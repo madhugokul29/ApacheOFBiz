@@ -342,6 +342,7 @@ public class ModelServiceReader implements Serializable {
             model.permissionServiceName = e.getAttribute("service-name");
             model.permissionMainAction = e.getAttribute("main-action");
             model.permissionResourceDesc = e.getAttribute("resource-description");
+            model.permissionRequireNewTransaction = !"false".equalsIgnoreCase(e.getAttribute("require-new-transaction"));
             model.auth = true; // auth is always required when permissions are set
         }
     }
@@ -386,6 +387,7 @@ public class ModelServiceReader implements Serializable {
                 perm.permissionServiceName = element.getAttribute("service-name");
                 perm.action = element.getAttribute("main-action");
                 perm.permissionResourceDesc = element.getAttribute("resource-description");
+                perm.permissionRequireNewTransaction = !"false".equalsIgnoreCase(element.getAttribute("require-new-transaction"));
                 perm.auth = true; // auth is always required when permissions are set
                 perm.serviceModel = service;
                 group.permissions.add(perm);

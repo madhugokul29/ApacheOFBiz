@@ -170,6 +170,9 @@ public class ModelService extends AbstractMap<String, Object> implements Seriali
     /** Permission service resource-description */
     public String permissionResourceDesc;
 
+    /** Permission service require-new-transaction */
+    public boolean permissionRequireNewTransaction;
+
     /** Semaphore setting (wait, fail, none) */
     public String semaphore;
 
