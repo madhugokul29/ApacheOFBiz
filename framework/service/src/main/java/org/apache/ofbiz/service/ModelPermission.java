@@ -47,6 +47,7 @@ public class ModelPermission implements Serializable {
     public String action = null;
     public String permissionServiceName = null;
     public String permissionResourceDesc = null;
+    public boolean permissionRequireNewTransaction = false;
     public Boolean auth;
     public String clazz = null;
 
@@ -144,7 +145,11 @@ public class ModelPermission implements Serializable {
         Map<String, Object> resp;
         String failMessage = null;
         try {
-            resp = dispatcher.runSync(permission.name,  ctx, 300, true);
+            if (permissionRequireNewTransaction) {
+                resp = dispatcher.runSync(permission.name, ctx, 300, true);
+            } else {
+                resp = dispatcher.runSync(permission.name, ctx);
+            }
             failMessage = (String) resp.get("failMessage");
         } catch (GenericServiceException e) {
             Debug.logError(failMessage + e.getMessage(), module);
