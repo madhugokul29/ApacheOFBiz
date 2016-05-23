@@ -19,6 +19,7 @@
 package org.apache.ofbiz.service;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -39,21 +40,25 @@ public class ModelPermGroup implements Serializable {
     public List<ModelPermission> permissions = new LinkedList<ModelPermission>();
     public String joinType;
 
-    public boolean evalPermissions(DispatchContext dctx, Map<String, ? extends Object> context) {
+    public Map<String, Object> evalPermissions(DispatchContext dctx, Map<String, ? extends Object> context) {
+        List<String> permissionErrors = new ArrayList<String>();
         if (UtilValidate.isNotEmpty(permissions))  {
             boolean foundOne = false;
             for (ModelPermission perm: permissions) {
-                if (perm.evalPermission(dctx, context)) {
+                Map<String, Object> permResult = perm.evalPermission(dctx, context);
+                if (ServiceUtil.isSuccess(permResult)) {
                     foundOne = true;
                 } else {
+                    ServiceUtil.addErrors(permissionErrors, null, permResult);
                     if (joinType.equals(PERM_JOIN_AND)) {
-                        return false;
+                        return permResult;
                     }
                 }
             }
-            return foundOne;
-        } else {
-            return true;
+            if (! foundOne) {
+                return ServiceUtil.returnError(permissionErrors);
+            }
         }
+        return ServiceUtil.returnSuccess();
     }
 }

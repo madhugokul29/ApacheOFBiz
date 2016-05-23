@@ -21,19 +21,7 @@ package org.apache.ofbiz.service;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.AbstractMap;
-import java.util.AbstractSet;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.TimeZone;
-import java.util.TreeSet;
+import java.util.*;
 
 import javax.wsdl.Binding;
 import javax.wsdl.BindingInput;
@@ -161,17 +149,8 @@ public class ModelService extends AbstractMap<String, Object> implements Seriali
     /** Sets the max number of times this service will retry when failed (persisted async only) */
     public int maxRetry = -1;
 
-    /** Permission service name */
-    public String permissionServiceName;
-
-    /** Permission service main-action */
-    public String permissionMainAction;
-
-    /** Permission service resource-description */
-    public String permissionResourceDesc;
-
-    /** Permission service require-new-transaction */
-    public boolean permissionRequireNewTransaction;
+    /** Permission service*/
+    ModelPermission modelPermission = null;
 
     /** Semaphore setting (wait, fail, none) */
     public String semaphore;
@@ -961,58 +940,9 @@ public class ModelService extends AbstractMap<String, Object> implements Seriali
      * @return result of permission service invocation
      */
     public Map<String, Object> evalPermission(DispatchContext dctx, Map<String, ? extends Object> context) {
-        if (UtilValidate.isNotEmpty(this.permissionServiceName)) {
+        if (this.modelPermission != null)) {
             ModelService thisService;
-            ModelService permission;
-            try {
-                thisService = dctx.getModelService(this.name);
-                permission = dctx.getModelService(this.permissionServiceName);
-            } catch (GenericServiceException e) {
-                Debug.logError(e, "Failed to get ModelService: " + e.toString(), module);
-                Map<String, Object> result = ServiceUtil.returnSuccess();
-                result.put("hasPermission", Boolean.FALSE);
-                result.put("failMessage", e.getMessage());
-                return result;
-            }
-            if (permission != null) {
-                Map<String, Object> ctx = permission.makeValid(context, ModelService.IN_PARAM);
-                if (UtilValidate.isNotEmpty(this.permissionMainAction)) {
-                    ctx.put("mainAction", this.permissionMainAction);
-                }
-                if (UtilValidate.isNotEmpty(this.permissionResourceDesc)) {
-                    ctx.put("resourceDescription", this.permissionResourceDesc);
-                } else if (thisService != null) {
-                    ctx.put("resourceDescription", thisService.name);
-                }
-
-                LocalDispatcher dispatcher = dctx.getDispatcher();
-                Map<String, Object> resp;
-                try {
-                    resp = dispatcher.runSync(permission.name, ctx, 300, true);
-                } catch (GenericServiceException e) {
-                    Debug.logError(e, module);
-                    Map<String, Object> result = ServiceUtil.returnSuccess();
-                    result.put("hasPermission", Boolean.FALSE);
-                    result.put("failMessage", e.getMessage());
-                    return result;
-                }
-                if (ServiceUtil.isError(resp) || ServiceUtil.isFailure(resp)) {
-                    Map<String, Object> result = ServiceUtil.returnSuccess();
-                    result.put("hasPermission", Boolean.FALSE);
-                    String failMessage = (String) resp.get("failMessage");
-                    if (UtilValidate.isEmpty(failMessage)) {
-                        failMessage = ServiceUtil.getErrorMessage(resp);
-                    }
-                    result.put("failMessage", failMessage);
-                    return result;
-                }
-                return resp;
-            } else {
-                Map<String, Object> result = ServiceUtil.returnSuccess();
-                result.put("hasPermission", Boolean.FALSE);
-                result.put("failMessage", "No ModelService found with the name [" + this.permissionServiceName + "]");
-                return result;
-            }
+            return modelPermission.evalPermission(dctx, context);
         } else {
             Map<String, Object> result = ServiceUtil.returnSuccess();
             result.put("hasPermission", Boolean.FALSE);
@@ -1034,18 +964,24 @@ public class ModelService extends AbstractMap<String, Object> implements Seriali
      * Evaluates permissions for a service.
      * @param dctx DispatchContext from the invoked service
      * @param context Map containing userLogin information
-     * @return true if all permissions evaluate true.
+     * @return Map if all permissions evaluate return success else return the error message list.
      */
-    public boolean evalPermissions(DispatchContext dctx, Map<String, ? extends Object> context) {
+    public Map<String, Object> evalPermissions(DispatchContext dctx, Map<String, ? extends Object> context) {
+        List<String> permGroupErrors = new ArrayList<String>();
+
         // old permission checking
         if (this.containsPermissions()) {
             for (ModelPermGroup group: this.permissionGroups) {
-                if (!group.evalPermissions(dctx, context)) {
-                    return false;
+                Map<String, Object> permResult = group.evalPermissions(dctx, context);
+                if (! ServiceUtil.isSuccess(permResult)) {
+                    ServiceUtil.addErrors(permGroupError, null, permResult);
                 }
             }
         }
-        return true;
+        if (UtilValidate.isEmpty(permGroupErrors)) {
+            return ServiceUtil.returnSuccess();
+        }
+        return ServiceUtil.returnError(permGroupErrors);
     }
 
     /**
