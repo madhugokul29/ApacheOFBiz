@@ -20,9 +20,11 @@ package org.apache.ofbiz.service;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.apache.ofbiz.base.util.Debug;
+import org.apache.ofbiz.base.util.UtilProperties;
 import org.apache.ofbiz.base.util.UtilValidate;
 import org.apache.ofbiz.entity.GenericValue;
 import org.apache.ofbiz.entity.util.EntityUtil;
@@ -48,34 +50,39 @@ public class ModelPermission implements Serializable {
     public String permissionServiceName = null;
     public String permissionResourceDesc = null;
     public boolean permissionRequireNewTransaction = false;
+    public boolean permissionReturnErrorOnFailure = true;
     public Boolean auth;
     public String clazz = null;
 
-    public boolean evalPermission(DispatchContext dctx, Map<String, ? extends Object> context) {
+    public Map<String, Object> evalPermission(DispatchContext dctx, Map<String, ? extends Object> context) {
         GenericValue userLogin = (GenericValue) context.get("userLogin");
+        Locale locale = (Locale) context.get("locale");
         Security security = dctx.getSecurity();
         if (userLogin == null) {
             Debug.logInfo("Secure service requested with no userLogin object", module);
-            return false;
+            return ServiceUtil.returnError(UtilProperties.getMessage("ServiceUiLabels", "ServicePermissionErrorUserLoginMissing", locale));
         }
+        boolean hasPermission = false;
         switch (permissionType) {
             case PERMISSION:
-                return evalSimplePermission(security, userLogin);
+                hasPermission = evalSimplePermission(security, userLogin);
             case ENTITY_PERMISSION:
-                return evalEntityPermission(security, userLogin);
-            case ROLE_MEMBER:
-                return evalRoleMember(userLogin);
+                hasPermission = evalEntityPermission(security, userLogin);
             case PERMISSION_SERVICE:
                 return evalPermissionService(serviceModel, dctx, context);
             default:
                 Debug.logWarning("Invalid permission type [" + permissionType + "] for permission named : " + nameOrRole + " on service : " + serviceModel.name, module);
-                return false;
+                return ServiceUtil.returnError(UtilProperties.getMessage("ServiceUiLabels", "ServicePermissionErrorInvalidPermissionType", locale));
         }
+        if (! hasPermission) {
+            return ServiceUtil.returnError(UtilProperties.getMessage("ServiceUiLabels", "ServicePermissionErrorFailed", locale));
+        }
+        return ServiceUtil.returnSuccess();
     }
 
     private boolean evalSimplePermission(Security security, GenericValue userLogin) {
         if (nameOrRole == null) {
-            Debug.logWarning("Null permission name passed for evaluation", module);
+            Debug.logError("Null permission name passed for evaluation", module);
             return false;
         }
         return security.hasPermission(nameOrRole, userLogin);
@@ -83,7 +90,7 @@ public class ModelPermission implements Serializable {
 
     private boolean evalEntityPermission(Security security, GenericValue userLogin) {
         if (nameOrRole == null) {
-            Debug.logWarning("Null permission name passed for evaluation", module);
+            Debug.logError("Null permission name passed for evaluation", module);
             return false;
         }
         if (action == null) {
@@ -92,45 +99,24 @@ public class ModelPermission implements Serializable {
         return security.hasEntityPermission(nameOrRole, action, userLogin);
     }
 
-    private boolean evalRoleMember(GenericValue userLogin) {
-        if (nameOrRole == null) {
-            Debug.logWarning("Null role type name passed for evaluation", module);
-            return false;
-        }
-        List<GenericValue> partyRoles = null;
-        /** (jaz) THIS IS NOT SECURE AT ALL
-        try {
-            partyRoles = delegator.findByAnd("PartyRole", "roleTypeId", nameOrRole, "partyId", userLogin.get("partyId"));
-        } catch (GenericEntityException e) {
-            Debug.logError(e, "Unable to lookup PartyRole records", module);
-        }
-        **/
-
-        if (UtilValidate.isNotEmpty(partyRoles)) {
-            partyRoles = EntityUtil.filterByDate(partyRoles);
-            if (UtilValidate.isNotEmpty(partyRoles)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean evalPermissionService(ModelService origService, DispatchContext dctx, Map<String, ? extends Object> context) {
+    private Map<String, Object> evalPermissionService(ModelService origService, DispatchContext dctx, Map<String, ? extends Object> context) {
         ModelService permission;
+        Locale locale = (Locale) context.get("locale");
         if (permissionServiceName == null) {
-            Debug.logWarning("No ModelService found; no service name specified!", module);
-            return false;
+            Debug.logError("No ModelService found; no service name specified!", module);
+            return ServiceUtil.returnError(UtilProperties.getMessage("ServiceUiLabels", "ServicePermissionErrorDefinitionProblem", locale));
         }
         try {
             permission = dctx.getModelService(permissionServiceName);
         } catch (GenericServiceException e) {
             Debug.logError(e, "Failed to get ModelService: " + e.toString(), module);
-            return false;
+            return ServiceUtil.returnError(UtilProperties.getMessage("ServiceUiLabels", "ServicePermissionErrorDefinitionProblem", locale));
         }
         if (permission == null) {
             Debug.logError("No ModelService found with the name [" + permissionServiceName + "]", module);
-            return false;
+            return ServiceUtil.returnError(UtilProperties.getMessage("ServiceUiLabels", "ServicePermissionErrorDefinitionProblem", locale));
         }
+
         permission.auth = true;
         Map<String, Object> ctx = permission.makeValid(context, ModelService.IN_PARAM);
         if (UtilValidate.isNotEmpty(action)) {
@@ -153,12 +139,13 @@ public class ModelPermission implements Serializable {
             failMessage = (String) resp.get("failMessage");
         } catch (GenericServiceException e) {
             Debug.logError(failMessage + e.getMessage(), module);
-            return false;
+            return ServiceUtil.returnError(UtilProperties.getMessage("ServiceUiLabels", "ServicePermissionErrorDefinitionProblem", locale));
         }
-        if (ServiceUtil.isError(resp) || ServiceUtil.isFailure(resp)) {
-            Debug.logError(failMessage, module);
-            return false;
+        if (permissionReturnErrorOnFailure &&
+                (UtilValidate.isNotEmpty(failMessage) || ! ((Boolean) resp.get("hasPermission")).booleanValue())) {
+            if (UtilValidate.isEmpty(failMessage)) failMessage = UtilProperties.getMessage("ServiceUiLabels", "ServicePermissionErrorFailed", locale);
+            return ServiceUtil.returnError(failMessage);
         }
-        return ((Boolean) resp.get("hasPermission")).booleanValue();
+        return resp;
     }
 }
