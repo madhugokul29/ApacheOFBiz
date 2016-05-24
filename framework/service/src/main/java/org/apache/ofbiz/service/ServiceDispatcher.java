@@ -917,7 +917,7 @@ public class ServiceDispatcher {
         // evaluate permissions for the service or throw exception if fail.
         DispatchContext dctx = this.getLocalContext(localName);
         Map<String, Object> permResp = null;
-        if (UtilValidate.isNotEmpty(origService.permissionServiceName)) {
+        if (origService.modelPermission != null) {
             permResp = origService.evalPermission(dctx, context);
             if (ServiceUtil.isSuccess(permResp)) {
                 //Ok the service have authorization to run, complete the context with the permission response map

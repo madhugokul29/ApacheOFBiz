@@ -339,10 +339,11 @@ public class ModelServiceReader implements Serializable {
     private void createPermission(Element baseElement, ModelService model) {
         Element e = UtilXml.firstChildElement(baseElement, "permission-service");
         if (e != null) {
-            model.permissionServiceName = e.getAttribute("service-name");
-            model.permissionMainAction = e.getAttribute("main-action");
-            model.permissionResourceDesc = e.getAttribute("resource-description");
-            model.permissionRequireNewTransaction = !"false".equalsIgnoreCase(e.getAttribute("require-new-transaction"));
+            ModelPermission modelPermission = new ModelPermission();
+            modelPermission.permissionServiceName = e.getAttribute("service-name");
+            modelPermission.permissionMainAction = e.getAttribute("main-action");
+            modelPermission.permissionResourceDesc = e.getAttribute("resource-description");
+            modelPermission.permissionRequireNewTransaction = !"false".equalsIgnoreCase(e.getAttribute("require-new-transaction"));
             model.auth = true; // auth is always required when permissions are set
         }
     }
