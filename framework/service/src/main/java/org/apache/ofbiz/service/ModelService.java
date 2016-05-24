@@ -221,9 +221,9 @@ public class ModelService extends AbstractMap<String, Object> implements Seriali
         }
         this.transactionTimeout = model.transactionTimeout;
         this.maxRetry = model.maxRetry;
-        this.permissionServiceName = model.permissionServiceName;
-        this.permissionMainAction = model.permissionMainAction;
-        this.permissionResourceDesc = model.permissionResourceDesc;
+        if (model.modelPermission != null) {
+            modelPermission = model.modelPermission;
+        }
         this.implServices = model.implServices;
         this.overrideParameters = model.overrideParameters;
         this.inheritedParameters = model.inheritedParameters();
@@ -940,8 +940,7 @@ public class ModelService extends AbstractMap<String, Object> implements Seriali
      * @return result of permission service invocation
      */
     public Map<String, Object> evalPermission(DispatchContext dctx, Map<String, ? extends Object> context) {
-        if (this.modelPermission != null)) {
-            ModelService thisService;
+        if (this.modelPermission != null) {
             return modelPermission.evalPermission(dctx, context);
         } else {
             Map<String, Object> result = ServiceUtil.returnSuccess();
@@ -974,7 +973,7 @@ public class ModelService extends AbstractMap<String, Object> implements Seriali
             for (ModelPermGroup group: this.permissionGroups) {
                 Map<String, Object> permResult = group.evalPermissions(dctx, context);
                 if (! ServiceUtil.isSuccess(permResult)) {
-                    ServiceUtil.addErrors(permGroupError, null, permResult);
+                    ServiceUtil.addErrors(permGroupErrors, null, permResult);
                 }
             }
         }

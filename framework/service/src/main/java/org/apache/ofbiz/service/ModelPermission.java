@@ -48,6 +48,7 @@ public class ModelPermission implements Serializable {
     public String nameOrRole = null;
     public String action = null;
     public String permissionServiceName = null;
+    public String permissionMainAction = null;
     public String permissionResourceDesc = null;
     public boolean permissionRequireNewTransaction = false;
     public boolean permissionReturnErrorOnFailure = true;
@@ -66,8 +67,10 @@ public class ModelPermission implements Serializable {
         switch (permissionType) {
             case PERMISSION:
                 hasPermission = evalSimplePermission(security, userLogin);
+                break;
             case ENTITY_PERMISSION:
                 hasPermission = evalEntityPermission(security, userLogin);
+                break;
             case PERMISSION_SERVICE:
                 return evalPermissionService(serviceModel, dctx, context);
             default:
