@@ -958,7 +958,7 @@ public class ModelService extends AbstractMap<String, Object> implements Seriali
         } else {
             Map<String, Object> result = ServiceUtil.returnSuccess();
             result.put("hasPermission", Boolean.FALSE);
-            result.put("failMessage", "No ModelService found; no service name specified!");
+            result.put("failMessage", UtilProperties.getMessage(resource, "ServicePermissionErrorDefinitionProblem", (Locale) context.get("locale")));
             return result;
         }
     }
@@ -984,6 +984,7 @@ public class ModelService extends AbstractMap<String, Object> implements Seriali
         // old permission checking
         if (this.containsPermissions()) {
             for (ModelPermGroup group: this.permissionGroups) {
+                if (Debug.verboseOn()) Debug.logVerbose(" Permission : Analyse " + group.toString(), module);
                 Map<String, Object> permResult = group.evalPermissions(dctx, context);
                 if (! ServiceUtil.isSuccess(permResult)) {
                     ServiceUtil.addErrors(permGroupErrors, null, permResult);
