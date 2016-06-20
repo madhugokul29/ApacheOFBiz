@@ -373,6 +373,7 @@ public class ServiceDispatcher {
                     // validate the context
                     if (modelService.validate && !isError && !isFailure) {
                         try {
+                            context = ctx.makeValidContext(modelService.name, ModelService.IN_PARAM, context);
                             modelService.validate(context, ModelService.IN_PARAM, locale);
                         } catch (ServiceValidationException e) {
                             Debug.logError(e, "Incoming context (in runSync : " + modelService.name + ") does not match expected requirements", module);
@@ -482,6 +483,7 @@ public class ServiceDispatcher {
                     // pre-out-validate ECA
                     if (eventMap != null) ServiceEcaUtil.evalRules(modelService.name, eventMap, "out-validate", ctx, ecaContext, result, isError, isFailure);
                     try {
+                        result = ctx.makeValidContext(modelService.name, ModelService.OUT_PARAM, result);
                         modelService.validate(result, ModelService.OUT_PARAM, locale);
                     } catch (ServiceValidationException e) {
                         throw new GenericServiceException("Outgoing result (in runSync : " + modelService.name + ") does not match expected requirements", e);
@@ -928,7 +930,7 @@ public class ServiceDispatcher {
             permResp = origService.evalPermissions(dctx, context);
         }
         if (ServiceUtil.isFailure(permResp) || ServiceUtil.isError(permResp)) {
-            throw new ServiceAuthException(UtilProperties.getMessage("ServiceUiLabels", "ServicePermissionError",
+            throw new ServiceAuthException(UtilProperties.getMessage("ServiceErrorUiLabels", "ServicePermissionError",
                     UtilMisc.toMap("serviceName", origService.name, "failMessage", ServiceUtil.getErrorMessage(permResp)), locale));
         }
 

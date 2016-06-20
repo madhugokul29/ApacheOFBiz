@@ -119,6 +119,10 @@
         <value xml:lang="en">Problem on permission service definition, please see with your integrator</value>
         <value xml:lang="fr">Problème dans la définition d'un service de validation de permission, merci d'en informer votre intégrateur</value>
     </property>
+    <property key="ServicePermissionErrorInvalidPermissionType">
+        <value xml:lang="en">The permission type call by the service isn't valid. Please see with your integrator</value>
+        <value xml:lang="fr">Le type de permission défini sur le service appelé n'est pas conforme, veuiller prendre contact avec votre intégrateur !</value>
+    </property>
     <property key="ServicePermissionErrorRefused">
         <value xml:lang="en">Access refused</value>
         <value xml:lang="fr">Accés refusé</value>
