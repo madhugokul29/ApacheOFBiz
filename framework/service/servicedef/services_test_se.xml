@@ -190,7 +190,7 @@ under the License.
     <service name="testSimpleGroupOrPermission" engine="java" auth="true"
              location="org.ofbiz.service.test.ServiceEngineTestPermissionServices" invoke="genericTestService">
         <required-permissions join-type="OR">
-            <check-permission permission="TESTPERM" action="_lUPDATE"/>
+            <check-permission permission="TESTPERM" action="_UPDATE"/>
             <permission-service service-name="testPermissionPing"/>
         </required-permissions>
         <attribute name="givePermission" type="String" mode="IN"/>
