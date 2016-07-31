@@ -42,7 +42,7 @@ public class ModelPermGroup implements Serializable {
 
     public Map<String, Object> evalPermissions(DispatchContext dctx, Map<String, ? extends Object> context) {
         List<String> permissionErrors = new ArrayList<String>();
-        if (UtilValidate.isNotEmpty(permissions))  {
+        if (UtilValidate.isNotEmpty(permissions)) {
             boolean foundOne = false;
             for (ModelPermission perm: permissions) {
                 Map<String, Object> permResult = perm.evalPermission(dctx, context);

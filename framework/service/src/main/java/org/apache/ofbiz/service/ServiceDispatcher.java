@@ -373,7 +373,8 @@ public class ServiceDispatcher {
                     // validate the context
                     if (modelService.validate && !isError && !isFailure) {
                         try {
-                            context = ctx.makeValidContext(modelService.name, ModelService.IN_PARAM, context);
+                            // FIXME without this line all simple test failed
+                            // context = ctx.makeValidContext(modelService.name, ModelService.IN_PARAM, context);
                             modelService.validate(context, ModelService.IN_PARAM, locale);
                         } catch (ServiceValidationException e) {
                             Debug.logError(e, "Incoming context (in runSync : " + modelService.name + ") does not match expected requirements", module);
