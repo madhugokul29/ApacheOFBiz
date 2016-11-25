@@ -18,4 +18,4 @@ under the License.
 -->
 
 <#include "component://widget/templates/HtmlFormMacroLibrary.ftl" ignore_missing=true />
-<#include "component://common/template/includes/HtmlTemplate.ftl" ignore_missing=true />
+<#include "component://common-theme/template/includes/HtmlTemplate.ftl" ignore_missing=true />

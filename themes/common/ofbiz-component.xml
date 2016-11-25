@@ -18,18 +18,21 @@ specific language governing permissions and limitations
 under the License.
 -->
 
-<screens xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xmlns="http://ofbiz.apache.org/Widget-Screen" xsi:schemaLocation="http://ofbiz.apache.org/Widget-Screen http://ofbiz.apache.org/dtds/widget-screen.xsd">
-    <screen name="FlotChart">
-        <section>
-            <actions>
-                <script location="component://common/groovyScripts/PrepareDataForFlotGraph.groovy"/>
-            </actions>
-            <widgets>
-                <platform-specific>
-                     <html><html-template location="component://common-theme/template/includes/flotCharts/${chartType}.ftl"/></html>
-                </platform-specific>
-            </widgets>
-        </section>
-    </screen>
-</screens>
+<ofbiz-component name="common-theme"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://ofbiz.apache.org/dtds/ofbiz-component.xsd">
+    <!-- define resource loaders; most common is to use the component resource loader -->
+    <resource-loader name="main" type="component"/>
+
+    <!-- entity resources: model(s), eca(s), group, and data definitions -->
+    <entity-resource type="data" reader-name="seed" loader="main" location="data/CommonThemeData.xml"/>
+
+    <!-- web applications -->
+    <webapp name="common-theme"
+        title="common theme"
+        menu-name="secondary"
+        server="default-server"
+        location="webapp/common"
+        mount-point="/common"
+        app-bar-display="false"/>
+</ofbiz-component>

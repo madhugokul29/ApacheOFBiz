@@ -119,7 +119,7 @@ under the License.
     <#if paginateEcommerceStyle??>
         <@paginationControls/>
     <#else>
-        <#include "component://common/template/includes/HtmlTemplate.ftl"/>
+        <#include "component://common-theme/template/includes/HtmlTemplate.ftl"/>
         <#assign commonUrl = "category?category_id="+ (parameters.category_id!) + "&"/>
         <#--assign viewIndex = viewIndex - 1/-->
         <#assign viewIndexFirst = 0/>

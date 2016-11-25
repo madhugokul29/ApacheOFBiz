@@ -18,20 +18,28 @@
  */
 import org.apache.ofbiz.base.util.UtilProperties
 
-if (!context.userPreferences) {
+def globalContext = context.globalContext;
+if (!globalContext.userPreferences) {
     Map userPreferencesResult = run service: 'getUserPreferenceGroup', with: ['userPrefGroupTypeId': 'GLOBAL_PREFERENCES']
-    context.userPreferences = userPreferencesResult.userPrefMap
+    globalContext.userPreferences = userPreferencesResult.userPrefMap
 }
 
-if (!context.generalProperties) {
-    context.generalProperties = UtilProperties.getResourceBundleMap('general', context.locale, context);
+if (!globalContext.generalProperties) {
+    globalContext.generalProperties = UtilProperties.getResourceBundleMap('general', context.locale, context)
 }
 
-if (!context.visualThemeId) {
-    context.visualThemeId = userPreferences.VISUAL_THEME ? userPreferences.VISUAL_THEME : generalProperties.VISUAL_THEME
+if (!globalContext.visualThemeId) {
+    globalContext.visualThemeId = userPreferences.VISUAL_THEME ? userPreferences.VISUAL_THEME : generalProperties.VISUAL_THEME
 }
 
-if (!context.layoutSettings) {
-    Map themeResourcesResult = run service: 'getVisualThemeResources', with: ['visualThemeId': context.visualThemeId]
-    context.layoutSettings = themeResourcesResult.themeResources;
+if (!globalContext.themeResources) {
+    Map themeResourcesResult = run service: 'getVisualThemeResources', with: ['visualThemeId': globalContext.visualThemeId]
+    globalContext.themeResources = themeResourcesResult.themeResources
+    if (globalContext.layoutSettings) {
+        globalContext.layoutSettings.putAll(themeResourcesResult.themeResources)
+    }
+    else {
+        globalContext.layoutSettings = themeResourcesResult.themeResources
+    }
 }
+context.globalContext = globalContext
