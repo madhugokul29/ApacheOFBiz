@@ -37,8 +37,7 @@ if (!globalContext.themeResources) {
     globalContext.themeResources = themeResourcesResult.themeResources
     if (globalContext.layoutSettings) {
         globalContext.layoutSettings.putAll(themeResourcesResult.themeResources)
-    }
-    else {
+    } else {
         globalContext.layoutSettings = themeResourcesResult.themeResources
     }
 }
