@@ -38,7 +38,7 @@ under the License.
           <#if !displayReturnField??>
             <#assign displayReturnField = Static[
                 "org.apache.ofbiz.entity.util.EntityUtilProperties"].getPropertyValue(
-                "widget", "widget.autocompleter.displayReturnField", delegator)>
+                "commonWidget", "widget.autocompleter.displayReturnField", delegator)>
           </#if>
           <#list autocompleteOptions as autocompleteOption>
               {

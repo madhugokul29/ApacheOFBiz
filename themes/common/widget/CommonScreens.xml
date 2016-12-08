@@ -400,6 +400,8 @@ under the License.
                     <actions>
                         <property-map resource="CommonUiLabels" map-name="uiLabelMap" global="true"/>
                         <set field="searchType" from-field="parameters.searchType" default-value="${searchType}"/>
+                        <set field="autocompleterViewSize" from-field="parameters.autocompleterViewSize"
+                             default-value="${groovy: EntityUtilProperties.getPropertyValue('commonWidget', 'widget.autocompleter.defaultViewSize', delegator)}"/>
                         <script location="component://common/groovyScripts/FindAutocompleteOptions.groovy"/>
                     </actions>
                     <widgets>

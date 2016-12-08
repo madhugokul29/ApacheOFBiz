@@ -69,8 +69,8 @@ under the License.
     require
   /><#t/>
   <#if ajaxEnabled?has_content && ajaxEnabled>
-    <#assign defaultMinLength = Static["org.apache.ofbiz.entity.util.EntityUtilProperties"].getPropertyValue("widget", "widget.autocompleter.defaultMinLength", delegator)>
-    <#assign defaultDelay = Static["org.apache.ofbiz.entity.util.EntityUtilProperties"].getPropertyValue("widget", "widget.autocompleter.defaultDelay", delegator)>
+    <#assign defaultMinLength = Static["org.apache.ofbiz.entity.util.EntityUtilProperties"].getPropertyValue("commonWidget", "widget.autocompleter.defaultMinLength", delegator)>
+    <#assign defaultDelay = Static["org.apache.ofbiz.entity.util.EntityUtilProperties"].getPropertyValue("commonWidget", "widget.autocompleter.defaultDelay", delegator)>
     <script language="JavaScript" type="text/javascript">ajaxAutoCompleter('${ajaxUrl}', false, ${defaultMinLength!2}, ${defaultDelay!300});</script><#lt/>
   </#if>
 </#macro>
@@ -649,13 +649,13 @@ Parameter: tabindex, String, optional - HTML tabindex number.
     </#if>
   </#if>
   <#if (!position?has_content)>
-    <#local position = Static["org.apache.ofbiz.entity.util.EntityUtilProperties"].getPropertyValue("widget", "widget.lookup.position", "topleft", delegator)>
+    <#local position = Static["org.apache.ofbiz.entity.util.EntityUtilProperties"].getPropertyValue("commonWidget", "widget.lookup.position", "topleft", delegator)>
   </#if>
   <#if (!width?has_content)>
-    <#local width = Static["org.apache.ofbiz.entity.util.EntityUtilProperties"].getPropertyValue("widget", "widget.lookup.width", "620", delegator)>
+    <#local width = Static["org.apache.ofbiz.entity.util.EntityUtilProperties"].getPropertyValue("commonWidget", "widget.lookup.width", "620", delegator)>
   </#if>
   <#if (!height?has_content)>
-    <#local height = Static["org.apache.ofbiz.entity.util.EntityUtilProperties"].getPropertyValue("widget", "widget.lookup.height", "500", delegator)>
+    <#local height = Static["org.apache.ofbiz.entity.util.EntityUtilProperties"].getPropertyValue("commonWidget", "widget.lookup.height", "500", delegator)>
   </#if>
   <#if ajaxEnabled?has_content && ajaxEnabled>
     <script type="text/javascript">
@@ -692,8 +692,8 @@ Parameter: tabindex, String, optional - HTML tabindex number.
       );"></a><#rt>
     <#else>
       <#if ajaxEnabled?has_content && ajaxEnabled>
-        <#assign defaultMinLength = Static["org.apache.ofbiz.entity.util.EntityUtilProperties"].getPropertyValue("widget", "widget.autocompleter.defaultMinLength", delegator)>
-        <#assign defaultDelay = Static["org.apache.ofbiz.entity.util.EntityUtilProperties"].getPropertyValue("widget", "widget.autocompleter.defaultDelay", delegator)>
+        <#assign defaultMinLength = Static["org.apache.ofbiz.entity.util.EntityUtilProperties"].getPropertyValue("commonWidget", "widget.autocompleter.defaultMinLength", delegator)>
+        <#assign defaultDelay = Static["org.apache.ofbiz.entity.util.EntityUtilProperties"].getPropertyValue("commonWidget", "widget.autocompleter.defaultDelay", delegator)>
         <#local ajaxUrl = ajaxUrl + "&amp;_LAST_VIEW_NAME_=" + lastViewName />
         <#if !ajaxUrl?contains("searchValueFieldName=")>
           <#if descriptionFieldName?has_content && showDescription == "true">
@@ -876,6 +876,9 @@ Parameter: tabindex, String, optional - HTML tabindex number.
         <#if linkStyle?has_content>class="${linkStyle}"</#if>>
         <#if description?has_content>${description}</#if></a>
         <script type="text/javascript">
+            <#if ! width?has_content><#assign width = Static["org.apache.ofbiz.entity.util.EntityUtilProperties"].getPropertyValue("commonWidget", "widget.link.default.layered-modal.width", delegator)/></#if>
+            <#if ! height?has_content><#assign height = Static["org.apache.ofbiz.entity.util.EntityUtilProperties"].getPropertyValue("commonWidget", "widget.link.default.layered-modal.height", delegator)/></#if>
+
             function ${uniqueItemName}_data () {
                 var data = {
                 <#if targetParameters?has_content>

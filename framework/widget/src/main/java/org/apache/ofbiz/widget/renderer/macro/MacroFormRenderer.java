@@ -3092,16 +3092,6 @@ public final class MacroFormRenderer implements FormStringRenderer {
         } else {
             if ("layered-modal".equals(realLinkType)) {
                 String uniqueItemName = "Modal_".concat(UUID.randomUUID().toString().replace("-", "_"));
-                String width = (String) this.request.getAttribute("width");
-                if (UtilValidate.isEmpty(width)) {
-                    width = String.valueOf(UtilProperties.getPropertyValue("widget", "widget.link.default.layered-modal.width", "800"));
-                    this.request.setAttribute("width", width);
-                }
-                String height = (String) this.request.getAttribute("height");
-                if (UtilValidate.isEmpty(height)) {
-                    height = String.valueOf(UtilProperties.getPropertyValue("widget", "widget.link.default.layered-modal.height", "600"));
-                    this.request.setAttribute("height", height);
-                }
                 this.request.setAttribute("uniqueItemName", uniqueItemName);
                 makeHyperlinkString(writer, linkStyle, targetType, target, parameterMap, encodedDescription, confirmation, modelFormField, request, response, context, targetWindow);
                 this.request.removeAttribute("uniqueItemName");
