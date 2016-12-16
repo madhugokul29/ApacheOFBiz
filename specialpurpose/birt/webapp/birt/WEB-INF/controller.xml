@@ -24,11 +24,10 @@ under the License.
          can be found in the following xml file. A component can override the
          elements found in the common-controller.xml file. -->
     <include location="component://common/webcommon/WEB-INF/common-controller.xml"/>
-
+    
     <description>BIRT Component Site Configuration File</description>
 
     <handler name="birt" type="view" class="org.apache.ofbiz.birt.webapp.view.BirtViewHandler"/>
-    <handler name="simplecontent" type="view" class="org.apache.ofbiz.content.view.SimpleContentViewHandler"/>
 
     <!-- Events to run on every request before security (chains exempt) -->
     <!--
@@ -77,94 +76,8 @@ under the License.
         <response name="success" type="view" value="chartReport"/>
     </request-map>
     <request-map uri="chartViewHandler">
-        <security https="true" auth="true" />
-        <response name="success" type="view" value="chartViewHandler" />
-    </request-map>
-
-    <request-map uri="useReport">
-        <security https="true" auth="true" />
-        <response name="success" type="view" value="useReport" />
-    </request-map>
-
-    <request-map uri="filteringParameters">
-        <security https="true" auth="true" />
-        <response name="success" type="view" value="filteringParameters" />
-    </request-map>
-
-    <request-map uri="produceReport">
-        <security https="true" auth="true" />
-        <event type="groovy" path="component://birt/webapp/birt/WEB-INF/actions/reports/produceReport.groovy" />
-        <response name="success" type="view" value="produceReport" />
-
-    </request-map>
-    <request-map uri="reportGeneration">
-        <security https="true" auth="true" />
-        <response name="success" type="view" value="reportGenerateParameters" />
-    </request-map>
-    <request-map uri="reportParameters">
-        <security https="true" auth="true" />
-        <event type="service" invoke="determineReportGenerationPath" />
-        <response name="error" type="view" value="reportGenerateParameters" />
-        <response name="success" type="view" value="reportParameters" />
-    </request-map>
-
-    <request-map uri="editReportForm">
-        <security https="true" auth="true" />
-        <event type="service" invoke="createFormForDisplay" />
-        <response name="error" type="view" value="manageReports" />
-        <response name="success" type="view" value="reportParameters" />
-    </request-map>
-
-    <request-map uri="deleteReports">
-        <security https="true" auth="true" />
-        <event type="service" invoke="deleteAllReports" />
-        <response name="success" type="view" value="main" />
-        <response name="error" type="view" value="main" />
-    </request-map>
-
-    <request-map uri="deleteOneReport">
-        <security https="true" auth="true" />
-        <event type="service" invoke="deleteOneReport" />
-        <response name="success" type="view" value="manageReports" />
-        <response name="error" type="view" value="manageReports" />
-    </request-map>
-
-    <request-map uri="manageReports">
-        <security https="true" auth="true" />
-        <response name="success" type="view" value="manageReports" />
-    </request-map>
-
-    <request-map uri="editFormParameters">
-        <security https="true" auth="true" />
-        <event type="service" invoke="overrideReportForm" />
-        <response name="success" type="view" value="manageReports" />
-        <response name="error" type="request" value="json" />
-        <!-- <response name="error" type="request-redirect" value="editReportForm"/> -->
-    </request-map>
-
-    <request-map uri="updateContent">
-        <security https="true" auth="true" />
-        <event type="service" invoke="updateContent" />
-        <response name="success" type="view" value="manageReports" />
-        <response name="error" type="view" value="manageReports" />
-    </request-map>
-
-    <request-map uri="editReport">
-        <security https="true" auth="true" />
-        <response name="success" type="view" value="editReport" />
-        <response name="error" type="view" value="manageReports" />
-    </request-map>
-
-    <request-map uri="uploadRptDesign">
-        <security https="true" auth="true" />
-        <event type="service" invoke="uploadRptDesign" />
-        <response name="success" type="view" value="manageReports" />
-        <response name="error" type="view" value="manageReports" />
-    </request-map>
-
-    <request-map uri="ViewBinaryDataResource">
-        <security auth="true" https="true" />
-        <response name="success" type="view" value="ViewBinaryDataResource" />
+        <security https="true" auth="true"/>
+        <response name="success" type="view" value="chartViewHandler"/>
     </request-map>
 
     <!-- end of request mappings -->
@@ -192,13 +105,5 @@ under the License.
      -->
     <view-map name="ViewHandler" type="birt" page="component://birt/webapp/birt/report/example.rptdesign" content-type="application/pdf"/>
     <view-map name="chartViewHandler" type="birt" page="component://birt/webapp/birt/report/chart.rptdesign" content-type="application/pdf"/>
-    <view-map name="useReport" type="screen" page="component://birt/widget/birt/BirtScreens.xml#useReport"/>
-    <view-map name="filteringParameters" type="screen" page="component://birt/widget/birt/BirtScreens.xml#filteringParameters"/>
-    <view-map name="reportGenerateParameters" type="screen" page="component://birt/widget/birt/BirtScreens.xml#reportGenerateParameters"/>
-    <view-map name="reportParameters" type="screen" page="component://birt/widget/birt/BirtScreens.xml#reportParameters"/>
-    <view-map name="manageReports" type="screen" page="component://birt/widget/birt/BirtScreens.xml#manageReports"/>
-    <view-map name="editReport" type="screen" page="component://birt/widget/birt/BirtScreens.xml#editReport"/>
-    <view-map name="produceReport" type="birt" />
-    <view-map name="ViewBinaryDataResource" page="" type="simplecontent"/>
     <!-- end of view mappings -->
 </site-conf>

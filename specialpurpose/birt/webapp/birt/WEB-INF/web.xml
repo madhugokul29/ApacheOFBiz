@@ -25,7 +25,7 @@ under the License.
     <context-param>
         <description>A unique name used to identify/recognize the local dispatcher for the Service Engine</description>
         <param-name>localDispatcherName</param-name><param-value>birt</param-value>
-    </context-param>
+    </context-param>    
     <context-param>
         <description>The Name of the Entity Delegator to use, defined in entityengine.xml</description>
         <param-name>entityDelegatorName</param-name><param-value>default</param-value>
@@ -51,11 +51,11 @@ under the License.
         <param-name>BIRT_VIEWER_LOCALE</param-name>
         <param-value>en-US</param-value>
     </context-param>
-
-    <!--
+    
+    <!-- 
         Default timezone setting.
         Examples: "Europe/Paris", "GMT+1".
-        Defaults to the container's timezone.
+        Defaults to the container's timezone.       
      -->
     <context-param>
         <param-name>BIRT_VIEWER_TIMEZONE</param-name>
@@ -257,18 +257,18 @@ under the License.
     <servlet-mapping>
         <servlet-name>EngineServlet</servlet-name>
         <url-pattern>/parameter</url-pattern>
-    </servlet-mapping>
+    </servlet-mapping>  
 
     <servlet-mapping>
         <servlet-name>EngineServlet</servlet-name>
         <url-pattern>/document</url-pattern>
-    </servlet-mapping>
+    </servlet-mapping>  
 
     <servlet-mapping>
         <servlet-name>EngineServlet</servlet-name>
         <url-pattern>/output</url-pattern>
-    </servlet-mapping>
-
+    </servlet-mapping>  
+    
     <servlet-mapping>
         <servlet-name>EngineServlet</servlet-name>
         <url-pattern>/extract</url-pattern>

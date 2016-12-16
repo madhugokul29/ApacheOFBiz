@@ -27,31 +27,8 @@ under the License.
         <menu-item name="Report" title="${uiLabelMap.ExampleBirtReport}"><link target="Report"/></menu-item>
         <menu-item name="Export" title="${uiLabelMap.ExampleBirtViewHandler}"><link target="ViewHandler" target-window="_BLANK"/></menu-item>
         <menu-item name="Mail" title="${uiLabelMap.ExampleBirtMail}"><link target="Mail"/></menu-item>
-
-
         <!-- Reports using charts-->
         <menu-item name="chartReport" title="${uiLabelMap.ExampleBirtChartReport}"><link target="chartReport"/></menu-item>
         <menu-item name="chartExport" title="${uiLabelMap.ExampleBirtChartViewHandler}"><link target="chartViewHandler" target-window="_BLANK"/></menu-item>
-        <menu-item name="useReport" title="${uiLabelMap.BirtGenericReport}"><link target="useReport"/></menu-item>
-
-        <menu-item name="reportGeneration" title="${uiLabelMap.BirtReportGeneration}">
-            <condition>
-                <if-has-permission permission="BIRT_CREATE"/>
-            </condition>
-            <link target="reportGeneration" /></menu-item>
-
-        <menu-item name="manageReports" title="${uiLabelMap.BirtManageReports}">
-            <condition>
-                <if-has-permission permission="BIRT_UPDATE"/>
-            </condition>
-            <link target="manageReports"/>
-        </menu-item>
-
-        <menu-item name="deleteReports" title="${uiLabelMap.BirtDeleteReports}">
-            <condition>
-                <if-has-permission permission="BIRT_DELETE"/>
-            </condition>
-            <link target="deleteReports" confirmation-message="${uiLabelMap.ConfirmDeleteReports}" request-confirmation="true"/>
-        </menu-item>
     </menu>
 </menus>
