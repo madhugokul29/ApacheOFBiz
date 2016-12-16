@@ -1,0 +1,348 @@
+package org.apache.ofbiz.birt;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.LinkedHashMap;
+import java.util.Locale;
+import java.util.Map;
+
+import org.eclipse.birt.core.framework.Platform;
+import org.eclipse.birt.report.model.api.CachedMetaDataHandle;
+import org.eclipse.birt.report.model.api.CellHandle;
+import org.eclipse.birt.report.model.api.DataItemHandle;
+import org.eclipse.birt.report.model.api.DesignConfig;
+import org.eclipse.birt.report.model.api.DesignElementHandle;
+import org.eclipse.birt.report.model.api.ElementFactory;
+import org.eclipse.birt.report.model.api.GridHandle;
+import org.eclipse.birt.report.model.api.IDesignEngine;
+import org.eclipse.birt.report.model.api.IDesignEngineFactory;
+import org.eclipse.birt.report.model.api.LabelHandle;
+import org.eclipse.birt.report.model.api.PropertyHandle;
+import org.eclipse.birt.report.model.api.ReportDesignHandle;
+import org.eclipse.birt.report.model.api.RowHandle;
+import org.eclipse.birt.report.model.api.ScalarParameterHandle;
+import org.eclipse.birt.report.model.api.ScriptDataSetHandle;
+import org.eclipse.birt.report.model.api.ScriptDataSourceHandle;
+import org.eclipse.birt.report.model.api.SessionHandle;
+import org.eclipse.birt.report.model.api.StructureFactory;
+import org.eclipse.birt.report.model.api.activity.SemanticException;
+import org.eclipse.birt.report.model.api.elements.DesignChoiceConstants;
+import org.eclipse.birt.report.model.api.elements.structures.CachedMetaData;
+import org.eclipse.birt.report.model.api.elements.structures.ColumnHint;
+import org.eclipse.birt.report.model.api.elements.structures.ComputedColumn;
+import org.eclipse.birt.report.model.api.elements.structures.HideRule;
+import org.eclipse.birt.report.model.api.elements.structures.ResultSetColumn;
+import org.eclipse.birt.report.model.elements.ReportItem;
+import org.apache.ofbiz.base.util.Debug;
+import org.apache.ofbiz.base.util.GeneralException;
+import org.apache.ofbiz.base.util.UtilMisc;
+import org.apache.ofbiz.base.util.UtilProperties;
+import org.apache.ofbiz.base.util.UtilValidate;
+import org.apache.ofbiz.birt.birt.BirtServices;
+import org.apache.ofbiz.entity.GenericEntityException;
+import org.apache.ofbiz.entity.GenericValue;
+import org.apache.ofbiz.service.DispatchContext;
+import org.apache.ofbiz.service.GenericServiceException;
+import org.apache.ofbiz.service.LocalDispatcher;
+import org.apache.ofbiz.service.ServiceUtil;
+
+import com.ibm.icu.util.ULocale;
+
+public class ReportDesignGenerator {
+
+    private Locale locale;
+    private ElementFactory factory;
+    private ReportDesignHandle design;
+    private Map<String, String> dataMap;
+    private Map<String, String> filterMap;
+    private LocalDispatcher dispatcher;
+    private String customMethod;
+    private Map<String, String> fieldDisplayLabels;
+    private Map<String, String> filterDisplayLabels;
+    private String rptDesignName;
+    private boolean generateFilters = false;
+    private GenericValue userLogin;
+
+    public ReportDesignGenerator(Map<String, ? extends Object> context, DispatchContext dctx) throws GeneralException, SemanticException, GenericServiceException {
+        locale = (Locale) context.get("locale");
+        dispatcher = dctx.getDispatcher();
+        dataMap = (Map<String, String>) context.get("dataMap");
+        filterMap = (LinkedHashMap<String, String>) context.get("filterMap");
+        customMethod = (String) context.get("customMethod");
+        fieldDisplayLabels = (Map<String, String>) context.get("fieldDisplayLabels");
+        filterDisplayLabels = (LinkedHashMap<String, String>) context.get("filterDisplayLabels");
+        rptDesignName = (String) context.get("rptDesignName");
+        String writeFilters = (String) context.get("writeFilters");
+        userLogin = (GenericValue) context.get("userLogin");
+        if(UtilValidate.isEmpty(dataMap)){
+            throw new GeneralException("Report design generator failed. Entry data map not found.");
+        }
+        if("Y".equals(writeFilters)) {
+            generateFilters = true;
+        }
+    }
+
+    public void buildReport() throws IOException, SemanticException, GenericServiceException, GenericEntityException{
+        DesignConfig config = new DesignConfig();
+
+        IDesignEngine engine = null;
+
+        try{
+            Platform.startup();
+            IDesignEngineFactory factory = (IDesignEngineFactory) Platform.createFactoryObject(IDesignEngineFactory.EXTENSION_DESIGN_ENGINE_FACTORY);
+            engine = factory.createDesignEngine(config);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        // creating main design elements
+        SessionHandle session = engine.newSessionHandle(ULocale.forLocale(locale));
+        design = session.createDesign();
+
+        factory = design.getElementFactory();
+
+        DesignElementHandle element = factory.newSimpleMasterPage("Page Master");
+        design.getMasterPages().add(element);
+
+        // create DataSource call
+        createScriptedDataSource();
+
+        // create DataSet call
+        try {
+            createScriptedDataset();
+        } catch (SemanticException se){
+            throw se;
+        } catch (GenericServiceException gse) {
+            throw gse;
+        }
+
+        // General design parameters
+        design.setLayoutPreference(DesignChoiceConstants.REPORT_LAYOUT_PREFERENCE_AUTO_LAYOUT);
+        design.setBidiOrientation(DesignChoiceConstants.BIDI_DIRECTION_LTR);
+        design.setDefaultUnits(DesignChoiceConstants.UNITS_IN);
+        design.setCreatedBy(design.getVersion());
+        design.setImageDPI(96);
+
+        // adding filters as parameters to make them available for design
+            // first adding parameters to the design itself
+        if(UtilValidate.isNotEmpty(filterMap)) {
+            // adding filters within reportDesign if generateFilters is set to true
+            GridHandle grid = null;
+            int i = 0;
+            if(generateFilters) {
+                grid = factory.newGridItem(null, 2, filterMap.size());
+                design.getBody().add(grid);
+                grid.setWidth("100%");
+            }
+
+            for(String filter : filterMap.keySet()) {
+                Map<String, Object> typeConvertResult;
+                try {
+                    typeConvertResult = dispatcher.runSync("convertFieldTypeToBirtParameterType", UtilMisc.toMap("fieldType", filterMap.get(filter), "userLogin", userLogin));
+                    if(ServiceUtil.isError(typeConvertResult)) {
+                        throw new GenericServiceException(ServiceUtil.getErrorMessage(typeConvertResult));
+                    }
+                } catch (GenericServiceException e) {
+                    e.printStackTrace();
+                    throw new GenericServiceException("Cannot convert field type to birt type");
+                }
+                String birtType = (String) typeConvertResult.get("birtType");
+                // get label
+                String displayFilterName;
+                if(UtilValidate.isNotEmpty(filterDisplayLabels)){
+                    displayFilterName = filterDisplayLabels.get(filter);
+                }else{
+                    displayFilterName = filter;
+                }
+                ScalarParameterHandle scalParam = factory.newScalarParameter(filter);
+//                scalParam.setDisplayName(displayFilterName); // has no incidence at all right now, is only displayed when using birt's report parameter system. Not our case. I leave it here if any idea arise of how to translate these.
+                scalParam.setPromptText(displayFilterName);
+                if ("javaObject".equals(birtType)) { //Fields of type='blob' are rejected by Birt: org.eclipse.birt.report.model.api.metadata.PropertyValueException: The choice value "javaObject" is not allowed. 
+                    throw new GenericServiceException("Fields of type='blob' are rejected by Birt. Create a view entity, based on the requested entity, where you exclude the field of type='blob'");
+                } else {
+                scalParam.setDataType(birtType);
+                }
+                scalParam.setIsRequired(false);
+                design.getParameters().add(scalParam);
+
+                if(generateFilters) {
+                    RowHandle row = (RowHandle) grid.getRows().get(i);
+                    CellHandle cellLabel = (CellHandle) row.getCells().get(0);
+                    CellHandle cellFilter = (CellHandle) row.getCells().get(1);
+                    LabelHandle label = factory.newLabel(null);
+                    label.setText(displayFilterName);
+                    cellLabel.getContent().add(label);
+                    // 1. create computed column and add it to grid column bindings
+                    ComputedColumn computedCol = StructureFactory.createComputedColumn();
+                    PropertyHandle computedSet = grid.getColumnBindings();
+                    computedCol.setName(displayFilterName);
+                    StringBuffer expression = new StringBuffer("params[\"");
+                    expression.append(filter);
+                    expression.append("\"]");
+                    computedCol.setExpression(expression.toString());
+                    computedSet.addItem(computedCol);
+                    // 2. create data and add computed column to it
+                    DataItemHandle data = factory.newDataItem(null);
+                    data.setResultSetColumn(computedCol.getName());
+                    cellFilter.getContent().add(data);
+                    // add visibility rule on row
+                    HideRule hideRule = StructureFactory.createHideRule();
+                    StringBuffer expressionHide = new StringBuffer(expression);
+                    expressionHide.append(".value == null || ");
+                    expressionHide.append(expression);
+                    expressionHide.append(".value == \"\"");
+                    hideRule.setExpression(expressionHide.toString());
+                    PropertyHandle propVisHandle = row.getPropertyHandle(ReportItem.VISIBILITY_PROP);
+                    propVisHandle.addItem(hideRule);
+                    i++;
+                }
+            }
+            // second adding script within beforeFactory filling the parameters with values from inputFields
+            createScriptedBeforeFactory();
+        }
+
+        // ################ CODE HERE IF YOU WANT TO ADD GENERATED DESIGN / MAY BE WORTH USING RPTTEMPLATE AND-OR RPTLIBRARY ###################
+
+        //GridHandle grid = factory.newGridItem(null, 7, 3);
+//        design.getBody().add(grid);
+        
+//        grid.setWidth("100%");
+        
+//        RowHandle row = (RowHandle) grid.getRows().get(0);
+        
+//        ImageHandle image = factory.newImage(null);
+        
+//        CellHandle cell = (CellHandle) row.getCells().get(0);
+//        cell.getContent().add(image);
+//        image.setURL("http://ofbiz.apache.org/images/ofbiz_logo.gif");
+        
+//        LabelHandle label = factory.newLabel(null);
+//        cell = (CellHandle) row.getCells().get(1);
+//        cell.getContent().add(label);
+//        label.setText("Dat is dat test !");
+        // #####################
+        String str_pathRpt = UtilProperties.getPropertyValue("birt.properties", "rptDesign.output.path");
+        if(!Files.isDirectory(Paths.get(str_pathRpt))){
+            throw new GenericServiceException(UtilProperties.getMessage(BirtServices.resource_error, "cannot_locate_report_folder", locale));
+        }
+        String pathAndName = str_pathRpt.concat("/").concat(rptDesignName);
+        design.saveAs(pathAndName);
+        design.close();
+        Debug.log("####### Design generated: ".concat(pathAndName));
+        session.closeAll(false);
+        Platform.shutdown();
+    }
+
+    private void createScriptedBeforeFactory() {
+        StringBuffer beforeFactoryScript = new StringBuffer("Debug.log(\"###### In beforeFactory\");\n");
+        beforeFactoryScript.append("var inputFields = reportContext.getParameterValue(\"parameters\");\n");
+        beforeFactoryScript.append("//get a list of all report parameters\n");
+        beforeFactoryScript.append("var parameters = reportContext.getDesignHandle().getAllParameters();\n");
+        beforeFactoryScript.append("for(var i=0; i<parameters.size(); i++) {\n");
+        beforeFactoryScript.append("var currentParam = parameters.get(i);\n");
+        beforeFactoryScript.append("var parametersName = currentParam.getName();\n");
+        beforeFactoryScript.append("params[parametersName].value = inputFields.get(parametersName);\n");
+        beforeFactoryScript.append("}");
+        design.setBeforeFactory(beforeFactoryScript.toString());
+    }
+
+    private void createScriptedDataset() throws SemanticException, GenericServiceException {
+        ScriptDataSetHandle dataSetHandle = factory.newScriptDataSet("Data Set");
+        dataSetHandle.setDataSource("OFBiz");
+
+        // set Initialize Birt script
+        StringBuffer dataSetInitializeScript = new StringBuffer("importPackage(Packages.org.apache.ofbiz.base.util)\n");
+        dataSetInitializeScript.append("importPackage(Packages.org.apache.ofbiz.entity);\n");
+        dataSetInitializeScript.append("importPackage(Packages.org.eclipse.birt.report.engine.api);\n");
+        dataSetInitializeScript.append("importPackage(Packages.org.apache.ofbiz.service);\n");
+        dataSetInitializeScript.append("importPackage(Packages.org.apache.ofbiz.base.util);\n");
+        dataSetInitializeScript.append("importPackage(java.util);\n");
+        dataSetInitializeScript.append("module = \""+rptDesignName+"\";");
+        dataSetInitializeScript.append("Debug.log(\"###### In initialize \"+ module);");
+        design.setInitialize(dataSetInitializeScript.toString());
+
+        // set open Birt script
+        StringBuffer dataSetOpenScript = new StringBuffer("importPackage(Packages.org.apache.ofbiz.birt);\n");
+        dataSetOpenScript.append("Debug.log(\"#### In open\")\n");
+        dataSetOpenScript.append("try {\n");
+        dataSetOpenScript.append("listRes = dispatcher.runSync(\""+customMethod+"\", UtilMisc.toMap(\"userLogin\", reportContext.getParameterValue(\"userLogin\"), \"locale\", reportContext.getParameterValue(\"locale\"), \"reportContext\", reportContext));\n");
+        dataSetOpenScript.append("if(ServiceUtil.isError(listRes)) {\n");
+        dataSetOpenScript.append("Debug.logError(ServiceUtil.getErrorMessage(listRes));\n");
+        dataSetOpenScript.append("}\n");
+        dataSetOpenScript.append("}\n");
+        dataSetOpenScript.append("catch (e)\n");
+        dataSetOpenScript.append("{\n");
+        dataSetOpenScript.append("Debug.logError(e, module);\n");
+        dataSetOpenScript.append("}\n");
+        dataSetOpenScript.append("list = listRes.get(\"list\");\n");
+        dataSetOpenScript.append("countOfRow = 0;\n");
+        dataSetOpenScript.append("totalRow = 0;\n");
+        dataSetOpenScript.append("totalRow = list.size();");
+        dataSetHandle.setOpen(dataSetOpenScript.toString());
+
+        // set fetch Birt script
+        StringBuffer dataSetFetchScript = new StringBuffer("if (countOfRow == totalRow) return false;\n");
+        dataSetFetchScript.append("line = list.get(countOfRow);\n");
+        for(String field: dataMap.keySet()){
+            dataSetFetchScript.append(field);
+            dataSetFetchScript.append(" = line.get(\"");
+            dataSetFetchScript.append(field);
+            dataSetFetchScript.append("\")\n");
+            dataSetFetchScript.append("row[\"");
+            dataSetFetchScript.append(field);
+            dataSetFetchScript.append("\"] = ");
+            dataSetFetchScript.append(field);
+            dataSetFetchScript.append(";\n");
+        }
+
+        dataSetFetchScript.append("countOfRow ++;\n");
+        dataSetFetchScript.append("return true;");
+        dataSetHandle.setFetch(dataSetFetchScript.toString());
+
+        // #### define dataSet
+        CachedMetaData cmd = StructureFactory.createCachedMetaData();
+        CachedMetaDataHandle cachedMetaDataHandle = dataSetHandle.setCachedMetaData(cmd);
+        PropertyHandle columnHintsSet = dataSetHandle.getPropertyHandle(ScriptDataSetHandle.COLUMN_HINTS_PROP);
+
+        int i = 1;
+        for(String field: dataMap.keySet()){
+            ResultSetColumn resultSetCol = StructureFactory.createResultSetColumn();
+            resultSetCol.setColumnName(field);
+            Map<String, Object> typeConvertResult;
+            try {
+                typeConvertResult = dispatcher.runSync("convertFieldTypeToBirtType", UtilMisc.toMap("fieldType", dataMap.get(field), "userLogin", userLogin));
+                if(ServiceUtil.isError(typeConvertResult)) {
+                    throw new GenericServiceException(ServiceUtil.getErrorMessage(typeConvertResult));
+                }
+            } catch (GenericServiceException e) {
+                e.printStackTrace();
+                throw new GenericServiceException("Cannot convert field type to birt type");
+            }
+            String birtType = (String) typeConvertResult.get("birtType");
+            resultSetCol.setPosition(i);
+            resultSetCol.setDataType(birtType);
+
+            ColumnHint columnHint = StructureFactory.createColumnHint();
+            columnHint.setProperty("columnName", field);
+            columnHint.setProperty("analysis", "dimension");
+            columnHint.setProperty("heading", field);
+            // get label
+            String displayName;
+            if(UtilValidate.isNotEmpty(fieldDisplayLabels)){
+                displayName = fieldDisplayLabels.get(field);
+            }else{
+                displayName = field;
+            }
+            columnHint.setProperty("displayName", displayName); 
+            cachedMetaDataHandle.getResultSet().addItem(resultSetCol);
+            columnHintsSet.addItem(columnHint);
+            i++;
+        }
+        design.getDataSets().add(dataSetHandle);
+    }
+
+    private void createScriptedDataSource() throws SemanticException {
+        ScriptDataSourceHandle dataSource = factory.newScriptDataSource("OFBiz");
+        design.getDataSources().add(dataSource);
+    }
+}

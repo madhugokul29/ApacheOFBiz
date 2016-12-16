@@ -39,4 +39,191 @@ under the License.
         <attribute name="webSiteId" type="String" mode="IN" optional="true"/>
         <attribute name="body" type="String" mode="OUT" optional="false"/>
     </service>
+    
+    <!-- SERVICES FOR REPORTS -->
+    <service name="reportGeneration" engine="java" auth="true" location="org.apache.ofbiz.birt.birt.BirtServices" invoke="generateReport">
+        <description>BIRT report generation</description>
+        <required-permissions join-type="AND"><check-permission permission="BIRT_CREATE"/></required-permissions>
+        <attribute name="dataMap" type="Map" mode="IN" optional="false" />
+        <attribute name="fieldDisplayLabels" type="Map" mode="IN" optional="true" />
+        <attribute name="filterMap" type="Map" mode="IN" optional="true" />
+        <attribute name="filterDisplayLabels" type="Map" mode="IN" optional="true" />
+        <attribute name="writeFilters" type="String" mode="IN" optional="true" />
+        <attribute name="customMethod" type="String" mode="IN" optional="false" />
+        <attribute name="rptDesignName" type="String" mode="IN" optional="false" />
+    </service>
+
+    <service name="convertFieldTypeToBirtType" auth="true" engine="java" location="org.apache.ofbiz.birt.birt.BirtServices" invoke="convertFieldTypeToBirtType">
+        <description>Convert OFBiz data type to Birt data type</description>
+        <required-permissions join-type="AND"><check-permission permission="BIRT_CREATE"/></required-permissions>
+        <attribute name="fieldType" type="String" mode="IN" optional="false" />
+        <attribute name="birtType" type="String" mode="OUT" optional="false" />
+    </service>
+
+    <service name="convertFieldTypeToBirtParameterType" auth="true" engine="java" location="org.apache.ofbiz.birt.birt.BirtServices" invoke="convertFieldTypeToBirtParameterType">
+        <description>Convert OFBiz data type to Birt parameter type</description>
+        <required-permissions join-type="AND"><check-permission permission="BIRT_CREATE"/></required-permissions>
+        <attribute name="fieldType" type="String" mode="IN" optional="false" />
+        <attribute name="birtType" type="String" mode="OUT" optional="false" />
+    </service>
+
+    <service name="getListMultiFieldsByView" engine="java" location="org.apache.ofbiz.birt.birt.BirtServices" invoke="getListMultiFieldsByView">
+        <description>Get fields corresponding to an entity or view, including _op _value and so on depending on type.</description>
+        <required-permissions join-type="AND"><check-permission permission="BIRT_CREATE"/></required-permissions>
+        <attribute name="entityViewName" type="String" mode="IN" optional="false" />
+        <attribute name="listMultiFields" type="List" mode="OUT" optional="false" />
+    </service>
+
+    <service name="callPerformFindFromBirt" engine="java" auth="true" location="org.apache.ofbiz.birt.birt.BirtServices" invoke="callPerformFindFromBirt">
+        <description>Manages performFind calling from Birt. Report from entity workflow.</description>
+        <required-permissions join-type="AND"><check-permission permission="BIRT_VIEW"/></required-permissions>
+        <attribute name="reportContext" type="Object" mode="IN" optional="false" />
+        <attribute name="list" type="List" mode="OUT" />
+    </service>
+
+    <service name="checkEntityViewExistence" engine="java" location="org.apache.ofbiz.birt.birt.BirtServices" invoke="checkEntityViewExistence">
+        <description>Check if the entity/view name truly exists</description>
+        <attribute name="entityName" type="String" mode="IN" optional="false" />
+    </service>
+
+    <service name="determineReportGenerationPath" auth="true" engine="java" location="org.apache.ofbiz.birt.birt.BirtServices" invoke="determineReportGenerationPath">
+        <description>Call report generator with appropriate workflow</description>
+        <required-permissions join-type="AND"><check-permission permission="BIRT_CREATE"/></required-permissions>
+        <attribute name="contentId" type="String" mode="IN" optional="false" />
+        <attribute name="reportName" type="String" mode="IN" optional="false" />
+        <attribute name="description" type="String" mode="IN" optional="false" />
+        <attribute name="writeFilters" type="String" mode="IN" optional="true" />
+        <attribute name="reportContentId" type="String" mode="OUT" optional="false"/>
+        <attribute name="textForm" type="String" mode="OUT" optional="false" allow-html="any"/>
+    </service>
+
+    <service name="createReportContentFromMasterEntityWorkflow" engine="java" location="org.apache.ofbiz.birt.birt.BirtServices" invoke="createReportContentFromMasterEntityWorkflow">
+        <description>Create and save in db content for a new report following entity workflow</description>
+        <required-permissions join-type="AND"><check-permission permission="BIRT_CREATE"/></required-permissions>
+        <attribute name="entityViewName" type="String" mode="IN" optional="false" />
+        <attribute name="rptDesignName" type="String" mode="IN" optional="false" />
+        <attribute name="description" type="String" mode="IN" optional="true" />
+        <attribute name="writeFilters" type="String" mode="IN" optional="true" />
+        <attribute name="masterContentId" type="String" mode="IN" optional="false" />
+        <attribute name="contentId" type="String" mode="OUT" optional="false" />
+    </service>
+
+    <service name="createReportContentFromMasterServiceWorkflow" engine="java" location="org.apache.ofbiz.birt.birt.BirtServices" invoke="createReportContentFromMasterServiceWorkflow">
+        <description>Create and save in db content for a new report following service workflow</description>
+        <required-permissions join-type="AND"><check-permission permission="BIRT_CREATE"/></required-permissions>
+        <attribute name="serviceName" type="String" mode="IN" optional="false" />
+        <attribute name="rptDesignName" type="String" mode="IN" optional="false" />
+        <attribute name="description" type="String" mode="IN" optional="true" />
+        <attribute name="writeFilters" type="String" mode="IN" optional="true" />
+        <attribute name="masterContentId" type="String" mode="IN" optional="false" />
+        <attribute name="contentId" type="String" mode="OUT" optional="false" />
+    </service>
+
+    <service name="createBirtMaps" engine="java" location="org.apache.ofbiz.birt.birt.BirtServices" invoke="createBirtMaps">
+        <description>Create maps to pass to ReportDesignGenerator</description>
+        <required-permissions join-type="AND"><check-permission permission="BIRT_CREATE"/></required-permissions>
+        <attribute name="modelEntity" mode="IN" type="Object"/>
+        <attribute name="dataMap" mode="OUT" type="Map"/>
+        <attribute name="fieldDisplayLabels" mode="OUT" type="Map" optional="true"/>
+        <attribute name="filterMap" mode="OUT" type="Map" optional="true"/>
+        <attribute name="filterDisplayLabels" mode="OUT" type="Map" optional="true"/>
+    </service>
+
+    <service name="deleteAllReports" auth="true" engine="java" location="org.apache.ofbiz.birt.birt.BirtServices" invoke="deleteAllReports">
+        <description>Delete all reports (admin purposes)</description>
+        <required-permissions join-type="AND"><check-permission permission="BIRT_DELETE"/></required-permissions>
+    </service>
+
+    <service name="deleteOneReport" auth="true" engine="java" location="org.apache.ofbiz.birt.birt.BirtServices" invoke="deleteOneReport">
+        <description>Delete a report</description>
+        <required-permissions join-type="AND"><check-permission permission="BIRT_DELETE"/></required-permissions>
+        <attribute name="contentId" type="String" mode="IN" optional="false" />
+    </service>
+
+    <service name="publishReport" auth="true" engine="java" location="org.apache.ofbiz.birt.birt.BirtServices" invoke="publishReport">
+        <description>Publish a report</description>
+        <required-permissions join-type="AND"><check-permission permission="BIRT_UPDATE"/></required-permissions>
+        <attribute name="contentId" type="String" mode="IN" optional="false" />
+    </service>
+
+    <service name="reOpenReport" auth="true" engine="java" location="org.apache.ofbiz.birt.birt.BirtServices" invoke="reOpenReport">
+        <description>reOpen a report</description>
+        <required-permissions join-type="AND"><check-permission permission="BIRT_UPDATE"/></required-permissions>
+        <attribute name="contentId" type="String" mode="IN" optional="false" />
+    </service>
+
+    <service name="uploadRptDesign" auth="true" engine="java" location="org.apache.ofbiz.birt.birt.BirtServices" invoke="uploadRptDesign">
+        <description>Upload design-modified rptdesign file</description>
+        <required-permissions join-type="AND"><check-permission permission="BIRT_UPDATE"/></required-permissions>
+        <attribute name="dataResourceIdRpt" type="String" mode="IN" optional="false" />
+        <attribute name="uploadRptDesign" type="java.nio.ByteBuffer" mode="IN" optional="false" />
+        <attribute name="_uploadRptDesign_fileName" type="String" mode="IN" optional="false" />
+    </service>
+
+    <service name="editReport" auth="true" engine="java" location="org.apache.ofbiz.birt.birt.BirtServices" invoke="editReport">
+        <description>Edit report</description>
+        <required-permissions join-type="AND"><check-permission permission="BIRT_UPDATE"/></required-permissions>
+        <attribute name="contentId" type="String" mode="IN" optional="false" />
+        <attribute name="contentIdRpt" type="String" mode="IN" optional="false" />
+    </service>
+
+    <service name="overrideReportForm" auth="true" engine="java" location="org.apache.ofbiz.birt.birt.BirtServices" invoke="overrideReportForm">
+        <description>Override report form</description>
+        <required-permissions join-type="OR">
+            <check-permission permission="BIRT_CREATE"/>
+            <check-permission permission="BIRT_UPDATE"/>
+        </required-permissions>
+        <attribute name="reportContentId" type="String" mode="IN" optional="false" />
+        <attribute name="overrideFilters" type="String" mode="IN" optional="true" allow-html="any"/>
+    </service>
+
+    <service name="createFormForDisplay" auth="true" engine="java" location="org.apache.ofbiz.birt.birt.BirtServices" invoke="createFormForDisplay">
+        <description>Prepare from DB report form for display</description>
+        <required-permissions join-type="OR">
+            <check-permission permission="BIRT_CREATE"/>
+            <check-permission permission="BIRT_UPDATE"/>
+        </required-permissions>
+        <attribute name="reportContentId" type="String" mode="IN" optional="false" />
+        <attribute name="textForm" type="String" mode="OUT" optional="false" allow-html="any"/>
+    </service>
+
+    <service name="genericBirtPermission" engine="simple" auth="true"
+            location="component://birt/minilang/BirtPermissionServices.xml" invoke="genericBirtPermission">
+        <description>Generic Birt Permission Service; Takes mainAction to determine the mode.</description>
+        <implements service="permissionInterface"/>
+    </service>
+
+    <service name="workEffortPerPerson" auth="true" engine="java" location="org.apache.ofbiz.birt.birt.BirtMasterReportServices" invoke="workEffortPerPerson">
+        <description>Service getting data for report (works in duo!)</description>
+        <required-permissions join-type="AND"><check-permission permission="BIRT_CREATE"/></required-permissions>
+        <attribute name="reportContext" type="Object" mode="IN" optional="false" />
+        <attribute name="list" type="List" mode="OUT" />
+    </service>
+
+    <service name="workEffortPerPersonSkeleton" auth="true" engine="java" location="org.apache.ofbiz.birt.birt.BirtMasterReportServices" invoke="workEffortPerPersonSkeleton">
+        <description>Service configuring data for report (works in duo!)</description>
+        <required-permissions join-type="AND"><check-permission permission="BIRT_VIEW"/></required-permissions>
+        <attribute name="dataMap" type="Map" mode="OUT" optional="false" />
+        <attribute name="fieldDisplayLabels" type="Map" mode="OUT" optional="true"/>
+        <attribute name="filterMap" type="Map" mode="OUT" optional="true" />
+        <attribute name="filterDisplayLabels" type="Map" mode="OUT" optional="true"/>
+        <attribute name="customMethodName" type="String" mode="OUT" optional="false"/>
+    </service>
+
+    <service name="turnOver" auth="true" engine="java" location="org.apache.ofbiz.birt.birt.BirtMasterReportServices" invoke="turnOver">
+        <description>Service getting data for report (works in duo!). Turnover report</description>
+        <required-permissions join-type="AND"><check-permission permission="BIRT_CREATE"/></required-permissions>
+        <attribute name="reportContext" type="Object" mode="IN" optional="false" />
+        <attribute name="list" type="List" mode="OUT" />
+    </service>
+
+    <service name="turnOverSkeleton" auth="true" engine="java" location="org.apache.ofbiz.birt.birt.BirtMasterReportServices" invoke="turnOverSkeleton">
+        <description>Service configuring data for report (works in duo!). Turnover report.</description>
+        <required-permissions join-type="AND"><check-permission permission="BIRT_VIEW"/></required-permissions>
+        <attribute name="dataMap" type="Map" mode="OUT" optional="false" />
+        <attribute name="fieldDisplayLabels" type="Map" mode="OUT" optional="true"/>
+        <attribute name="filterMap" type="Map" mode="OUT" optional="true" />
+        <attribute name="filterDisplayLabels" type="Map" mode="OUT" optional="true"/>
+        <attribute name="customMethodName" type="String" mode="OUT" optional="false"/>
+    </service>
 </services>

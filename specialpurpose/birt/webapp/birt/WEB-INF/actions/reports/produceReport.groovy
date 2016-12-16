@@ -1,4 +1,4 @@
-/*******************************************************************************
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -15,20 +15,25 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
- *******************************************************************************/
-package org.apache.ofbiz.widget.content;
-
-import java.io.IOException;
-import java.util.Locale;
-import java.util.Map;
-
-import org.apache.ofbiz.base.util.GeneralException;
-import org.apache.ofbiz.entity.Delegator;
-
-/**
- * ContentWorkerInterface
  */
-public interface DataResourceWorkerInterface {
-    public String renderDataResourceAsTextExt(Delegator delegator, String dataResourceId, Map<String, Object> templateContext,
-            Locale locale, String targetMimeTypeId, boolean cache) throws GeneralException, IOException;
+
+import org.apache.ofbiz.base.util.*
+import org.apache.ofbiz.entity.GenericValue
+
+def birtParameters = [:];
+
+String entityViewOrServiceName;
+if(UtilValidate.isNotEmpty(parameters.get("entityViewName"))){
+    entityViewOrServiceName = parameters.get("entityViewName");
+} else {
+    entityViewOrServiceName = parameters.get("serviceName");
 }
+
+GenericValue userLogin = (GenericValue) context.get("userLogin");
+
+birtParameters.put("parameters", parameters);
+birtParameters.put("entityViewOrServiceName", entityViewOrServiceName);
+birtParameters.put("userLogin",userLogin);
+
+request.setAttribute("birtParameters", birtParameters);
+return "success";

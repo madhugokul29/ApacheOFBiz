@@ -176,4 +176,252 @@ under the License.
             </widgets>
         </section>
     </screen>
+    <screen name="useReport">
+        <section>
+            <actions>
+               <set field="tabButtonItem" value="useReport" />
+            </actions>   
+            <widgets>
+                <decorator-screen name="CommonBirtDecorator" location="${parameters.mainDecoratorLocation}">
+                    <decorator-section name="body">
+                        <section>
+                            <condition>
+                                <if-has-permission permission="BIRT" action="_VIEW"/>
+                            </condition>
+                            <widgets>
+                                <include-screen name="useTheReport"/>
+                            </widgets>
+                            <fail-widgets>
+                                <label style="h3">${uiLabelMap.BirtPermissionError}</label>
+                            </fail-widgets>
+                        </section>
+                    </decorator-section>
+                </decorator-screen>
+            </widgets>
+        </section>
+    </screen>
+
+    <screen name="useTheReport">
+        <section>
+            <condition>
+                <if-has-permission permission="BIRT" action="_VIEW"/>
+<!--                 <if-service-permission service-name="genericBirtPermission" main-action="VIEW"/> -->
+            </condition>
+            <actions>
+                <property-map resource="BirtUiLabels" map-name="uiLabelMap" global="true" />
+            </actions>
+            <widgets>
+                <screenlet title="${uiLabelMap.BirtReportchoice}">
+                    <include-form location="component://birt/widget/birt/BirtForms.xml" name="reportChoice" />
+                </screenlet>
+            </widgets>
+            <fail-widgets>
+                <label style="h3">${uiLabelMap.BirtPermissionError}</label>
+            </fail-widgets>
+        </section>
+    </screen>
+
+    <screen name="manageReports">
+        <section>
+            <actions>
+                <set field="tabButtonItem" value="manageReports" />
+                <set field="sortField" from-field="parameters.sortField" default-value="contentName"/>
+                <entity-and entity-name="Content" use-cache="true" list="contentTypeReport">
+                    <field-map field-name="contentTypeId" value="REPORT"/>
+                    <order-by field-name="${sortField}"/>
+                </entity-and>
+                <service service-name="genericBirtPermission" result-map="permCreateResult">
+                    <field-map field-name="mainAction" value="CREATE"/>
+                </service>
+                <set field="hasCreatePermission" from-field="permCreateResult.hasPermission"/>
+    
+                <service service-name="genericBirtPermission" result-map="permDeleteResult">
+                    <field-map field-name="mainAction" value="DELETE"/>
+                </service>
+                <set field="hasDeletePermission" from-field="permDeleteResult.hasPermission"/>
+    
+                <service service-name="genericBirtPermission" result-map="permUpdateResult">
+                    <field-map field-name="mainAction" value="UPDATE"/>
+                </service>
+                <set field="hasUpdatePermission" from-field="permUpdateResult.hasPermission"/>
+            </actions>   
+            <widgets>
+                <decorator-screen name="CommonBirtDecorator" location="${parameters.mainDecoratorLocation}">
+                    <decorator-section name="body">
+                        <section>
+                            <condition>
+                                <or>
+                                    <if-has-permission permission="BIRT" action="_DELETE"/>
+                                    <if-has-permission permission="BIRT" action="_CREATE"/>
+                                    <if-has-permission permission="BIRT" action="_UPDATE"/>
+                                </or>
+                            </condition>
+                            <widgets>
+                                <screenlet title="${uiLabelMap.BirtReportManagement}">
+                                    <section>
+                                        <condition>
+                                            <not><if-empty field="contentTypeReport"/></not>
+                                        </condition>
+                                        <widgets>
+                                            <include-form location="component://birt/widget/birt/BirtForms.xml" name="manageReports" />
+                                        </widgets>
+                                        <fail-widgets>
+                                            <label text="${uiLabelMap.NoKnownReport}"/>
+                                        </fail-widgets>
+                                    </section>
+                                </screenlet>
+                            </widgets>
+                            <fail-widgets>
+                                <label style="h3">${uiLabelMap.BirtPermissionError}</label>
+                            </fail-widgets>
+                        </section>
+                    </decorator-section>
+                </decorator-screen>
+            </widgets>
+        </section>
+    </screen>
+
+    <screen name="filteringParameters">
+        <section>
+            <actions>
+                <set field="tabButtonItem" value="useReport" />
+            </actions>   
+            <widgets>
+                <decorator-screen name="CommonBirtDecorator" location="${parameters.mainDecoratorLocation}">
+                    <decorator-section name="body">
+                        <section>
+                            <condition>
+                                <if-has-permission permission="BIRT" action="_VIEW"/>
+                            </condition>
+                            <widgets>
+                                <screenlet title="${uiLabelMap.BirtFilteringParameters}">
+                                    <content content-id="${parameters.contentId}" />
+                                </screenlet>
+                            </widgets>
+                            <fail-widgets>
+                                <label style="h3">${uiLabelMap.BirtPermissionError}</label>
+                            </fail-widgets>
+                        </section>
+                    </decorator-section>
+                </decorator-screen>
+            </widgets>
+        </section>
+    </screen>
+
+    <screen name="reportGenerateParameters">
+        <section>
+            <actions>
+                <set field="tabButtonItem" value="reportGeneration" />
+            </actions>
+            <widgets>
+                <decorator-screen name="CommonBirtDecorator" location="${parameters.mainDecoratorLocation}">
+                    <decorator-section name="body">
+                        <section>
+                            <condition>
+                                <if-has-permission permission="BIRT" action="_CREATE"/>
+                            </condition>
+                            <widgets>
+                                <screenlet title="${uiLabelMap.ContentChoice}">
+                                    <include-form location="component://birt/widget/birt/BirtForms.xml" name="viewChoice" />
+                                </screenlet>
+                            </widgets>
+                            <fail-widgets>
+                                <label style="h3">${uiLabelMap.BirtPermissionError}</label>
+                            </fail-widgets>
+                        </section>
+                    </decorator-section>
+                </decorator-screen>
+            </widgets>
+        </section>
+    </screen>
+
+    <screen name="reportParameters">
+        <section>
+          <actions>
+              <set field="tabButtonItem" value="reportGeneration" />
+              <property-map resource="CommonUiLabels" map-name="uiLabelMap"/>
+              <property-map resource="WebtoolsUiLabels" map-name="uiLabelMap"/>
+          </actions>
+          <widgets>
+              <decorator-screen name="CommonBirtDecorator" location="${parameters.mainDecoratorLocation}">
+                  <decorator-section name="body">
+                      <section>
+                          <condition>
+                              <if-has-permission permission="BIRT" action="_CREATE"/>
+                          </condition>
+                          <widgets>
+                              <screenlet title="${uiLabelMap.CreateNewReport}">
+                                  <content content-id="${parameters.contentId}"/>
+                              </screenlet>
+                          </widgets>
+                          <fail-widgets>
+                              <label style="h3">${uiLabelMap.BirtPermissionError}</label>
+                          </fail-widgets>
+                      </section>
+                  </decorator-section>
+              </decorator-screen>
+          </widgets>
+        </section>
+    </screen>
+
+    <screen name="downloadRptDesign">
+        <section>
+            <condition>
+                <or>
+                    <if-has-permission permission="BIRT" action="_CREATE"/>
+                    <if-has-permission permission="BIRT" action="_UPDATE"/>
+                </or>
+            </condition>
+            <actions>
+                <property-map resource="CommonUiLabels" map-name="uiLabelMap" global="true"/>
+                <property-map resource="CommonExtUiLabels" map-name="uiLabelMap" global="true"/>
+                <set field="contentId" from-field="parameters.contentId" default-value="${contentId}"/>
+                <set field="visualThemeId" from-field="userPreferences.VISUAL_THEME" global="true"/>
+                <service service-name="getVisualThemeResources">
+                    <field-map field-name="visualThemeId"/>
+                    <field-map field-name="themeResources" from-field="layoutSettings"/>
+                </service>
+                <set field="layoutSettings" from-field="themeResources" default-value="${layoutSettings}" global="true"/>
+            </actions>
+            <widgets>
+                <content content-id="${contentId}"/>
+            </widgets>
+            <fail-widgets>
+                <label style="h3">${uiLabelMap.BirtPermissionError}</label>
+            </fail-widgets>
+        </section>
+    </screen>
+
+    <screen name="editReport">
+        <section>
+            <actions>
+                <set field="tabButtonItem" value="manageReport" />
+                <set field="contentId" from-field="parameters.contentId"/>
+            </actions>
+            <widgets>
+                <decorator-screen name="CommonBirtDecorator" location="${parameters.mainDecoratorLocation}">
+                    <decorator-section name="body">
+                        <section>
+                            <condition>
+                                <or>
+                                    <if-has-permission permission="BIRT" action="_CREATE"/>
+                                    <if-has-permission permission="BIRT" action="_UPDATE"/>
+                                </or>
+                            </condition>
+                            <widgets>
+                                <screenlet title="${uiLabelMap.editReport}">
+                                        <include-form name="editReport" location="component://birt/widget/birt/BirtForms.xml"/>
+                                        <include-form name="uploadRptDesign" location="component://birt/widget/birt/BirtForms.xml" />
+                                        <include-form name="editFormParameters" location="component://birt/widget/birt/BirtForms.xml" />
+                                </screenlet>
+                            </widgets>
+                            <fail-widgets>
+                                <label style="h3">${uiLabelMap.BirtPermissionError}</label>
+                            </fail-widgets>
+                        </section>
+                    </decorator-section>
+                </decorator-screen>
+            </widgets>
+        </section>
+    </screen>
 </screens>
