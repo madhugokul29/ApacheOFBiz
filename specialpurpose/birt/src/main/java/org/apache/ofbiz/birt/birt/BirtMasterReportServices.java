@@ -109,7 +109,7 @@ public class BirtMasterReportServices {
             ServiceUtil.returnError("Error getting party from person name.");
         }
         List<GenericValue> listCompiled = new ArrayList<GenericValue>(); 
-        listCompiled.addAll(listWorkEffortTime);        
+        listCompiled.addAll(listWorkEffortTime);
         listCompiled.addAll(listPersons);
         Map<String, Object> result = ServiceUtil.returnSuccess();
         result.put("list", listCompiled);

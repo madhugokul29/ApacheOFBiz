@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -18,29 +18,30 @@
  *******************************************************************************/
 package org.apache.ofbiz.birt;
 
+import freemarker.template.TemplateException;
+import java.io.IOException;
 import java.io.OutputStream;
+import java.io.StringWriter;
 import java.sql.SQLException;
 import java.util.Locale;
 import java.util.Map;
-
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
 import org.apache.ofbiz.base.util.Debug;
 import org.apache.ofbiz.base.util.GeneralException;
 import org.apache.ofbiz.base.util.UtilGenerics;
 import org.apache.ofbiz.base.util.UtilMisc;
 import org.apache.ofbiz.base.util.UtilProperties;
 import org.apache.ofbiz.base.util.UtilValidate;
+import org.apache.ofbiz.base.util.template.FreeMarkerWorker;
 import org.apache.ofbiz.entity.Delegator;
 import org.apache.ofbiz.entity.GenericValue;
 import org.apache.ofbiz.security.Security;
-import org.apache.ofbiz.security.Security;
 import org.apache.ofbiz.service.GenericServiceException;
 import org.apache.ofbiz.service.LocalDispatcher;
-import org.apache.ofbiz.service.LocalDispatcher;
+import org.apache.ofbiz.webapp.WebAppUtil;
 import org.eclipse.birt.report.engine.api.EXCELRenderOption;
 import org.eclipse.birt.report.engine.api.EngineException;
 import org.eclipse.birt.report.engine.api.HTMLRenderOption;
@@ -63,8 +64,22 @@ public final class BirtWorker {
     private final static String BIRT_OUTPUT_FILE_NAME = "birtOutputFileName";
 
     private final static HTMLServerImageHandler imageHandler = new HTMLServerImageHandler();
+    private final static Map<String, String> mimeTypeOutputFormatMap = UtilMisc.toMap(
+            "text/html", RenderOption.OUTPUT_FORMAT_HTML,
+            "application/pdf", RenderOption.OUTPUT_FORMAT_HTML,
+            "application/postscript", "postscript",
+            "application/vnd.ms-word", "doc",
+            "application/vnd.ms-excel", "xls",
+            "application/vnd.ms-powerpoint", "ppt",
+            "application/vnd.oasis.opendocument.text", "odt",
+            "application/vnd.oasis.opendocument.spreadsheet", "ods",
+            "application/vnd.oasis.opendocument.presentation", "odp",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "xlsx",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "docx",
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation", "pptx");
 
-    private BirtWorker() {}
+    private BirtWorker() {
+    }
 
     /**
      * export report
@@ -77,16 +92,18 @@ public final class BirtWorker {
      * @throws SQLException
      */
     public static void exportReport(IReportRunnable design, Map<String, ? extends Object> context, String contentType, OutputStream output)
-        throws EngineException, GeneralException, SQLException {
+            throws EngineException, GeneralException, SQLException {
 
-        Locale birtLocale = (Locale)context.get(BIRT_LOCALE);
-        String birtImageDirectory = (String)context.get(BIRT_IMAGE_DIRECTORY);
+        Locale birtLocale = (Locale) context.get(BIRT_LOCALE);
+        String birtImageDirectory = (String) context.get(BIRT_IMAGE_DIRECTORY);
 
         if (contentType == null) {
             contentType = "text/html";
+        } else {
+            contentType = contentType.toLowerCase();
         }
         if (birtImageDirectory == null) {
-             birtImageDirectory = "/";
+            birtImageDirectory = "/";
         }
         Debug.logInfo("Get report engine", module);
         IReportEngine engine = BirtFactory.getReportEngine();
@@ -105,40 +122,23 @@ public final class BirtWorker {
         }
 
         // set output options
+        if (mimeTypeOutputFormatMap.containsKey(contentType)) {
+            throw new GeneralException("Unknown content type : " + contentType);
+        }
         RenderOption options = new RenderOption();
-        if ("text/html".equalsIgnoreCase(contentType)) { // HTML
-            options.setOutputFormat(RenderOption.OUTPUT_FORMAT_HTML);
+        options.setOutputFormat(mimeTypeOutputFormatMap.get(contentType));
+
+        //specific process for mimetype
+        if ("text/html".equals(contentType)) { // HTML
             HTMLRenderOption htmlOptions = new HTMLRenderOption(options);
             htmlOptions.setImageDirectory(birtImageDirectory);
             htmlOptions.setBaseImageURL(birtImageDirectory);
             options.setImageHandler(imageHandler);
-        } else if ("application/postscript".equalsIgnoreCase(contentType)) { // Post Script
-            options.setOutputFormat("postscript");
-        } else if ("application/pdf".equalsIgnoreCase(contentType)) { // PDF
-            options.setOutputFormat(RenderOption.OUTPUT_FORMAT_PDF);
+        } else if ("application/pdf".equals(contentType)) { // PDF
             PDFRenderOption pdfOptions = new PDFRenderOption(options);
-            pdfOptions.setOption(IPDFRenderOption.PAGE_OVERFLOW, Boolean.TRUE );
-        } else if ("application/vnd.ms-word".equalsIgnoreCase(contentType)) { // MS Word
-            options.setOutputFormat("doc");
-        }  else if ("application/vnd.ms-excel".equalsIgnoreCase(contentType)) { // MS Excel
-            options.setOutputFormat("xls");
+            pdfOptions.setOption(IPDFRenderOption.PAGE_OVERFLOW, Boolean.TRUE);
+        } else if ("application/vnd.ms-excel".equals(contentType)) { // MS Excel
             new EXCELRenderOption(options);
-        } else if ("application/vnd.ms-powerpoint".equalsIgnoreCase(contentType)) { // MS Power Point
-            options.setOutputFormat("ppt");
-        } else if ("application/vnd.oasis.opendocument.text".equalsIgnoreCase(contentType)) { // Open Document Text
-            options.setOutputFormat("odt");
-        } else if ("application/vnd.oasis.opendocument.spreadsheet".equalsIgnoreCase(contentType)) { // Open Document Spreadsheet
-            options.setOutputFormat("ods");
-        } else if ("application/vnd.oasis.opendocument.presentation".equalsIgnoreCase(contentType)) { // Open Document Presentation
-            options.setOutputFormat("odp");
-        } else if ("application/vnd.openxmlformats-officedocument.wordprocessingml.document".equalsIgnoreCase(contentType)) { // MS Word 2007
-            options.setOutputFormat("docx");
-        } else if ("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet".equalsIgnoreCase(contentType)) { // MS Excel 2007
-            options.setOutputFormat("xlsx");
-        } else if ("application/vnd.openxmlformats-officedocument.presentationml.presentation".equalsIgnoreCase(contentType)) { // MS Word 2007
-            options.setOutputFormat("pptx");
-        } else {
-            throw new GeneralException("Unknown content type : " + contentType);
         }
 
         options.setOutputStream(output);
@@ -150,55 +150,28 @@ public final class BirtWorker {
         task.run();
         task.close();
     }
-    
+
     /**
      * set web context objects
      * @param appContext
      * @param request
      * @param response
      */
-    public static void setWebContextObjects(Map<String, Object> appContext, HttpServletRequest request, HttpServletResponse response) {
+    public static void setWebContextObjects(Map<String, Object> appContext, HttpServletRequest request, HttpServletResponse response)
+    throws GeneralException {
         HttpSession session = request.getSession();
         ServletContext servletContext = session.getServletContext();
-        
-        // set delegator
-        Delegator delegator = (Delegator) session.getAttribute("delegator");
-        if (UtilValidate.isEmpty(delegator)) {
-            delegator = (Delegator) servletContext.getAttribute("delegator");
-        }
-        if (UtilValidate.isEmpty(delegator)) {
-            delegator = (Delegator) request.getAttribute("delegator");
-        }
-        if (UtilValidate.isNotEmpty(delegator)) {
-            appContext.put("delegator", delegator);
+
+        if (appContext == null || servletContext == null) {
+            throw new GeneralException("The context reporting is empty, check your configuration");
         }
 
-        // set JDBC connection
-        //appContext.put("OdaJDBCDriverPassInConnection", connection);
-
-        // set dispatcher
-        LocalDispatcher dispatcher = (LocalDispatcher) session.getAttribute("dispatcher");
-        if (UtilValidate.isEmpty(dispatcher)) {
-            dispatcher = (LocalDispatcher) servletContext.getAttribute("dispatcher");
-        }
-        if (UtilValidate.isEmpty(dispatcher)) {
-            dispatcher = (LocalDispatcher) request.getAttribute("dispatcher");
-        }
-        if (UtilValidate.isNotEmpty(dispatcher)) {
-            appContext.put("dispatcher", dispatcher);
-        }
-
-        // set security
-        Security security = (Security) session.getAttribute("security");
-        if (UtilValidate.isEmpty(security)) {
-            security = (Security) servletContext.getAttribute("security");
-        }
-        if (UtilValidate.isEmpty(security)) {
-            security = (Security) request.getAttribute("security");
-        }
-        if (UtilValidate.isNotEmpty(security)) {
-            appContext.put("security", security);
-        }
+        // initialize the delegator
+        appContext.put("delegator", WebAppUtil.getDelegator(servletContext));
+        // initialize security
+        appContext.put("security", WebAppUtil.getSecurity(servletContext));
+        // initialize the services dispatcher
+        appContext.put("dispatcher", WebAppUtil.getDispatcher(servletContext));
     }
 
     public static String getBirtParameters() {
@@ -222,6 +195,7 @@ public final class BirtWorker {
     }
 
 
+    //TODO use ftl rendering
     public static String getBirtStandardFields(String rptDesignName, String fieldName, String serviceOrEntityName) {
         String reportPath = UtilProperties.getPropertyValue("birt.properties", "rptDesign.output.path");
         StringBuffer birtContentTypeField = new StringBuffer("<field name=\"rptDesignFile\"><hidden value=\"");
@@ -259,78 +233,69 @@ public final class BirtWorker {
         return birtContentTypeField.toString();
     }
 
-    public static String createReportContentInDatabase(Delegator delegator, LocalDispatcher dispatcher, String masterContentId, String rptDesignName, String description, String serviceName, String entityViewName, GenericValue userLogin) throws GenericServiceException{
+    //TODO documentation
+    public static String recordReportContent(Delegator delegator, LocalDispatcher dispatcher, Map<String, Object> context) throws GeneralException {
+        Locale locale = (Locale) context.get("locale");
+        String description = (String) context.get("description");
+        String rptDesignName = (String) context.get("rptDesignName");
+        String writeFilters = (String) context.get("writeFilters");
+        GenericValue userLogin = (GenericValue) context.get("userLogin");
+        String entityViewName = (String) context.get("entityViewName");
+        String serviceName = (String) context.get("serviceName");
+        String masterContentId = (String) context.get("masterContentId");
         String dataResourceId = delegator.getNextSeqId("DataResource");
         String contentId = delegator.getNextSeqId("Content");
-        String reportFormScreenName = masterContentId+"_"+contentId;
+        String reportFormScreenName = masterContentId + "_" + contentId;
 
-        if(UtilValidate.isEmpty(serviceName) && UtilValidate.isEmpty(entityViewName)){
+        if (UtilValidate.isEmpty(serviceName) && UtilValidate.isEmpty(entityViewName)) {
             throw new GenericServiceException("Service and entity name cannot be both empty");
         }
 
         String fieldName = null;
         String serviceOrEntityName = null;
         String workflowType = null;
-        if(UtilValidate.isEmpty(serviceName)){
+        if (UtilValidate.isEmpty(serviceName)) {
             fieldName = "entityViewName";
             serviceOrEntityName = entityViewName;
             workflowType = "Entity";
-        }else{
+        } else {
             fieldName = "serviceName";
             serviceOrEntityName = serviceName;
             workflowType = "Service";
         }
-        StringBuffer reportForm = new StringBuffer("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-        reportForm.append("<forms xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"http://ofbiz.apache.org/dtds/widget-form.xsd\">");
-        reportForm.append("<form name=\"");
-        reportForm.append(reportFormScreenName);
-        reportForm.append("\" type=\"single\" target=\"produceReport\" extends=\"");
-        reportForm.append(masterContentId);
-        reportForm.append("\" extends-resource=\"component://birt/widget/birt/BirtMasterForms.xml\">");
-        reportForm.append(getBirtStandardFields(rptDesignName, fieldName, serviceOrEntityName));
-        reportForm.append("</form>");
-        reportForm.append("</forms>");
+        String reportForm = BirtWorker.renderInitialFormFlow(context);
         dispatcher.runSync("createDataResource", UtilMisc.toMap("dataResourceId", dataResourceId, "dataResourceTypeId", "ELECTRONIC_TEXT", "dataTemplateTypeId", "FORM_COMBINED", "userLogin", userLogin));
         dispatcher.runSync("createElectronicTextForm", UtilMisc.toMap("dataResourceId", dataResourceId, "textData", reportForm, "userLogin", userLogin));
         dispatcher.runSync("createContent", UtilMisc.toMap("contentId", contentId, "contentTypeId", "REPORT", "dataResourceId", dataResourceId, "statusId", "CTNT_IN_PROGRESS", "contentName", rptDesignName.substring(0, rptDesignName.indexOf('.')), "description", description, "userLogin", userLogin));
         String dataResourceIdRpt = delegator.getNextSeqId("DataResource");
         String contentIdRpt = delegator.getNextSeqId("Content");
-        dispatcher.runSync("createDataResource", UtilMisc.toMap("dataResourceId", dataResourceIdRpt, "dataResourceTypeId", "LOCAL_FILE", "mimeTypeId", "text/rptdesign", "dataResourceName", rptDesignName, "objectInfo", UtilProperties.getPropertyValue("birt.properties", "rptDesign.output.path")+"/"+rptDesignName, "userLogin", userLogin));
-        dispatcher.runSync("createContent", UtilMisc.toMap("contentId", contentIdRpt, "contentTypeId", "RPTDESIGN", "dataResourceId", dataResourceIdRpt, "statusId", "CTNT_PUBLISHED", "contentName", rptDesignName, "description", description+" (.rptDesign file)", "userLogin", userLogin));
+        dispatcher.runSync("createDataResource", UtilMisc.toMap("dataResourceId", dataResourceIdRpt, "dataResourceTypeId", "LOCAL_FILE", "mimeTypeId", "text/rptdesign", "dataResourceName", rptDesignName, "objectInfo", UtilProperties.getPropertyValue("birt.properties", "rptDesign.output.path") + "/" + rptDesignName, "userLogin", userLogin));
+        dispatcher.runSync("createContent", UtilMisc.toMap("contentId", contentIdRpt, "contentTypeId", "RPTDESIGN", "dataResourceId", dataResourceIdRpt, "statusId", "CTNT_PUBLISHED", "contentName", rptDesignName, "description", description + " (.rptDesign file)", "userLogin", userLogin));
         dispatcher.runSync("createContentAssoc", UtilMisc.toMap("contentId", masterContentId, "contentIdTo", contentId, "contentAssocTypeId", "SUB_CONTENT", "userLogin", userLogin));
         dispatcher.runSync("createContentAssoc", UtilMisc.toMap("contentId", contentId, "contentIdTo", contentIdRpt, "contentAssocTypeId", "SUB_CONTENT", "userLogin", userLogin));
         dispatcher.runSync("createContentAttribute", UtilMisc.toMap("contentId", contentId, "attrName", workflowType, "attrValue", serviceOrEntityName, "userLogin", userLogin));
         return contentId;
     }
 
-    public static String getFormat(String contentType) throws GeneralException {
-        if ("text/html".equalsIgnoreCase(contentType)) { // HTML
-            return ".html";
-        } else if ("application/postscript".equalsIgnoreCase(contentType)) { // Post Script
-            return ".ps";
-        } else if ("application/pdf".equalsIgnoreCase(contentType)) { // PDF
-            return ".pdf";
-        } else if ("application/vnd.ms-word".equalsIgnoreCase(contentType)) { // MS Word
-            return ".doc";
-        } else if ("application/vnd.ms-excel".equalsIgnoreCase(contentType)) { // MS Excel
-            return ".xls";
-        } else if ("application/vnd.ms-powerpoint".equalsIgnoreCase(contentType)) { // MS Power Point
-            return ".ppt";
-        } else if ("application/vnd.oasis.opendocument.text".equalsIgnoreCase(contentType)) { // Open Document Text
-            return ".odt";
-        } else if ("application/vnd.oasis.opendocument.spreadsheet".equalsIgnoreCase(contentType)) { // Open Document Spreadsheet
-            return ".ods";
-        } else if ("application/vnd.oasis.opendocument.presentation".equalsIgnoreCase(contentType)) { // Open Document Presentation
-            return ".odp";
-        } else if ("application/vnd.openxmlformats-officedocument.wordprocessingml.document".equalsIgnoreCase(contentType)) { // MS Word 2007
-            return ".docx";
-        } else if ("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet".equalsIgnoreCase(contentType)) { // MS Excel 2007
-            return ".xlsx";
-        } else if ("application/vnd.openxmlformats-officedocument.presentationml.presentation".equalsIgnoreCase(contentType)) { // MS Word 2007
-            return ".pptx";
-        } else {
-            throw new GeneralException("Unknown content type : " + contentType);
+    private static String renderInitialFormFlow(Map<String, Object> context) throws GeneralException {
+        //call ftl rendering
+        StringWriter writer = new StringWriter();
+        String location = UtilProperties.getPropertyValue("birt", "template.master.initial.form.location", "component://birt/template/MasterXmlForm.ftl");
+        try {
+            FreeMarkerWorker.renderTemplate(location, context, writer);
+        } catch (TemplateException e) {
+            throw new GeneralException(e.getMessage(), e);
+        } catch (IOException e) {
+            throw new GeneralException(e.getMessage(), e);
         }
+        return writer.toString();
+    }
+
+    public static String getFormat(String contentType) throws GeneralException {
+        if (mimeTypeOutputFormatMap.containsKey(contentType)) {
+            return ".".concat(mimeTypeOutputFormatMap.get(contentType));
+        }
+        throw new GeneralException("Unknown content type : " + contentType);
     }
 
 }

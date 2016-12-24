@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.ofbiz.base.util.Debug;
+import org.apache.ofbiz.base.util.GeneralException;
 import org.apache.ofbiz.base.util.StringUtil;
 import org.apache.ofbiz.base.util.UtilMisc;
 import org.apache.ofbiz.base.util.UtilProperties;
@@ -90,7 +91,7 @@ public class BirtServices {
     public static final String resource_error = "BirtErrorUiLabels";
     public static final String resourceProduct = "BirtUiLabels";
 
-    public static Map<String, Object> generateReport(DispatchContext dctx, Map<String, ? extends Object> context) {
+    public static Map<String, Object> generateReport(DispatchContext dctx, Map<String, Object> context) {
         ReportDesignGenerator rptGenerator;
         try {
             rptGenerator = new ReportDesignGenerator(context, dctx);
@@ -105,78 +106,6 @@ public class BirtServices {
             return ServiceUtil.returnError(e.getMessage());
         }
         return ServiceUtil.returnSuccess();
-    }
-    
-    public static Map<String, Object> convertFieldTypeToBirtType(DispatchContext dctx,
-            Map<String, ? extends Object> context) {
-        String fieldType = (String) context.get("fieldType");
-        Locale locale = (Locale) context.get("locale");
-        Map<String, Object> result = null;
-
-        final List<String> listTypeString = new ArrayList<String>(Arrays.asList("id", "id-long", "id-vlong", "indicator", "very-short", "short-varchar", "long-varchar", "very-long", "comment", "description", "name", "value", "credit-card-number", "credit-card-date", "email", "url", "id-ne", "id-long-ne", "id-vlong-ne", "tel-number"));
-        final List<String> listTypeDecimal = new ArrayList<String>(Arrays.asList("currency-amount", "currency-precise" , "fixed-point", "floating-point"));
-
-        String birtType = null;
-        if(listTypeString.contains(fieldType)) {
-            birtType = DesignChoiceConstants.COLUMN_DATA_TYPE_STRING;
-        } else if(fieldType.equalsIgnoreCase("date-time")){
-            birtType = DesignChoiceConstants.COLUMN_DATA_TYPE_DATETIME;
-        } else if(fieldType.equalsIgnoreCase("date")){
-            birtType = DesignChoiceConstants.COLUMN_DATA_TYPE_DATE;
-        } else if(fieldType.equalsIgnoreCase("time")){
-            birtType = DesignChoiceConstants.COLUMN_DATA_TYPE_TIME;
-        } else if(listTypeDecimal.contains(fieldType)){
-            birtType = DesignChoiceConstants.COLUMN_DATA_TYPE_DECIMAL;
-        } else if(fieldType.equalsIgnoreCase("numeric")){
-            birtType = DesignChoiceConstants.COLUMN_DATA_TYPE_INTEGER;
-        } else if(fieldType.equalsIgnoreCase("object")){
-            birtType = DesignChoiceConstants.COLUMN_DATA_TYPE_JAVA_OBJECT;
-        } else if(fieldType.equalsIgnoreCase("blob")){
-            birtType = DesignChoiceConstants.COLUMN_DATA_TYPE_BLOB;
-        }
-        if(UtilValidate.isEmpty(birtType)) {
-            result = ServiceUtil.returnError(UtilProperties.getMessage(resource_error, "conversion.field_to_birt.failed", locale));
-        } else {
-            result = ServiceUtil.returnSuccess(); 
-            result.put("birtType", birtType);
-        }
-        return result;
-    }
-
-    public static Map<String, Object> convertFieldTypeToBirtParameterType(DispatchContext dctx,
-            Map<String, ? extends Object> context) {
-        String fieldType = (String) context.get("fieldType");
-        Locale locale = (Locale) context.get("locale");
-        Map<String, Object> result = null;
-        
-        final List<String> listTypeString = new ArrayList<String>(Arrays.asList("id", "id-long", "id-vlong", "indicator", "very-short", "short-varchar", "long-varchar", "very-long", "comment", "description", "name", "value", "credit-card-number", "credit-card-date", "email", "url", "id-ne", "id-long-ne", "id-vlong-ne", "tel-number"));
-        final List<String> listTypeDecimal = new ArrayList<String>(Arrays.asList("currency-amount", "currency-precise" , "fixed-point", "floating-point"));
-        
-        String birtType = null;
-        if(listTypeString.contains(fieldType)) {
-            birtType = DesignChoiceConstants.PARAM_TYPE_STRING;
-        } else if(fieldType.equalsIgnoreCase("date-time")){
-            birtType = DesignChoiceConstants.PARAM_TYPE_DATETIME;
-        } else if(fieldType.equalsIgnoreCase("date")){
-            birtType = DesignChoiceConstants.PARAM_TYPE_DATE;
-        } else if(fieldType.equalsIgnoreCase("time")){
-            birtType = DesignChoiceConstants.PARAM_TYPE_TIME;
-        } else if(listTypeDecimal.contains(fieldType)){
-            birtType = DesignChoiceConstants.PARAM_TYPE_DECIMAL;
-        } else if(fieldType.equalsIgnoreCase("numeric")){
-            birtType = DesignChoiceConstants.PARAM_TYPE_INTEGER;
-        } else if(fieldType.equalsIgnoreCase("object")){
-            birtType = DesignChoiceConstants.PARAM_TYPE_JAVA_OBJECT;
-        } else if(fieldType.equalsIgnoreCase("blob")){
-            birtType = DesignChoiceConstants.PARAM_TYPE_JAVA_OBJECT;
-        }
-        if(UtilValidate.isEmpty(birtType)) {
-            result = ServiceUtil.returnError(UtilProperties.getMessage(resource_error, "conversion.field_to_birt.failed", locale));
-        } else {
-            result = ServiceUtil.returnSuccess(); 
-            result.put("birtType", birtType);
-        }
-        return result;
     }
     
     @Deprecated
@@ -466,7 +395,7 @@ public class BirtServices {
         return ServiceUtil.returnSuccess(UtilProperties.getMessage(resource, "form_successfully_overridden", locale));
     }
 
-    public static Map<String, Object> createReportContentFromMasterEntityWorkflow(DispatchContext dctx, Map<String, ? extends Object> context) {
+    public static Map<String, Object> createReportContentFromMasterEntityWorkflow(DispatchContext dctx, Map<String, Object> context) {
         LocalDispatcher dispatcher = dctx.getDispatcher();
         Delegator delegator = dctx.getDelegator();
         Locale locale = (Locale) context.get("locale");
@@ -498,13 +427,13 @@ public class BirtServices {
             if(UtilValidate.isNotEmpty(resultMapsForGeneration.get("filterDisplayLabels"))) {
                 filterDisplayLabels = (Map<String, String>) resultMapsForGeneration.get("filterDisplayLabels");
             }
-            contentId = BirtWorker.createReportContentInDatabase(delegator, dispatcher, masterContentId, rptDesignName, description, null, entityViewName, userLogin);
+            contentId = BirtWorker.recordReportContent(delegator, dispatcher, context);
             // callPerformFindFromBirt is the customMethod for Entity workflow
             result = dispatcher.runSync("reportGeneration", UtilMisc.toMap("dataMap", dataMap, "fieldDisplayLabels", fieldDisplayLabels, "filterMap", filterMap, "filterDisplayLabels", filterDisplayLabels, "rptDesignName", rptDesignName, "writeFilters", writeFilters, "customMethod", "callPerformFindFromBirt", "userLogin", userLogin, "locale", locale));
             if(ServiceUtil.isError(result)) {
                 return ServiceUtil.returnError(ServiceUtil.getErrorMessage(result));
             }
-        } catch (GenericServiceException e) {
+        } catch (GeneralException e) {
             e.printStackTrace();
             return ServiceUtil.returnError(e.getMessage());
         }
@@ -618,7 +547,7 @@ public class BirtServices {
         return result;
     }
 
-    public static Map<String, Object> createReportContentFromMasterServiceWorkflow(DispatchContext dctx, Map<String, ? extends Object> context) {
+    public static Map<String, Object> createReportContentFromMasterServiceWorkflow(DispatchContext dctx, Map<String, Object> context) {
         LocalDispatcher dispatcher = dctx.getDispatcher();
         Delegator delegator = dctx.getDelegator();
         Locale locale = (Locale) context.get("locale");
@@ -638,12 +567,12 @@ public class BirtServices {
             Map<String, String> fieldDisplayLabels = (Map<String, String>) resultService.get("fieldDisplayLabels");
             Map<String, String> filterDisplayLabels = (Map<String, String>) resultService.get("filterDisplayLabels");
             String customMethodName = (String) resultService.get("customMethodName");
-            contentId = BirtWorker.createReportContentInDatabase(delegator, dispatcher, masterContentId, rptDesignName, description, serviceName, null, userLogin);
+            contentId = BirtWorker.recordReportContent(delegator, dispatcher, context);
             Map<String, Object> resultGeneration = dispatcher.runSync("reportGeneration", UtilMisc.toMap("dataMap", dataMap, "fieldDisplayLabels", fieldDisplayLabels, "filterMap", filterMap, "filterDisplayLabels", filterDisplayLabels, "rptDesignName", rptDesignName, "writeFilters", writeFilters, "customMethod", customMethodName, "userLogin", userLogin, "locale", locale));
             if(ServiceUtil.isError(resultGeneration)) {
                 return ServiceUtil.returnError(UtilProperties.getMessage(resource_error, "errorCreatingReport", locale));
             }
-        } catch (GenericServiceException e) {
+        } catch (GeneralException e) {
             e.printStackTrace();
             return ServiceUtil.returnError(e.getMessage());
         }

@@ -30,6 +30,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.ofbiz.base.util.UtilFormatOut;
 import org.eclipse.birt.core.exception.BirtException;
 import org.eclipse.birt.report.engine.api.IReportEngine;
 import org.eclipse.birt.report.engine.api.IReportRunnable;
@@ -108,6 +109,10 @@ public class BirtViewHandler implements ViewHandler {
             String outputFileName = (String) request.getParameter(BirtWorker.getBirtOutputFileName());
             if (UtilValidate.isNotEmpty(outputFileName)) {
                 String format = BirtWorker.getFormat(contentType);
+                if (! outputFileName.endsWith(format)) {
+                    outputFileName = outputFileName.concat(format);
+                }
+                outputFileName = UtilHttp.canonicalizeParameter(outputFileName);
                 response.setHeader("Content-Disposition", "attachment; filename=" + outputFileName+format);
             }
             
