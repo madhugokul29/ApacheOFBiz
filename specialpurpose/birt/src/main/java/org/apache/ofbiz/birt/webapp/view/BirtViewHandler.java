@@ -109,7 +109,7 @@ public class BirtViewHandler implements ViewHandler {
             String outputFileName = (String) request.getParameter(BirtWorker.getBirtOutputFileName());
             if (UtilValidate.isNotEmpty(outputFileName)) {
                 String format = BirtWorker.getFormat(contentType);
-                if (! outputFileName.endsWith(format)) {
+                if (!outputFileName.endsWith(format)) {
                     outputFileName = outputFileName.concat(format);
                 }
                 outputFileName = UtilHttp.canonicalizeParameter(outputFileName);
