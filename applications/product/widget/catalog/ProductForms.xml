@@ -562,7 +562,7 @@ under the License.
         header-row-style="header-row" default-table-style="basic-table">
         <auto-fields-service service-name="safeAddProductToCategory"/>
         <field name="productId" title="${uiLabelMap.ProductProductId}" map-name="product"><hidden/></field>
-        <field name="productCategoryId" title="${uiLabelMap.ProductProductCategoryId}"><lookup target-form-name="LookupProductCategory"></lookup></field>
+        <field name="productCategoryId" title="${uiLabelMap.ProductProductCategoryId}" required-field="true"><lookup target-form-name="LookupProductCategory"></lookup></field>
         <field name="fromDate" title="${uiLabelMap.CommonFromDate}" required-field="true"><date-time default-value="${nowTimestamp}"/></field>
         <field name="thruDate" title="${uiLabelMap.CommonThruDate}" ></field>
         <field name="sequenceNum" title="${uiLabelMap.ProductSequenceNum}" ></field>
@@ -1164,9 +1164,9 @@ under the License.
     <form name="EditProductAssoc" type="single" use-row-submit="true"  title="" default-map-name="productAssoc" target="createProductAssoc"
          default-table-style="basic-table" paginate-target="EditProductAssoc">
         <alt-target use-when="productAssoc!=null" target="updateProductAssoc"/>
-        <field name="productId" use-when="productAssoc==null" title="${uiLabelMap.ProductProductId}"><lookup target-form-name="LookupProduct"/></field>
+        <field name="productId" use-when="productAssoc==null" title="${uiLabelMap.ProductProductId}" required-field="true"><lookup target-form-name="LookupProduct"/></field>
         <field name="productId" use-when="productAssoc!=null" title="${uiLabelMap.ProductProductId}" tooltip="${uiLabelMap.ProductRecreateAssociation}" ><display/></field>
-        <field name="productIdTo" use-when="productAssoc==null" title="${uiLabelMap.ProductProductIdTo}">
+        <field name="productIdTo" use-when="productAssoc==null" title="${uiLabelMap.ProductProductIdTo}" required-field="true">
             <lookup target-form-name="LookupProduct"/>
         </field>
         <field name="productIdTo" use-when="productAssoc!=null" title="${uiLabelMap.ProductProductIdTo}" tooltip="${uiLabelMap.ProductRecreateAssociation}"><display/></field>
