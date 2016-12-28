@@ -18,17 +18,18 @@
  *******************************************************************************/
 package org.apache.ofbiz.birt;
 
-import freemarker.template.TemplateException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.sql.SQLException;
 import java.util.Locale;
 import java.util.Map;
+
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+
 import org.apache.ofbiz.base.util.Debug;
 import org.apache.ofbiz.base.util.GeneralException;
 import org.apache.ofbiz.base.util.UtilGenerics;
@@ -38,7 +39,6 @@ import org.apache.ofbiz.base.util.UtilValidate;
 import org.apache.ofbiz.base.util.template.FreeMarkerWorker;
 import org.apache.ofbiz.entity.Delegator;
 import org.apache.ofbiz.entity.GenericValue;
-import org.apache.ofbiz.security.Security;
 import org.apache.ofbiz.service.GenericServiceException;
 import org.apache.ofbiz.service.LocalDispatcher;
 import org.apache.ofbiz.webapp.WebAppUtil;
@@ -52,6 +52,8 @@ import org.eclipse.birt.report.engine.api.IReportRunnable;
 import org.eclipse.birt.report.engine.api.IRunAndRenderTask;
 import org.eclipse.birt.report.engine.api.PDFRenderOption;
 import org.eclipse.birt.report.engine.api.RenderOption;
+
+import freemarker.template.TemplateException;
 
 public final class BirtWorker {
 
@@ -280,7 +282,7 @@ public final class BirtWorker {
     private static String renderInitialFormFlow(Map<String, Object> context) throws GeneralException {
         //call ftl rendering
         StringWriter writer = new StringWriter();
-        String location = UtilProperties.getPropertyValue("birt", "template.master.initial.form.location", "component://birt/template/MasterXmlForm.ftl");
+        String location = UtilProperties.getPropertyValue("birt", "template.master.initial.form.location", "component://birt/template/MasterXmlForms.ftl");
         try {
             FreeMarkerWorker.renderTemplate(location, context, writer);
         } catch (TemplateException e) {
