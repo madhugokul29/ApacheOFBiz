@@ -338,9 +338,10 @@ public class ContentWorker implements org.apache.ofbiz.widget.content.ContentWor
         String rendered = writer.toString();
         // According to https://www.owasp.org/index.php/XSS_%28Cross_Site_Scripting%29_Prevention_Cheat_Sheet#XSS_Prevention_Rules_Summary
         // Normally head should be protected by X-XSS-Protection Response Header by default
+// Commented out for now, need to be bypassed more elegantly for flexible Birt
 //        if ((rendered.contains("<script>")
 //                || rendered.contains("<!--")
-////                || rendered.contains("<div")
+//                || rendered.contains("<div")
 //                || rendered.contains("<style>")
 //                || rendered.contains("<span")
 //                || rendered.contains("<input")
