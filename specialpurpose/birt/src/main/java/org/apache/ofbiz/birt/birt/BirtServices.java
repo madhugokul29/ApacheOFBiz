@@ -519,6 +519,7 @@ public class BirtServices {
             e.printStackTrace();
             return ServiceUtil.returnError(e.getMessage());
         }
+        //TODO utiliser un parser XML
         textData = textData.substring(textData.indexOf("<form name=\"CTNT_MASTER_"), textData.length());
         textData = textData.substring(0, textData.indexOf("</forms>"));
         textData = StringUtil.replaceString(textData, textData.substring(textData.indexOf("<field name=\"rptDesignFile\">"), textData.indexOf("</drop-down></field>") + 20), "");
