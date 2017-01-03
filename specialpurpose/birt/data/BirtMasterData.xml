@@ -22,7 +22,8 @@
     <ContentType contentTypeId="REPORT" description="Report" />
     <ContentType contentTypeId="RPTDESIGN" description="Birt report (.rptDesign) file" />
     <DataTemplateType dataTemplateTypeId="FORM_COMBINED" description="Form widget" extension="xml" />
-    
+
+    <CustomMethodType customMethodTypeId="BOM_FORMULA" description="Formula for calculating material estimates for boms"/>
 
   <DataResource dataResourceId="DR_MASTER_EXAMPLE" dataResourceTypeId="ELECTRONIC_TEXT" dataTemplateTypeId="FORM_COMBINED" />
   <ElectronicText dataResourceId="DR_MASTER_EXAMPLE">
@@ -39,6 +40,6 @@
       </forms>]]>
     </textData>
   </ElectronicText>
-  <Content contentId="CTNT_MASTER_EXAMPLE" contentTypeId="REPORT_MASTER" customMethodId="callPerformFindFromBirt" dataResourceId="DR_MASTER_EXAMPLE" statusId="CTNT_PUBLISHED" contentName="Orders" description="Master Content for Example" />
+  <Content contentId="CTNT_MASTER_EXAMPLE" contentTypeId="REPORT_MASTER" customMethodId="CM_FB_PERFORM_FIND" dataResourceId="DR_MASTER_EXAMPLE" statusId="CTNT_PUBLISHED" contentName="Orders" description="Master Content for Example" />
   <ContentAttribute contentId="CTNT_MASTER_EXAMPLE" attrName="Entity" attrValue="Example"/>
 </entity-engine-xml>

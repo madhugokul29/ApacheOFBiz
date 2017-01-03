@@ -21,6 +21,7 @@ package org.apache.ofbiz.birt;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import javax.servlet.ServletContext;
@@ -30,13 +31,19 @@ import javax.servlet.http.HttpSession;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.ofbiz.base.util.Debug;
 import org.apache.ofbiz.base.util.GeneralException;
+import org.apache.ofbiz.base.util.StringUtil;
 import org.apache.ofbiz.base.util.UtilGenerics;
 import org.apache.ofbiz.base.util.UtilMisc;
 import org.apache.ofbiz.base.util.UtilProperties;
 import org.apache.ofbiz.base.util.UtilValidate;
 import org.apache.ofbiz.base.util.template.FreeMarkerWorker;
 import org.apache.ofbiz.entity.Delegator;
+import org.apache.ofbiz.entity.GenericEntityException;
 import org.apache.ofbiz.entity.GenericValue;
+import org.apache.ofbiz.entity.condition.EntityCondition;
+import org.apache.ofbiz.entity.condition.EntityConditionList;
+import org.apache.ofbiz.entity.condition.EntityExpr;
+import org.apache.ofbiz.entity.util.EntityUtil;
 import org.apache.ofbiz.security.Security;
 import org.apache.ofbiz.service.GenericServiceException;
 import org.apache.ofbiz.service.LocalDispatcher;
@@ -121,6 +128,20 @@ public final class BirtUtil {
             "object", DesignChoiceConstants.PARAM_TYPE_JAVA_OBJECT,
             "blob", DesignChoiceConstants.PARAM_TYPE_JAVA_OBJECT));
 
+    private final static Map<String, String> mimeTypeOutputFormatMap = UtilMisc.toMap(
+            "text/html", RenderOption.OUTPUT_FORMAT_HTML,
+            "application/pdf", RenderOption.OUTPUT_FORMAT_HTML,
+            "application/postscript", "postscript",
+            "application/vnd.ms-word", "doc",
+            "application/vnd.ms-excel", "xls",
+            "application/vnd.ms-powerpoint", "ppt",
+            "application/vnd.oasis.opendocument.text", "odt",
+            "application/vnd.oasis.opendocument.spreadsheet", "ods",
+            "application/vnd.oasis.opendocument.presentation", "odp",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "xlsx",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "docx",
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation", "pptx");
+
     private BirtUtil() {}
 
     public static String convertFieldTypeToBirtType(String entityFieldType) {
@@ -137,5 +158,80 @@ public final class BirtUtil {
         return entityFieldTypeBirtParameterTypeMap.get(entityFieldType.toLowerCase());
     }
 
+    public static boolean isSupportedMimeType(String contentType) {
+        return mimeTypeOutputFormatMap.containsKey(contentType);
+    }
 
+    public static String getMimeTypeOutputFormat(String contentType) throws GeneralException {
+        if (isSupportedMimeType(contentType)) {
+            return mimeTypeOutputFormatMap.get(contentType);
+        }
+        throw new GeneralException("Unknown content type : " + contentType);
+    }
+
+    /**
+     * return extension file related to a contentType supported by Birt
+     * @param contentType
+     * @return
+     * @throws GeneralException
+     */
+    public static String getMimeTypeFileExtension(String contentType) throws GeneralException {
+        return ".".concat(getMimeTypeOutputFormat(contentType));
+    }
+
+    /**
+     * Resolve the template path location where rptDesign file are stored,
+     * first try the resolution from birt.properties with rptDesign.output.path
+     * second from content.properties content.upload.path.prefix
+     * and add birtReptDesign directory
+     * default OFBIZ_HOME/runtime/uploads/birtRptDesign/
+     * @return
+     */
+    public static String resolveTemplatePathLocation() {
+        String templatePathLocation = UtilProperties.getPropertyValue("birt", "rptDesign.output.path");
+        if (UtilValidate.isEmpty(templatePathLocation)) {
+            templatePathLocation = UtilProperties.getPropertyValue("content", "content.upload.path.prefix", "runtime/uploads");
+        }
+        if (! templatePathLocation.endsWith("/")) {
+            templatePathLocation = templatePathLocation.concat("/");
+        }
+        if (! templatePathLocation.endsWith("/birtRptDesign/")) {
+            templatePathLocation = templatePathLocation.concat("birtRptDesign/");
+        }
+        if (! templatePathLocation.startsWith("/")) templatePathLocation = System.getProperty("ofbiz.home").concat("/").concat(templatePathLocation);
+        return templatePathLocation;
+    }
+
+    /**
+     * With the reporting contentId element resolve the path to rptDesign linked
+     * @param delegator
+     * @param contentId
+     * @return
+     * @throws GenericEntityException
+     */
+    public static String resolveRptDesignFilePathFromContent(Delegator delegator, String contentId) throws GenericEntityException {
+        List<GenericValue> listContentRpt = delegator.findList("ContentAssoc", EntityCondition.makeCondition("contentId", contentId), UtilMisc.toSet("contentIdTo"), null, null, true);
+        if (UtilValidate.isNotEmpty(listContentRpt)) {
+            String contentIdRpt = EntityUtil.getFirst(listContentRpt).getString("contentIdTo");
+            List<EntityExpr> listConditions = UtilMisc.toList(
+                    EntityCondition.makeCondition("contentTypeId", "RPTDESIGN"),
+                    EntityCondition.makeCondition("contentId", contentIdRpt));
+            EntityConditionList<EntityExpr> ecl = EntityCondition.makeCondition(listConditions);
+            List<GenericValue> listDataRessouceRptDesignFile = delegator.findList("ContentDataResourceView", ecl, UtilMisc.toSet("drObjectInfo"), null, null, true);
+            if (UtilValidate.isNotEmpty(listDataRessouceRptDesignFile)) {
+                return EntityUtil.getFirst(listDataRessouceRptDesignFile).getString("drObjectInfo");
+            }
+        }
+        return "";
+    }
+
+    /**
+     * remove all non unicode alphanumeric and replace space by _
+     * @param reportName
+     * @return
+     */
+    public static String encodeReportName(String reportName) {
+        if (UtilValidate.isEmpty(reportName)) return "";
+        return StringUtil.replaceString(StringUtil.removeRegex(reportName.trim(), "[^\\p{L}\\s]"), " ", "_");
+    }
 }

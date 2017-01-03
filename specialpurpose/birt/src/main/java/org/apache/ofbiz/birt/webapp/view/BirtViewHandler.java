@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -24,28 +24,26 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.ParserConfigurationException;
-
-import org.apache.ofbiz.base.util.UtilFormatOut;
-import org.eclipse.birt.core.exception.BirtException;
-import org.eclipse.birt.report.engine.api.IReportEngine;
-import org.eclipse.birt.report.engine.api.IReportRunnable;
 import org.apache.ofbiz.base.util.Debug;
 import org.apache.ofbiz.base.util.GeneralException;
 import org.apache.ofbiz.base.util.UtilGenerics;
 import org.apache.ofbiz.base.util.UtilHttp;
 import org.apache.ofbiz.base.util.UtilValidate;
 import org.apache.ofbiz.birt.BirtFactory;
+import org.apache.ofbiz.birt.BirtUtil;
 import org.apache.ofbiz.birt.BirtWorker;
 import org.apache.ofbiz.entity.Delegator;
 import org.apache.ofbiz.entity.GenericEntityException;
 import org.apache.ofbiz.entity.util.EntityUtilProperties;
 import org.apache.ofbiz.webapp.view.ViewHandler;
 import org.apache.ofbiz.webapp.view.ViewHandlerException;
+import org.eclipse.birt.core.exception.BirtException;
+import org.eclipse.birt.report.engine.api.IReportEngine;
+import org.eclipse.birt.report.engine.api.IReportRunnable;
 import org.xml.sax.SAXException;
 
 public class BirtViewHandler implements ViewHandler {
@@ -69,16 +67,16 @@ public class BirtViewHandler implements ViewHandler {
     }
 
     public void render(String name, String page, String info,
-            String contentType, String encoding, HttpServletRequest request,
-            HttpServletResponse response) throws ViewHandlerException {
-        
+                       String contentType, String encoding, HttpServletRequest request,
+                       HttpServletResponse response) throws ViewHandlerException {
+
         try {
             IReportEngine engine = org.apache.ofbiz.birt.BirtFactory.getReportEngine();
             // open report design
             IReportRunnable design = null;
 
             // add dynamic parameter for page
-            if(UtilValidate.isEmpty(page) || page.equals("produceReport")){
+            if (UtilValidate.isEmpty(page) || page.equals("produceReport")) {
                 page = (String) request.getParameter("rptDesignFile");
             }
             if (page.startsWith("component://")) {
@@ -87,43 +85,43 @@ public class BirtViewHandler implements ViewHandler {
             } else {
                 design = engine.openReportDesign(page);
             }
-            
+
             Map<String, Object> appContext = UtilGenerics.cast(engine.getConfig().getAppContext());
             BirtWorker.setWebContextObjects(appContext, request, response);
 
             Map<String, Object> context = new HashMap<String, Object>();
             // set parameters from request
-             Map<String, Object> parameters = UtilGenerics.cast(request.getAttribute(BirtWorker.getBirtParameters()));
+            Map<String, Object> parameters = UtilGenerics.cast(request.getAttribute(BirtWorker.getBirtParameters()));
             if (parameters != null) {
                 context.put(BirtWorker.getBirtParameters(), parameters);
             } else {
                 context.put(BirtWorker.getBirtParameters(), UtilHttp.getParameterMap(request));
             }
             // set locale from request
-            Locale locale = (Locale)request.getAttribute(BirtWorker.getBirtLocale());
+            Locale locale = (Locale) request.getAttribute(BirtWorker.getBirtLocale());
             if (locale == null) {
                 locale = UtilHttp.getLocale(request);
             }
 
-            // set output file name to get also file extension
-            String outputFileName = (String) request.getParameter(BirtWorker.getBirtOutputFileName());
-            if (UtilValidate.isNotEmpty(outputFileName)) {
-                String format = BirtWorker.getFormat(contentType);
-                if (!outputFileName.endsWith(format)) {
-                    outputFileName = outputFileName.concat(format);
-                }
-                outputFileName = UtilHttp.canonicalizeParameter(outputFileName);
-                response.setHeader("Content-Disposition", "attachment; filename=" + outputFileName+format);
-            }
-            
             // set override content type
             String overrideContentType = (String) request.getParameter(BirtWorker.getBirtContentType());
             if (UtilValidate.isNotEmpty(overrideContentType)) {
                 contentType = overrideContentType;
             }
 
+            // set output file name to get also file extension
+            String outputFileName = (String) request.getParameter(BirtWorker.getBirtOutputFileName());
+            if (UtilValidate.isNotEmpty(outputFileName)) {
+                String format = BirtUtil.getMimeTypeFileExtension(contentType);
+                if (! outputFileName.endsWith(format)) {
+                    outputFileName = outputFileName.concat(format);
+                }
+                outputFileName = UtilHttp.canonicalizeParameter(outputFileName);
+                response.setHeader("Content-Disposition", "attachment; filename=" + outputFileName + format);
+            }
+
             // checking consistency between Birt content type and response content type
-            if(!contentType.equals(response.getContentType())){
+            if (! contentType.equals(response.getContentType())) {
                 response.setContentType(contentType);
             }
             context.put(BirtWorker.getBirtLocale(), locale);

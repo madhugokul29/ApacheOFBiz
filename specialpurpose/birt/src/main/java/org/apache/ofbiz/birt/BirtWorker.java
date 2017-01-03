@@ -18,10 +18,12 @@
  *******************************************************************************/
 package org.apache.ofbiz.birt;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -31,6 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.ofbiz.base.util.Debug;
+import org.apache.ofbiz.base.util.FileUtil;
 import org.apache.ofbiz.base.util.GeneralException;
 import org.apache.ofbiz.base.util.UtilGenerics;
 import org.apache.ofbiz.base.util.UtilMisc;
@@ -39,6 +42,7 @@ import org.apache.ofbiz.base.util.UtilValidate;
 import org.apache.ofbiz.base.util.template.FreeMarkerWorker;
 import org.apache.ofbiz.entity.Delegator;
 import org.apache.ofbiz.entity.GenericValue;
+import org.apache.ofbiz.entity.condition.EntityCondition;
 import org.apache.ofbiz.service.GenericServiceException;
 import org.apache.ofbiz.service.LocalDispatcher;
 import org.apache.ofbiz.webapp.WebAppUtil;
@@ -64,22 +68,9 @@ public final class BirtWorker {
     private final static String BIRT_IMAGE_DIRECTORY = "birtImageDirectory";
     private final static String BIRT_CONTENT_TYPE = "birtContentType";
     private final static String BIRT_OUTPUT_FILE_NAME = "birtOutputFileName";
+    private static final String resourceError = "BirtErrorUiLabels";
 
     private final static HTMLServerImageHandler imageHandler = new HTMLServerImageHandler();
-    private final static Map<String, String> mimeTypeOutputFormatMap = UtilMisc.toMap(
-            "text/html", RenderOption.OUTPUT_FORMAT_HTML,
-            "application/pdf", RenderOption.OUTPUT_FORMAT_HTML,
-            "application/postscript", "postscript",
-            "application/vnd.ms-word", "doc",
-            "application/vnd.ms-excel", "xls",
-            "application/vnd.ms-powerpoint", "ppt",
-            "application/vnd.oasis.opendocument.text", "odt",
-            "application/vnd.oasis.opendocument.spreadsheet", "ods",
-            "application/vnd.oasis.opendocument.presentation", "odp",
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "xlsx",
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "docx",
-            "application/vnd.openxmlformats-officedocument.presentationml.presentation", "pptx");
-
     private BirtWorker() {
     }
 
@@ -124,11 +115,11 @@ public final class BirtWorker {
         }
 
         // set output options
-        if (mimeTypeOutputFormatMap.containsKey(contentType)) {
+        if (BirtUtil.isSupportedMimeType(contentType)) {
             throw new GeneralException("Unknown content type : " + contentType);
         }
         RenderOption options = new RenderOption();
-        options.setOutputFormat(mimeTypeOutputFormatMap.get(contentType));
+        options.setOutputFormat(BirtUtil.getMimeTypeOutputFormat(contentType));
 
         //specific process for mimetype
         if ("text/html".equals(contentType)) { // HTML
@@ -199,14 +190,16 @@ public final class BirtWorker {
 
     //TODO use ftl rendering
     public static String getBirtStandardFields(String rptDesignName, String fieldName, String serviceOrEntityName) {
-        String reportPath = UtilProperties.getPropertyValue("birt.properties", "rptDesign.output.path");
+        String reportPath = BirtUtil.resolveTemplatePathLocation().concat(rptDesignName);
+        return getBirtStandardFields(rptDesignName, fieldName, serviceOrEntityName, reportPath);
+    }
+
+    public static String getBirtStandardFields(String reportName, String fieldName, String serviceOrEntityName, String templateFileLocation) {
         StringBuffer birtContentTypeField = new StringBuffer("<field name=\"rptDesignFile\"><hidden value=\"");
-        birtContentTypeField.append(reportPath);
-        birtContentTypeField.append("/");
-        birtContentTypeField.append(rptDesignName);
+        birtContentTypeField.append(templateFileLocation);
         birtContentTypeField.append("\"/></field>");
         birtContentTypeField.append("<field name=\"birtOutputFileName\"><hidden value=\"");
-        birtContentTypeField.append(rptDesignName.substring(0, rptDesignName.lastIndexOf('.')));
+        birtContentTypeField.append(BirtUtil.encodeReportName(reportName));
         birtContentTypeField.append("\"/></field>");
         birtContentTypeField.append("<field name=\"");
         birtContentTypeField.append(fieldName);
@@ -239,7 +232,7 @@ public final class BirtWorker {
     public static String recordReportContent(Delegator delegator, LocalDispatcher dispatcher, Map<String, Object> context) throws GeneralException {
         Locale locale = (Locale) context.get("locale");
         String description = (String) context.get("description");
-        String rptDesignName = (String) context.get("rptDesignName");
+        String reportName = (String) context.get("reportName");
         String writeFilters = (String) context.get("writeFilters");
         GenericValue userLogin = (GenericValue) context.get("userLogin");
         String entityViewName = (String) context.get("entityViewName");
@@ -265,14 +258,44 @@ public final class BirtWorker {
             serviceOrEntityName = serviceName;
             workflowType = "Service";
         }
+
+        //resolve the path location to store the RptDesign file, check if the file already exists under this name and increment index name if needed
+        List<GenericValue> listRptDesigns = null;
+        EntityCondition entityConditionRpt = EntityCondition.makeCondition("contentTypeId", "RPTDESIGN");
+        String templatePathLocation = BirtUtil.resolveTemplatePathLocation();
+        File templatePathLocationDir = new File(templatePathLocation);
+            if (!templatePathLocationDir.exists()) {
+                boolean created = templatePathLocationDir.mkdirs();
+                if (!created) {
+                    new GeneralException(UtilProperties.getMessage(resourceError, "cannot_locate_report_folder", locale));
+                }
+            }
+        int i = 0;
+        String templateFileLocation = null;
+        EntityCondition ecl = null;
+        do {
+            StringBuffer rptDesignNameSb = new StringBuffer(templatePathLocation);
+            rptDesignNameSb.append(BirtUtil.encodeReportName(reportName));
+            rptDesignNameSb.append("_").append(i);
+            rptDesignNameSb.append(".rptdesign");
+            templateFileLocation = rptDesignNameSb.toString();
+            EntityCondition entityConditionOnName = EntityCondition.makeCondition("drObjectInfo", templateFileLocation);
+            ecl = EntityCondition.makeCondition(UtilMisc.toList(entityConditionRpt, entityConditionOnName));
+            i++;
+        } while (delegator.findCountByCondition("ContentDataResourceView", ecl, null, null) > 0);
+
         String reportForm = BirtWorker.renderInitialFormFlow(context);
         dispatcher.runSync("createDataResource", UtilMisc.toMap("dataResourceId", dataResourceId, "dataResourceTypeId", "ELECTRONIC_TEXT", "dataTemplateTypeId", "FORM_COMBINED", "userLogin", userLogin));
         dispatcher.runSync("createElectronicTextForm", UtilMisc.toMap("dataResourceId", dataResourceId, "textData", reportForm, "userLogin", userLogin));
-        dispatcher.runSync("createContent", UtilMisc.toMap("contentId", contentId, "contentTypeId", "REPORT", "dataResourceId", dataResourceId, "statusId", "CTNT_IN_PROGRESS", "contentName", rptDesignName.substring(0, rptDesignName.indexOf('.')), "description", description, "userLogin", userLogin));
+        dispatcher.runSync("createContent", UtilMisc.toMap("contentId", contentId, "contentTypeId", "REPORT", "dataResourceId", dataResourceId, "statusId", "CTNT_IN_PROGRESS", "contentName", reportName, "description", description, "userLogin", userLogin));
         String dataResourceIdRpt = delegator.getNextSeqId("DataResource");
         String contentIdRpt = delegator.getNextSeqId("Content");
-        dispatcher.runSync("createDataResource", UtilMisc.toMap("dataResourceId", dataResourceIdRpt, "dataResourceTypeId", "LOCAL_FILE", "mimeTypeId", "text/rptdesign", "dataResourceName", rptDesignName, "objectInfo", UtilProperties.getPropertyValue("birt.properties", "rptDesign.output.path") + "/" + rptDesignName, "userLogin", userLogin));
-        dispatcher.runSync("createContent", UtilMisc.toMap("contentId", contentIdRpt, "contentTypeId", "RPTDESIGN", "dataResourceId", dataResourceIdRpt, "statusId", "CTNT_PUBLISHED", "contentName", rptDesignName, "description", description + " (.rptDesign file)", "userLogin", userLogin));
+        String rptDesignName = BirtUtil.encodeReportName(reportName);
+        if (! rptDesignName.endsWith(".rptdesign")) {
+            rptDesignName = rptDesignName.concat(".rptdesign");
+        }
+        dispatcher.runSync("createDataResource", UtilMisc.toMap("dataResourceId", dataResourceIdRpt, "dataResourceTypeId", "LOCAL_FILE", "mimeTypeId", "text/rptdesign", "dataResourceName", rptDesignName, "objectInfo", templateFileLocation, "userLogin", userLogin));
+        dispatcher.runSync("createContent", UtilMisc.toMap("contentId", contentIdRpt, "contentTypeId", "RPTDESIGN", "dataResourceId", dataResourceIdRpt, "statusId", "CTNT_PUBLISHED", "contentName", reportName, "description", description + " (.rptDesign file)", "userLogin", userLogin));
         dispatcher.runSync("createContentAssoc", UtilMisc.toMap("contentId", masterContentId, "contentIdTo", contentId, "contentAssocTypeId", "SUB_CONTENT", "userLogin", userLogin));
         dispatcher.runSync("createContentAssoc", UtilMisc.toMap("contentId", contentId, "contentIdTo", contentIdRpt, "contentAssocTypeId", "SUB_CONTENT", "userLogin", userLogin));
         dispatcher.runSync("createContentAttribute", UtilMisc.toMap("contentId", contentId, "attrName", workflowType, "attrValue", serviceOrEntityName, "userLogin", userLogin));
@@ -285,19 +308,10 @@ public final class BirtWorker {
         String location = UtilProperties.getPropertyValue("birt", "template.master.initial.form.location", "component://birt/template/MasterXmlForms.ftl");
         try {
             FreeMarkerWorker.renderTemplate(location, context, writer);
-        } catch (TemplateException e) {
-            throw new GeneralException(e.getMessage(), e);
-        } catch (IOException e) {
+        } catch (IOException | TemplateException e) {
             throw new GeneralException(e.getMessage(), e);
         }
         return writer.toString();
-    }
-
-    public static String getFormat(String contentType) throws GeneralException {
-        if (mimeTypeOutputFormatMap.containsKey(contentType)) {
-            return ".".concat(mimeTypeOutputFormatMap.get(contentType));
-        }
-        throw new GeneralException("Unknown content type : " + contentType);
     }
 
 }

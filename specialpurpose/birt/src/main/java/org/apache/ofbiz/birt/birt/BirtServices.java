@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -18,6 +18,7 @@
  *******************************************************************************/
 package org.apache.ofbiz.birt.birt;
 
+import com.ibm.icu.util.ULocale;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -26,7 +27,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-
 import org.apache.ofbiz.base.util.Debug;
 import org.apache.ofbiz.base.util.GeneralException;
 import org.apache.ofbiz.base.util.StringUtil;
@@ -42,6 +41,7 @@ import org.apache.ofbiz.base.util.UtilMisc;
 import org.apache.ofbiz.base.util.UtilProperties;
 import org.apache.ofbiz.base.util.UtilValidate;
 import org.apache.ofbiz.base.util.string.FlexibleStringExpander;
+import org.apache.ofbiz.birt.BirtUtil;
 import org.apache.ofbiz.birt.BirtWorker;
 import org.apache.ofbiz.birt.ReportDesignGenerator;
 import org.apache.ofbiz.entity.Delegator;
@@ -59,6 +59,7 @@ import org.apache.ofbiz.entity.util.EntityUtil;
 import org.apache.ofbiz.service.DispatchContext;
 import org.apache.ofbiz.service.GenericServiceException;
 import org.apache.ofbiz.service.LocalDispatcher;
+import org.apache.ofbiz.service.ModelService;
 import org.apache.ofbiz.service.ServiceUtil;
 import org.eclipse.birt.core.exception.BirtException;
 import org.eclipse.birt.core.framework.Platform;
@@ -74,10 +75,7 @@ import org.eclipse.birt.report.model.api.SimpleMasterPageHandle;
 import org.eclipse.birt.report.model.api.SlotHandle;
 import org.eclipse.birt.report.model.api.VariableElementHandle;
 import org.eclipse.birt.report.model.api.activity.SemanticException;
-import org.eclipse.birt.report.model.api.elements.DesignChoiceConstants;
 import org.eclipse.birt.report.model.elements.SimpleMasterPage;
-
-import com.ibm.icu.util.ULocale;
 
 
 /**
@@ -85,7 +83,7 @@ import com.ibm.icu.util.ULocale;
  */
 
 public class BirtServices {
-    
+
     public static final String module = BirtServices.class.getName();
     public static final String resource = "BirtUiLabels";
     public static final String resource_error = "BirtErrorUiLabels";
@@ -107,10 +105,10 @@ public class BirtServices {
         }
         return ServiceUtil.returnSuccess();
     }
-    
+
     @Deprecated
     public static Map<String, Object> getListMultiFieldsByView(DispatchContext dctx,
-            Map<String, ? extends Object> context) {
+                                                               Map<String, ? extends Object> context) {
         String entityViewName = (String) context.get("entityViewName");
         GenericValue userLogin = (GenericValue) context.get("userLogin");
         List<String> listMultiFields = new ArrayList<String>();
@@ -122,7 +120,7 @@ public class BirtServices {
         ModelEntity modelEntity = delegator.getModelEntity(entityViewName);
         List<String> listFieldsEntity = modelEntity.getAllFieldNames();
 
-        for(String field: listFieldsEntity){
+        for (String field : listFieldsEntity) {
             listMultiFields.add(field);
             ModelField mField = modelEntity.getField(field);
             String fieldType = mField.getType();
@@ -130,18 +128,18 @@ public class BirtServices {
             try {
                 Map<String, Object> convertRes = dispatcher.runSync("convertFieldTypeToBirtType", UtilMisc.toMap("fieldType", fieldType, "userLogin", userLogin));
                 birtType = (String) convertRes.get("birtType");
-                if(UtilValidate.isEmpty(birtType)){
+                if (UtilValidate.isEmpty(birtType)) {
                     return ServiceUtil.returnError(UtilProperties.getMessage(resource_error, "conversion.field_to_birt.failed", locale));
                 }
             } catch (GenericServiceException e) {
                 e.printStackTrace();
             }
-         // make more general when report forms have been made so too.
-            if(birtType.equalsIgnoreCase("date-time") || birtType.equalsIgnoreCase("date") || birtType.equalsIgnoreCase("time")){
-                listMultiFields.add(field+"_fld0_op");
-                listMultiFields.add(field+"_fld0_value");
-                listMultiFields.add(field+"_fld1_op");
-                listMultiFields.add(field+"_fld1_value");
+            // make more general when report forms have been made so too.
+            if (birtType.equalsIgnoreCase("date-time") || birtType.equalsIgnoreCase("date") || birtType.equalsIgnoreCase("time")) {
+                listMultiFields.add(field + "_fld0_op");
+                listMultiFields.add(field + "_fld0_value");
+                listMultiFields.add(field + "_fld1_op");
+                listMultiFields.add(field + "_fld1_value");
             }
         }
         result.put("listMultiFields", listMultiFields);
@@ -159,13 +157,13 @@ public class BirtServices {
         Map<String, Object> resultToBirt = null;
         List<GenericValue> list = null;
 
-        if(UtilValidate.isEmpty(entityViewName)) {
+        if (UtilValidate.isEmpty(entityViewName)) {
             return ServiceUtil.returnError(UtilProperties.getMessage(resource_error, "unknown.entityViewName", locale));
         }
 
         try {
-            resultPerformFind = dispatcher.runSync("performFind", UtilMisc.<String, Object> toMap("entityName", entityViewName, "inputFields", inputFields, "userLogin", userLogin, "noConditionFind", "Y", "locale", locale));
-            if(ServiceUtil.isError(resultPerformFind)) {
+            resultPerformFind = dispatcher.runSync("performFind", UtilMisc.<String, Object>toMap("entityName", entityViewName, "inputFields", inputFields, "userLogin", userLogin, "noConditionFind", "Y", "locale", locale));
+            if (ServiceUtil.isError(resultPerformFind)) {
                 return ServiceUtil.returnError(UtilProperties.getMessage(resource_error, "errorRunningPerformFind", locale));
             }
         } catch (GenericServiceException e) {
@@ -175,7 +173,7 @@ public class BirtServices {
 
         EntityListIterator listIt = (EntityListIterator) resultPerformFind.get("listIt");
         try {
-            if(UtilValidate.isNotEmpty(listIt)) {
+            if (UtilValidate.isNotEmpty(listIt)) {
                 list = listIt.getCompleteList();
                 listIt.close();
             } else {
@@ -188,82 +186,41 @@ public class BirtServices {
         resultToBirt.put("list", list);
         return resultToBirt;
     }
-    
+
     public static Map<String, Object> determineReportGenerationPath(DispatchContext dctx, Map<String, ? extends Object> context) {
         Delegator delegator = dctx.getDelegator();
         LocalDispatcher dispatcher = dctx.getDispatcher();
         Locale locale = (Locale) context.get("locale");
-        
+
         String reportName = (String) context.get("reportName");
         String masterContentId = (String) context.get("contentId");
         String description = (String) context.get("description");
         String writeFilters = (String) context.get("writeFilters");
         GenericValue userLogin = (GenericValue) context.get("userLogin");
 
-        // check if .rptdesign file already exists under this name and increment index name if needed
-        String rptDesignName = reportName.concat("_generated.rptdesign");
-        List<GenericValue> listRptDesigns = null;
-        EntityCondition entityConditionRpt = EntityCondition.makeCondition("contentTypeId", EntityOperator.EQUALS, "RPTDESIGN");
-        EntityCondition entityConditionOnName = EntityCondition.makeCondition("drObjectInfo", EntityOperator.EQUALS, UtilProperties.getPropertyValue("birt.properties", "rptDesign.output.path").concat("/").concat(rptDesignName));
-        List<EntityCondition> listConditions = new ArrayList<EntityCondition>();
-        listConditions.add(entityConditionRpt);
-        listConditions.add(entityConditionOnName);
-        EntityConditionList<EntityCondition> ecl = EntityCondition.makeCondition(listConditions, EntityOperator.AND);
+        GenericValue masterContentAttribute = null;
         try {
-            listRptDesigns = delegator.findList("ContentDataResourceView", ecl, UtilMisc.toSet("drObjectInfo"), null, null, false);
+            EntityCondition entityCondition = EntityCondition.makeCondition("contentId", masterContentId);
+            masterContentAttribute = EntityUtil.getFirst(delegator.findList("ContentAttribute", entityCondition, null, null, null, false));
         } catch (GenericEntityException e) {
             e.printStackTrace();
             return ServiceUtil.returnError(e.getMessage());
         }
-        int i = 1;
-        while(UtilValidate.isNotEmpty(listRptDesigns)){
-            StringBuffer rptDesignNameSb = new StringBuffer(reportName);
-            rptDesignNameSb.append("_generated(");
-            rptDesignNameSb.append(i);
-            rptDesignNameSb.append(").rptdesign");
-            rptDesignName = rptDesignNameSb.toString();
-            listConditions.remove(entityConditionOnName);
-            entityConditionOnName = EntityCondition.makeCondition("drObjectInfo", EntityOperator.EQUALS, UtilProperties.getPropertyValue("birt.properties", "rptDesign.output.path").concat("/").concat(rptDesignName));
-            listConditions.add(entityConditionOnName);
-            ecl = EntityCondition.makeCondition(listConditions, EntityOperator.AND);
-            try {
-                listRptDesigns = delegator.findList("ContentDataResourceView", ecl, UtilMisc.toSet("drObjectInfo"), null, null, false);
-            } catch (GenericEntityException e) {
-                e.printStackTrace();
-                return ServiceUtil.returnError(e.getMessage());
-            }
-            i++;
-        }
-        
-        GenericValue contentAttribute = null;
-        List<GenericValue> listContentAttribute;
-        try {
-            EntityCondition entityCondition = EntityCondition.makeCondition("contentId", EntityOperator.EQUALS, masterContentId);
-            listContentAttribute = delegator.findList("ContentAttribute", entityCondition, null, null, null, false);
-        } catch (GenericEntityException e) {
-            e.printStackTrace();
-            return ServiceUtil.returnError(e.getMessage());
-        }
-        
-        if(UtilValidate.isEmpty(listContentAttribute)) {
+
+        if (masterContentAttribute == null) {
             return ServiceUtil.returnError(UtilProperties.getMessage(resource_error, "no_attribute_found", locale));
         }
-        contentAttribute = listContentAttribute.get(0);
-        String attrName = contentAttribute.getString("attrName");
+        String attrName = masterContentAttribute.getString("attrName");
         String reportContentId;
-        if(attrName.equalsIgnoreCase("Entity")){
-            String entityViewName = contentAttribute.getString("attrValue");
-            try {
-                Map<String, Object> result = dispatcher.runSync("checkEntityViewExistence", UtilMisc.toMap("entityName", entityViewName));
-                if(ServiceUtil.isError(result)) {
-                    return ServiceUtil.returnError(ServiceUtil.getErrorMessage(result));
+        if (attrName.equalsIgnoreCase("Entity")) {
+            String entityViewName = masterContentAttribute.getString("attrValue");
+            //FIXME use entity model control
+                ModelEntity modelEntity = delegator.getModelEntity(entityViewName);
+                if (modelEntity == null) {
+                    return ServiceUtil.returnError(UtilProperties.getMessage(resource_error, "entity_view_does_not_exist", locale) + " " + entityViewName);
                 }
-            } catch (GenericServiceException e) {
-                e.printStackTrace();
-                return ServiceUtil.returnError(e.getMessage());
-            }
             try {
-                Map<String, Object> resultContent = dispatcher.runSync("createReportContentFromMasterEntityWorkflow", UtilMisc.toMap("entityViewName", entityViewName, "rptDesignName", rptDesignName, "description", description, "writeFilters", writeFilters, "masterContentId", masterContentId, "userLogin", userLogin, "locale", locale));
+                Map<String, Object> resultContent = dispatcher.runSync("createReportContentFromMasterEntityWorkflow", UtilMisc.toMap("entityViewName", entityViewName, "reportName", reportName, "description", description, "writeFilters", writeFilters, "masterContentId", masterContentId, "userLogin", userLogin, "locale", locale));
                 if(ServiceUtil.isError(resultContent)) {
                     return ServiceUtil.returnError(ServiceUtil.getErrorMessage(resultContent));
                 }
@@ -272,11 +229,16 @@ public class BirtServices {
                 e.printStackTrace();
                 return ServiceUtil.returnError(e.getMessage());
             }
-        }else if(attrName.equalsIgnoreCase("Service")){
-            String serviceName = contentAttribute.getString("attrValue");
+        } else if (attrName.equalsIgnoreCase("Service")) {
+            String serviceName = masterContentAttribute.getString("attrValue");
             try {
-                Map<String, Object> resultContent = dispatcher.runSync("createReportContentFromMasterServiceWorkflow", UtilMisc.toMap("serviceName", serviceName, "rptDesignName", rptDesignName, "description", description, "writeFilters", writeFilters, "masterContentId", masterContentId, "userLogin", userLogin, "locale", locale));
-                if(ServiceUtil.isError(resultContent)) {
+                ModelService modelService = dctx.getModelService("serviceName");
+            } catch (GenericServiceException e) {
+                return ServiceUtil.returnError("No service define with name" + serviceName); //TODO labelise
+            }
+            try {
+                Map<String, Object> resultContent = dispatcher.runSync("createReportContentFromMasterServiceWorkflow", UtilMisc.toMap("serviceName", serviceName, "reportName", reportName, "description", description, "writeFilters", writeFilters, "masterContentId", masterContentId, "userLogin", userLogin, "locale", locale));
+                if (ServiceUtil.isError(resultContent)) {
                     return ServiceUtil.returnError(ServiceUtil.getErrorMessage(resultContent));
                 }
                 reportContentId = (String) resultContent.get("contentId");
@@ -284,7 +246,7 @@ public class BirtServices {
                 e.printStackTrace();
                 return ServiceUtil.returnError(e.getMessage());
             }
-        }else{
+        } else {
             // could create other workflows. WebService? Does it need to be independent from Service workflow?
             return ServiceUtil.returnError(UtilProperties.getMessage(resource_error, "cannot_determine_data_source", locale));
         }
@@ -300,28 +262,9 @@ public class BirtServices {
             return ServiceUtil.returnError(UtilProperties.getMessage(resource_error, "error_creating_default_form", locale).concat(UtilProperties.getMessage(resource, "withMessage", locale)).concat(e.getMessage()));
         }
 
-        Map<String, Object> result = ServiceUtil.returnSuccess(UtilProperties.getMessage(resource, "report_successfully_generated", locale).concat(" ").concat(rptDesignName));
+        Map<String, Object> result = ServiceUtil.returnSuccess(UtilProperties.getMessage(resource, "report_successfully_generated", locale).concat(" ").concat(reportName));
         result.put("textForm", textForm);
         result.put("reportContentId", reportContentId);
-        return result;
-    }
-
-    public static Map<String, Object> checkEntityViewExistence(DispatchContext dctx, Map<String, ? extends Object> context) {
-        Delegator delegator = dctx.getDelegator();
-        Locale locale = (Locale) context.get("locale");
-        ModelReader reader = delegator.getModelReader();
-        String entityName = (String) context.get("entityName");
-        Map<String, Object> result = ServiceUtil.returnSuccess();
-        Set<String> entityNames = null;
-        try {
-            entityNames = reader.getEntityNames();
-        } catch (GenericEntityException e) {
-            e.printStackTrace();
-            return ServiceUtil.returnError(UtilProperties.getMessage(resource_error, "failed_to_retrieve_entity_names", locale));
-        }
-        if(!entityNames.contains(entityName)){
-            return ServiceUtil.returnError(UtilProperties.getMessage(resource_error, "entity_view_does_not_exist", locale));
-        }
         return result;
     }
 
@@ -336,13 +279,13 @@ public class BirtServices {
 
         // safety check : do not accept "${groovy", "${bsh" and "javascript"
         String overideFiltersNoWhiteSpace = overrideFilters.replaceAll("\\s", "");
-        if(overideFiltersNoWhiteSpace.contains("${groovy") || overideFiltersNoWhiteSpace.contains("${bsh") || overideFiltersNoWhiteSpace.contains("javascript:")) {
+        if (overideFiltersNoWhiteSpace.contains("${groovy") || overideFiltersNoWhiteSpace.contains("${bsh") || overideFiltersNoWhiteSpace.contains("javascript:")) {
             return ServiceUtil.returnError(UtilProperties.getMessage(resource_error, "UnauthorisedCharacter", locale));
         }
 
         GenericValue content;
         List<GenericValue> contentAssocViewTos;
-        GenericValue contentAssocViewTo;
+        GenericValue rptContent;
         List<GenericValue> contentAttributes;
         GenericValue contentAttribute;
         String dataResourceId;
@@ -356,9 +299,9 @@ public class BirtServices {
             EntityExpr conditionContentIdStart = EntityCondition.makeCondition("contentIdStart", reportContentId);
             EntityExpr conditionContentTypeId = EntityCondition.makeCondition("contentTypeId", "RPTDESIGN");
             EntityConditionList<EntityExpr> ecl = EntityCondition.makeCondition(UtilMisc.toList(conditionAssocType, conditionContentIdStart, conditionContentTypeId));
-            contentAssocViewTos = delegator.findList("ContentAssocViewTo", ecl, UtilMisc.toSet("contentName"), null, null, true);
-            contentAssocViewTo = contentAssocViewTos.get(0);
-            rptDesignName = contentAssocViewTo.getString("contentName");
+            contentAssocViewTos = delegator.findList("ContentAssocDataResourceViewTo", ecl, null, null, null, true);
+            rptContent = contentAssocViewTos.get(0);
+            rptDesignName = rptContent.getString("contentName");
 
             EntityExpr conditionAttrNameEntity = EntityCondition.makeCondition("attrName", "Entity");
             EntityExpr conditionAttrNameService = EntityCondition.makeCondition("attrName", "Service");
@@ -368,7 +311,7 @@ public class BirtServices {
             contentAttributes = delegator.findList("ContentAttribute", eclAttribute, UtilMisc.toSet("attrName", "attrValue"), null, null, true);
             contentAttribute = contentAttributes.get(0);
             serviceOrEntityName = contentAttribute.getString("attrValue");
-            if(contentAttribute.getString("attrName").equalsIgnoreCase("entity")) {
+            if (contentAttribute.getString("attrName").equalsIgnoreCase("entity")) {
                 fieldName = "entityViewName";
             } else {
                 fieldName = "serviceName";
@@ -384,7 +327,7 @@ public class BirtServices {
             String formEnd = overrideForm.substring(indexEndForm, overrideForm.length());
             StringBuffer newForm = new StringBuffer("<?xml version=\"1.0\" encoding=\"UTF-8\"?> <forms xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"http://ofbiz.apache.org/dtds/widget-form.xsd\">");
             newForm.append(formStart);
-            newForm.append(BirtWorker.getBirtStandardFields(rptDesignName, fieldName, serviceOrEntityName));
+            newForm.append(BirtWorker.getBirtStandardFields(rptDesignName, fieldName, serviceOrEntityName, rptContent.getString("drObjectInfo")));
             newForm.append(formEnd);
             newForm.append("</forms>");
             dispatcher.runSync("updateElectronicTextForm", UtilMisc.toMap("dataResourceId", dataResourceId, "textData", newForm.toString(), "userLogin", userLogin, "locale", locale));
@@ -400,7 +343,7 @@ public class BirtServices {
         Delegator delegator = dctx.getDelegator();
         Locale locale = (Locale) context.get("locale");
         String description = (String) context.get("description");
-        String rptDesignName = (String) context.get("rptDesignName");
+        String reportName = (String) context.get("reportName");
         String writeFilters = (String) context.get("writeFilters");
         GenericValue userLogin = (GenericValue) context.get("userLogin");
         String entityViewName = (String) context.get("entityViewName");
@@ -411,27 +354,71 @@ public class BirtServices {
         Map<String, Object> result = ServiceUtil.returnSuccess();
         try {
             Map<String, Object> resultMapsForGeneration = dispatcher.runSync("createBirtMaps", UtilMisc.toMap("modelEntity", modelEntity, "userLogin", userLogin, "locale", locale));
-            if(ServiceUtil.isError(resultMapsForGeneration)) {
+            if (ServiceUtil.isError(resultMapsForGeneration)) {
                 return ServiceUtil.returnError(ServiceUtil.getErrorMessage(resultMapsForGeneration));
             }
             Map<String, String> dataMap = (Map<String, String>) resultMapsForGeneration.get("dataMap");
             Map<String, String> fieldDisplayLabels = null;
-            if(UtilValidate.isNotEmpty(resultMapsForGeneration.get("fieldDisplayLabels"))) {
+            if (UtilValidate.isNotEmpty(resultMapsForGeneration.get("fieldDisplayLabels"))) {
                 fieldDisplayLabels = (Map<String, String>) resultMapsForGeneration.get("fieldDisplayLabels");
             }
             Map<String, String> filterMap = null;
-            if(UtilValidate.isNotEmpty(resultMapsForGeneration.get("filterMap"))) {
+            if (UtilValidate.isNotEmpty(resultMapsForGeneration.get("filterMap"))) {
                 filterMap = (Map<String, String>) resultMapsForGeneration.get("filterMap");
             }
             Map<String, String> filterDisplayLabels = null;
-            if(UtilValidate.isNotEmpty(resultMapsForGeneration.get("filterDisplayLabels"))) {
+            if (UtilValidate.isNotEmpty(resultMapsForGeneration.get("filterDisplayLabels"))) {
                 filterDisplayLabels = (Map<String, String>) resultMapsForGeneration.get("filterDisplayLabels");
             }
             contentId = BirtWorker.recordReportContent(delegator, dispatcher, context);
             // callPerformFindFromBirt is the customMethod for Entity workflow
-            result = dispatcher.runSync("reportGeneration", UtilMisc.toMap("dataMap", dataMap, "fieldDisplayLabels", fieldDisplayLabels, "filterMap", filterMap, "filterDisplayLabels", filterDisplayLabels, "rptDesignName", rptDesignName, "writeFilters", writeFilters, "customMethod", "callPerformFindFromBirt", "userLogin", userLogin, "locale", locale));
-            if(ServiceUtil.isError(result)) {
+            String rptDesignFileName = BirtUtil.resolveRptDesignFilePathFromContent(delegator, contentId);
+            result = dispatcher.runSync("reportGeneration", UtilMisc.toMap(
+                    "locale", locale,
+                    "dataMap", dataMap,
+                    "userLogin", userLogin,
+                    "filterMap", filterMap,
+                    "serviceName", delegator.findOne("CustomMethod", true, "customMethodId", "CM_FB_PERFORM_FIND").get("customMethodName"),
+                    "writeFilters", writeFilters,
+                    "rptDesignName", rptDesignFileName,
+                    "fieldDisplayLabels", fieldDisplayLabels,
+                    "filterDisplayLabels", filterDisplayLabels));
+            if (ServiceUtil.isError(result)) {
                 return ServiceUtil.returnError(ServiceUtil.getErrorMessage(result));
+            }
+        } catch (GeneralException e) {
+            e.printStackTrace();
+            return ServiceUtil.returnError(e.getMessage());
+        }
+        result.put("contentId", contentId);
+        return result;
+    }
+
+    public static Map<String, Object> createReportContentFromMasterServiceWorkflow(DispatchContext dctx, Map<String, Object> context) {
+        LocalDispatcher dispatcher = dctx.getDispatcher();
+        Delegator delegator = dctx.getDelegator();
+        Locale locale = (Locale) context.get("locale");
+        String description = (String) context.get("description");
+        String reportName = (String) context.get("reportName");
+        String writeFilters = (String) context.get("writeFilters");
+        String serviceName = (String) context.get("serviceName");
+        GenericValue userLogin = (GenericValue) context.get("userLogin");
+        String masterContentId = (String) context.get("masterContentId");
+        String contentId = null;
+        Map<String, Object> result = ServiceUtil.returnSuccess();
+
+        try {
+            //FIXME comprend pas
+            Map<String, Object> resultService = dispatcher.runSync(serviceName, UtilMisc.toMap("locale", locale, "userLogin", userLogin));
+            Map<String, String> dataMap = (Map<String, String>) resultService.get("dataMap");
+            Map<String, String> filterMap = (Map<String, String>) resultService.get("filterMap");
+            Map<String, String> fieldDisplayLabels = (Map<String, String>) resultService.get("fieldDisplayLabels");
+            Map<String, String> filterDisplayLabels = (Map<String, String>) resultService.get("filterDisplayLabels");
+            String customMethodName = (String) resultService.get("customMethodName");
+            contentId = BirtWorker.recordReportContent(delegator, dispatcher, context);
+            Map<String, Object> resultGeneration = dispatcher.runSync("reportGeneration", UtilMisc.toMap("dataMap", dataMap, "fieldDisplayLabels", fieldDisplayLabels, "filterMap", filterMap, "filterDisplayLabels", filterDisplayLabels, "reportName", reportName, "writeFilters", writeFilters, "customMethodId", "", "userLogin", userLogin, "locale", locale));
+            if (ServiceUtil.isError(resultGeneration)) {
+                return ServiceUtil.returnError(UtilProperties.getMessage(resource_error, "errorCreatingReport", locale));
             }
         } catch (GeneralException e) {
             e.printStackTrace();
@@ -457,26 +444,22 @@ public class BirtServices {
             uiLabelMap.putAll(UtilProperties.getProperties(res, locale));
         }
 
-        for (String field: listEntityFields) {
+        for (String field : listEntityFields) {
             ModelField mField = modelEntity.getField(field);
             dataMap.put(field, mField.getType());
-            
+
             String localizedName = null;
             String interpretedFieldName = null;
             FlexibleStringExpander.getInstance(mField.getDescription()).expandString(context);
-            if (uiLabelMap == null) {
-                Debug.log("Could not find UiLabelMap in context while generating report");
+            String titleFieldName = "FormFieldTitle_".concat(field);
+            localizedName = (String) uiLabelMap.get(titleFieldName);
+            if (UtilValidate.isEmpty(localizedName) || localizedName.equals(titleFieldName)) {
+                interpretedFieldName = FlexibleStringExpander.getInstance(field).expandString(context);
+                fieldDisplayLabels.put(field, interpretedFieldName);
             } else {
-                String titleFieldName = "FormFieldTitle_".concat(field);
-                localizedName = (String) uiLabelMap.get(titleFieldName);
-                if (UtilValidate.isEmpty(localizedName) || localizedName.equals(titleFieldName)) {
-                    interpretedFieldName = FlexibleStringExpander.getInstance(field).expandString(context);
-                    fieldDisplayLabels.put(field, interpretedFieldName);
-                } else {
-                    fieldDisplayLabels.put(field, localizedName);
-                }
+                fieldDisplayLabels.put(field, localizedName);
             }
-    
+
             List<String> listTwoFields = UtilMisc.toList("id", "id-long", "id-vlong", "indicator", "very-short", "short-varchar", "long-varchar", "very-long", "comment");
             listTwoFields.add("description");
             listTwoFields.add("name");
@@ -491,7 +474,7 @@ public class BirtServices {
             listTwoFields.add("tel-number");
             listTwoFields.add("fixed-point"); // should be in the other category, OFBiz bug (https://issues.apache.org/jira/browse/OFBIZ-6443) delete line when corrected.
             listTwoFields.add("currency-precise"); // should be in the other category, OFBiz bug (https://issues.apache.org/jira/browse/OFBIZ-6443) delete line when corrected.
-            if(listTwoFields.contains(mField.getType())) {
+            if (listTwoFields.contains(mField.getType())) {
                 filterMap.put(field, mField.getType());
                 filterMap.put(field.concat("_op"), "short-varchar");
                 filterDisplayLabels.put(field, fieldDisplayLabels.get(field));
@@ -509,14 +492,14 @@ public class BirtServices {
         }
         Map<String, Object> result = ServiceUtil.returnSuccess();
         result.put("dataMap", dataMap);
-        if(UtilValidate.isNotEmpty(fieldDisplayLabels)) {
+        if (UtilValidate.isNotEmpty(fieldDisplayLabels)) {
             result.put("fieldDisplayLabels", fieldDisplayLabels);
         }
-        if(UtilValidate.isNotEmpty(filterMap)) {
-        result.put("filterMap", filterMap);
+        if (UtilValidate.isNotEmpty(filterMap)) {
+            result.put("filterMap", filterMap);
         }
-        if(UtilValidate.isNotEmpty(filterDisplayLabels)) {
-        result.put("filterDisplayLabels", filterDisplayLabels);
+        if (UtilValidate.isNotEmpty(filterDisplayLabels)) {
+            result.put("filterDisplayLabels", filterDisplayLabels);
         }
         return result;
     }
@@ -528,9 +511,9 @@ public class BirtServices {
 
         String textData;
         try {
-            GenericValue content = delegator.findOne("Content", true, UtilMisc.toMap("contentId", reportContentId));
+            GenericValue content = delegator.findOne("Content", true, "contentId", reportContentId);
             String dataResourceId = content.getString("dataResourceId");
-            GenericValue electronicText = delegator.findOne("ElectronicText", true, UtilMisc.toMap("dataResourceId", dataResourceId));
+            GenericValue electronicText = delegator.findOne("ElectronicText", true, "dataResourceId", dataResourceId);
             textData = electronicText.getString("textData");
         } catch (GenericEntityException e) {
             e.printStackTrace();
@@ -538,45 +521,12 @@ public class BirtServices {
         }
         textData = textData.substring(textData.indexOf("<form name=\"CTNT_MASTER_"), textData.length());
         textData = textData.substring(0, textData.indexOf("</forms>"));
-        textData = StringUtil.replaceString(textData, textData.substring(textData.indexOf("<field name=\"rptDesignFile\">"), textData.indexOf("</drop-down></field>")+20), "");
+        textData = StringUtil.replaceString(textData, textData.substring(textData.indexOf("<field name=\"rptDesignFile\">"), textData.indexOf("</drop-down></field>") + 20), "");
         textData = StringUtil.replaceString(textData, textData.substring(textData.indexOf("<sort-order>"), textData.indexOf("</form>")), "\n\n");
 //        String textFormString = UtilFormatOut.encodeXmlValue(textData);
         String textFormString = textData;
         textFormString = StringUtil.replaceString(textFormString, "$", "&#36;");
         result.put("textForm", textFormString);
-        return result;
-    }
-
-    public static Map<String, Object> createReportContentFromMasterServiceWorkflow(DispatchContext dctx, Map<String, Object> context) {
-        LocalDispatcher dispatcher = dctx.getDispatcher();
-        Delegator delegator = dctx.getDelegator();
-        Locale locale = (Locale) context.get("locale");
-        String description = (String) context.get("description");
-        String rptDesignName = (String) context.get("rptDesignName");
-        String writeFilters = (String) context.get("writeFilters");
-        String serviceName = (String) context.get("serviceName");
-        GenericValue userLogin = (GenericValue) context.get("userLogin");
-        String masterContentId = (String) context.get("masterContentId");
-        String contentId = null;
-        Map<String, Object> result = ServiceUtil.returnSuccess();
-
-        try {
-            Map<String, Object> resultService = dispatcher.runSync(serviceName, UtilMisc.toMap("locale", locale, "userLogin", userLogin));
-            Map<String, String> dataMap = (Map<String, String>) resultService.get("dataMap");
-            Map<String, String> filterMap = (Map<String, String>) resultService.get("filterMap");
-            Map<String, String> fieldDisplayLabels = (Map<String, String>) resultService.get("fieldDisplayLabels");
-            Map<String, String> filterDisplayLabels = (Map<String, String>) resultService.get("filterDisplayLabels");
-            String customMethodName = (String) resultService.get("customMethodName");
-            contentId = BirtWorker.recordReportContent(delegator, dispatcher, context);
-            Map<String, Object> resultGeneration = dispatcher.runSync("reportGeneration", UtilMisc.toMap("dataMap", dataMap, "fieldDisplayLabels", fieldDisplayLabels, "filterMap", filterMap, "filterDisplayLabels", filterDisplayLabels, "rptDesignName", rptDesignName, "writeFilters", writeFilters, "customMethod", customMethodName, "userLogin", userLogin, "locale", locale));
-            if(ServiceUtil.isError(resultGeneration)) {
-                return ServiceUtil.returnError(UtilProperties.getMessage(resource_error, "errorCreatingReport", locale));
-            }
-        } catch (GeneralException e) {
-            e.printStackTrace();
-            return ServiceUtil.returnError(e.getMessage());
-        }
-        result.put("contentId", contentId);
         return result;
     }
 
@@ -590,8 +540,8 @@ public class BirtServices {
         List<String> listRptDesignFiles = null;
         List<GenericValue> listRptDesignFilesGV = null;
         List<GenericValue> listContent = null;
-        EntityCondition entityConditionContent = EntityCondition.makeCondition("contentTypeId", EntityOperator.EQUALS, "REPORT");
-        EntityCondition entityConditionContentRpt = EntityCondition.makeCondition("contentTypeId", EntityOperator.EQUALS, "RPTDESIGN");
+        EntityCondition entityConditionContent = EntityCondition.makeCondition("contentTypeId", "REPORT");
+        EntityCondition entityConditionContentRpt = EntityCondition.makeCondition("contentTypeId", "RPTDESIGN");
         try {
             listContent = delegator.findList("Content", entityConditionContent, UtilMisc.toSet("contentId"), null, null, false);
             listRptDesignFilesGV = delegator.findList("ContentDataResourceView", entityConditionContentRpt, UtilMisc.toSet("drObjectInfo"), null, null, false);
@@ -599,15 +549,15 @@ public class BirtServices {
             e.printStackTrace();
             return ServiceUtil.returnError(e.getMessage());
         }
-        if(UtilValidate.isEmpty(listContent)) {
+        if (UtilValidate.isEmpty(listContent)) {
             return ServiceUtil.returnError(UtilProperties.getMessage(resource_error, "noReportToDelete", locale));
         }
         listContentId = EntityUtil.getFieldListFromEntityList(listContent, "contentId", false);
         listRptDesignFiles = EntityUtil.getFieldListFromEntityList(listRptDesignFilesGV, "drObjectInfo", false);
-        for(String rptfileName: listRptDesignFiles) {
+        for (String rptfileName : listRptDesignFiles) {
             Path path = Paths.get(rptfileName.toString());
             try {
-                if(!Files.deleteIfExists(path)) {
+                if (! Files.deleteIfExists(path)) {
                     ServiceUtil.returnError(UtilProperties.getMessage(resource_error, "cannot_locate_report_file", locale));
                 }
             } catch (IOException e) {
@@ -619,9 +569,9 @@ public class BirtServices {
         // TODO : factoriser ce code qui ressort plusieurs fois dans un worker (je savais pas qu'on pouvait faire des workers là :D) !
         List<GenericValue> listContentRpt = null;
         try {
-            for(String contentId:listContentId){ // serait ptet plus propre avec utilisation directe du delegator pour s'occuper de la liste en une seule requête par table, mais bouton pas forcément destiné à rester donc au plus simple
+            for (String contentId : listContentId) { // serait ptet plus propre avec utilisation directe du delegator pour s'occuper de la liste en une seule requête par table, mais bouton pas forcément destiné à rester donc au plus simple
                 delegator.removeByAnd("ContentAttribute", UtilMisc.toMap("contentId", contentId));
-                listContentRpt = delegator.findList("ContentAssoc", EntityCondition.makeCondition("contentId", EntityOperator.EQUALS, contentId), UtilMisc.toSet("contentIdTo"), null, null, false);
+                listContentRpt = delegator.findList("ContentAssoc", EntityCondition.makeCondition("contentId", contentId), UtilMisc.toSet("contentIdTo"), null, null, false);
                 String contentIdRpt = listContentRpt.get(0).getString("contentIdTo");
                 dispatcher.runSync("removeContentAndRelated", UtilMisc.toMap("contentId", contentId, "userLogin", userLogin, "locale", locale));
                 dispatcher.runSync("removeContentAndRelated", UtilMisc.toMap("contentId", contentIdRpt, "userLogin", userLogin, "locale", locale));
@@ -657,14 +607,14 @@ public class BirtServices {
             e1.printStackTrace();
             return ServiceUtil.returnError(e1.getMessage());
         }
-        if(listRptDesignFileGV.size() > 1){
+        if (listRptDesignFileGV.size() > 1) {
             return ServiceUtil.returnError(UtilProperties.getMessage(resource_error, "unexpected_number_reports_to_delete", locale));
         }
         List<String> listRptDesignFile = EntityUtil.getFieldListFromEntityList(listRptDesignFileGV, "drObjectInfo", false);
         String rptfileName = listRptDesignFile.get(0);
         Path path = Paths.get(rptfileName);
         try {
-            if(!Files.deleteIfExists(path)){
+            if (! Files.deleteIfExists(path)) {
                 ServiceUtil.returnError(UtilProperties.getMessage(resource_error, "cannot_locate_report_file", locale));
             }
         } catch (IOException e) {
@@ -685,24 +635,24 @@ public class BirtServices {
         }
         return ServiceUtil.returnSuccess(UtilProperties.getMessage(resource, "report_successfully_deleted", locale));
     }
-    
+
     public static Map<String, Object> uploadRptDesign(DispatchContext dctx, Map<String, ? extends Object> context) {
         String dataResourceId = (String) context.get("dataResourceIdRpt");
         Locale locale = (Locale) context.get("locale");
         Delegator delegator = dctx.getDelegator();
         Map<String, Object> result = null;
         List<String> listSuccessMessage = new ArrayList<String>();
-        
+
         // the idea is to allow only design to be uploaded. We use the stored file and add the new design from the uploaded file within.
         DesignConfig config = new DesignConfig();
 
         IDesignEngine engine = null;
 
-        try{
+        try {
             Platform.startup();
             IDesignEngineFactory factory = (IDesignEngineFactory) Platform.createFactoryObject(IDesignEngineFactory.EXTENSION_DESIGN_ENGINE_FACTORY);
             engine = factory.createDesignEngine(config);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         SessionHandle session = engine.newSessionHandle(ULocale.forLocale(locale));
@@ -724,10 +674,10 @@ public class BirtServices {
         }
         String rptDesignName = dataResource.getString("objectInfo");
 
-        if(!uploadedFilename.equals(rptDesignName.substring(rptDesignName.lastIndexOf('/')+1))){
+        if (! uploadedFilename.equals(rptDesignName.substring(rptDesignName.lastIndexOf('/') + 1))) {
             listSuccessMessage.add(UtilProperties.getMessage(resource, "file_name_consistency_warning", locale));
         }
-        
+
         // start Birt API platfrom
         try {
             Platform.startup();
@@ -735,7 +685,7 @@ public class BirtServices {
             e.printStackTrace();
             return ServiceUtil.returnError("Cannot start Birt platform");
         }
-        
+
         // get database design
         ReportDesignHandle designStored;
         try {
@@ -746,11 +696,11 @@ public class BirtServices {
         }
 
         // check if design stored already has a body and delete it to avoid conflicts (taking into account only newly designed body)
-        if(UtilValidate.isNotEmpty(designStored.getBody())) {
+        if (UtilValidate.isNotEmpty(designStored.getBody())) {
             SlotHandle bodyStored = designStored.getBody();
 
             Iterator<DesignElementHandle> iter = bodyStored.iterator();
-            while(iter.hasNext()){
+            while (iter.hasNext()) {
                 try {
                     iter.remove();
                 } catch (Exception e) {
@@ -785,7 +735,7 @@ public class BirtServices {
 
         Iterator<DesignElementHandle> iterCube = cubesFromUser.iterator();
 
-        while(iterCube.hasNext()){
+        while (iterCube.hasNext()) {
             DesignElementHandle item = (DesignElementHandle) iterCube.next();
             DesignElementHandle copy = item.copy().getHandle(item.getModule());
             try {
@@ -801,7 +751,7 @@ public class BirtServices {
 
         Iterator<DesignElementHandle> iter = bodyFromUser.iterator();
 
-        while(iter.hasNext()){
+        while (iter.hasNext()) {
             DesignElementHandle item = (DesignElementHandle) iter.next();
             DesignElementHandle copy = item.copy().getHandle(item.getModule());
             try {
@@ -815,17 +765,17 @@ public class BirtServices {
         // deleting simple master page from design stored
         try {
             List<DesignElementHandle> listMasterPagesStored = designStored.getMasterPages().getContents();
-            for(Object masterPage : listMasterPagesStored) {
-                if(masterPage instanceof SimpleMasterPageHandle) {
+            for (Object masterPage : listMasterPagesStored) {
+                if (masterPage instanceof SimpleMasterPageHandle) {
                     designStored.getMasterPages().drop((DesignElementHandle) masterPage);
                 }
             }
 
             // adding simple master page => tous ces casts et autres instanceof... c'est laid, mais c'est tellement galère que quand je trouve une solution qui marche... :s
             List<DesignElementHandle> listMasterPages = designFromUser.getMasterPages().getContents();
-            for(DesignElementHandle masterPage : listMasterPages) {
-                if(masterPage instanceof SimpleMasterPageHandle) {
-                        designStored.getMasterPages().add((SimpleMasterPage) ((SimpleMasterPageHandle) masterPage).copy());
+            for (DesignElementHandle masterPage : listMasterPages) {
+                if (masterPage instanceof SimpleMasterPageHandle) {
+                    designStored.getMasterPages().add((SimpleMasterPage) ((SimpleMasterPageHandle) masterPage).copy());
                 }
             }
         } catch (Exception e) {
@@ -835,7 +785,7 @@ public class BirtServices {
 
         // page variables
         List<VariableElementHandle> pageVariablesUser = designFromUser.getPageVariables();
-        for(VariableElementHandle pageVariable : pageVariablesUser) {
+        for (VariableElementHandle pageVariable : pageVariablesUser) {
             try {
                 designStored.setPageVariable(pageVariable.getName(), pageVariable.getPropertyBindingExpression(pageVariable.getName()));
             } catch (SemanticException e) {
@@ -847,11 +797,11 @@ public class BirtServices {
         // copy styles
         SlotHandle stylesFromUser = designFromUser.getStyles();
         SlotHandle stylesStored = designStored.getStyles();
-        
+
         // getting style names from stored report
         List<String> listStyleNames = new ArrayList<String>();
         Iterator<DesignElementHandle> iterStored = stylesStored.iterator();
-        while(iterStored.hasNext()){
+        while (iterStored.hasNext()) {
             DesignElementHandle item = (DesignElementHandle) iterStored.next();
             listStyleNames.add(item.getName());
         }
@@ -859,9 +809,9 @@ public class BirtServices {
         Iterator<DesignElementHandle> iterUser = stylesFromUser.iterator();
 
         // adding to styles those which are not already present
-        while(iterUser.hasNext()){
+        while (iterUser.hasNext()) {
             DesignElementHandle item = (DesignElementHandle) iterUser.next();
-            if(!listStyleNames.contains(item.getName())){
+            if (! listStyleNames.contains(item.getName())) {
                 DesignElementHandle copy = item.copy().getHandle(item.getModule());
                 try {
                     designStored.getStyles().add(copy);
@@ -880,8 +830,8 @@ public class BirtServices {
         }
         designFromUser.close();
         designStored.close();
-        Debug.log("####### Design uploaded: ".concat(rptDesignName));
-        
+        if (Debug.infoOn()) Debug.logInfo("####### Design uploaded: ".concat(rptDesignName), module);
+
         // should we as a secondary safety precaution delete any file finishing with _TEMP_.rptdesign?
         listSuccessMessage.add(UtilProperties.getMessage(resource, "report_file_successfully_uploaded", locale));
         result = ServiceUtil.returnSuccess(listSuccessMessage);

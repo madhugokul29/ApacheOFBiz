@@ -209,6 +209,7 @@ under the License.
             </condition>
             <actions>
                 <property-map resource="BirtUiLabels" map-name="uiLabelMap" global="true" />
+                <set field="contentEntityNameView" from-field="contentEntityNameView" default-value=""/>
             </actions>
             <widgets>
                 <screenlet title="${uiLabelMap.BirtReportchoice}">
@@ -285,7 +286,7 @@ under the License.
         <section>
             <actions>
                 <set field="tabButtonItem" value="useReport" />
-            </actions>   
+            </actions>
             <widgets>
                 <decorator-screen name="CommonBirtDecorator" location="${parameters.mainDecoratorLocation}">
                     <decorator-section name="body">

@@ -88,13 +88,10 @@ under the License.
                 <entity-options description="${description}" entity-name="ContentAssocViewTo" key-field-name="contentId">
                     <entity-constraint name="contentTypeId" value="REPORT" />
                     <entity-constraint name="statusId" value="CTNT_PUBLISHED"/>
-                    <entity-constraint name="contentIdStart" value="${reportCategory}" ignore-if-empty="true"/>
                 </entity-options>
             </drop-down>
         </field>
-        <field name="sendButton" widget-style="smallSubmit">
-            <submit button-type="button" />
-        </field>
+        <field name="sendButton"><submit /></field>
     </form>
 
     <form name="editReport" type="single" target="updateContent" default-entity-name="content">

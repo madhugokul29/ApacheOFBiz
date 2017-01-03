@@ -49,22 +49,8 @@ under the License.
         <attribute name="filterMap" type="Map" mode="IN" optional="true" />
         <attribute name="filterDisplayLabels" type="Map" mode="IN" optional="true" />
         <attribute name="writeFilters" type="String" mode="IN" optional="true" />
-        <attribute name="customMethod" type="String" mode="IN" optional="false" />
+        <attribute name="serviceName" type="String" mode="IN" optional="false" />
         <attribute name="rptDesignName" type="String" mode="IN" optional="false" />
-    </service>
-
-    <service name="convertFieldTypeToBirtType" auth="true" engine="java" location="org.apache.ofbiz.birt.birt.BirtServices" invoke="convertFieldTypeToBirtType">
-        <description>Convert OFBiz data type to Birt data type</description>
-        <required-permissions join-type="AND"><check-permission permission="BIRT_CREATE"/></required-permissions>
-        <attribute name="fieldType" type="String" mode="IN" optional="false" />
-        <attribute name="birtType" type="String" mode="OUT" optional="false" />
-    </service>
-
-    <service name="convertFieldTypeToBirtParameterType" auth="true" engine="java" location="org.apache.ofbiz.birt.birt.BirtServices" invoke="convertFieldTypeToBirtParameterType">
-        <description>Convert OFBiz data type to Birt parameter type</description>
-        <required-permissions join-type="AND"><check-permission permission="BIRT_CREATE"/></required-permissions>
-        <attribute name="fieldType" type="String" mode="IN" optional="false" />
-        <attribute name="birtType" type="String" mode="OUT" optional="false" />
     </service>
 
     <service name="getListMultiFieldsByView" engine="java" location="org.apache.ofbiz.birt.birt.BirtServices" invoke="getListMultiFieldsByView">
@@ -74,16 +60,11 @@ under the License.
         <attribute name="listMultiFields" type="List" mode="OUT" optional="false" />
     </service>
 
-    <service name="callPerformFindFromBirt" engine="java" auth="true" location="org.apache.ofbiz.birt.birt.BirtServices" invoke="callPerformFindFromBirt">
+    <service name="callPerformFindFromBirt" engine="java" auth="true" location="org.apache.ofbiz.birt.birt.BirtServices" invoke="callPerformFindFromBirt" transaction-timeout="7200">
         <description>Manages performFind calling from Birt. Report from entity workflow.</description>
         <required-permissions join-type="AND"><check-permission permission="BIRT_VIEW"/></required-permissions>
         <attribute name="reportContext" type="Object" mode="IN" optional="false" />
         <attribute name="list" type="List" mode="OUT" />
-    </service>
-
-    <service name="checkEntityViewExistence" engine="java" location="org.apache.ofbiz.birt.birt.BirtServices" invoke="checkEntityViewExistence">
-        <description>Check if the entity/view name truly exists</description>
-        <attribute name="entityName" type="String" mode="IN" optional="false" />
     </service>
 
     <service name="determineReportGenerationPath" auth="true" engine="java" location="org.apache.ofbiz.birt.birt.BirtServices" invoke="determineReportGenerationPath">
@@ -101,7 +82,7 @@ under the License.
         <description>Create and save in db content for a new report following entity workflow</description>
         <required-permissions join-type="AND"><check-permission permission="BIRT_CREATE"/></required-permissions>
         <attribute name="entityViewName" type="String" mode="IN" optional="false" />
-        <attribute name="rptDesignName" type="String" mode="IN" optional="false" />
+        <attribute name="reportName" type="String" mode="IN" optional="false" />
         <attribute name="description" type="String" mode="IN" optional="true" />
         <attribute name="writeFilters" type="String" mode="IN" optional="true" />
         <attribute name="masterContentId" type="String" mode="IN" optional="false" />
@@ -112,7 +93,7 @@ under the License.
         <description>Create and save in db content for a new report following service workflow</description>
         <required-permissions join-type="AND"><check-permission permission="BIRT_CREATE"/></required-permissions>
         <attribute name="serviceName" type="String" mode="IN" optional="false" />
-        <attribute name="rptDesignName" type="String" mode="IN" optional="false" />
+        <attribute name="reportName" type="String" mode="IN" optional="false" />
         <attribute name="description" type="String" mode="IN" optional="true" />
         <attribute name="writeFilters" type="String" mode="IN" optional="true" />
         <attribute name="masterContentId" type="String" mode="IN" optional="false" />
