@@ -26,6 +26,7 @@ under the License.
 
     <classpath type="dir" location="config"/>
     <entity-resource type="data" reader-name="seed" loader="main" location="data/BirtHelpData.xml"/>
+    <entity-resource type="data" reader-name="seed" loader="main" location="data/BirtTypeData.xml"/>
     <entity-resource type="data" reader-name="seed" loader="main" location="data/OrderPortletData.xml"/>
     <service-resource type="model" loader="main" location="servicedef/services.xml"/>
    

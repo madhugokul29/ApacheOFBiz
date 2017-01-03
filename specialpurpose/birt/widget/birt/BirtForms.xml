@@ -42,4 +42,139 @@ under the License.
         <field name="attachmentName" required-field="true"><text/></field>
         <field name="sendButton" widget-style="smallSubmit"><submit button-type="button"/></field>
     </form>
+<<<<<<< HEAD
+=======
+
+  <form name="reportByEntityOrView" type="single" target="produceReport">
+    <auto-fields-entity entity-name="OrderHeaderItemAndRoles" default-field-type="find"/>
+    <field name="birtContentType" title="${uiLabelMap.birtContentType}">
+      <drop-down>
+        <option key="text/html" description="Text (.html)"/>
+        <option key="application/pdf" description="Pdf (.pdf)"/>
+        <option key="application/postscript" description="Postscript (.ps)"/>
+        <option key="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" description="Excel (.xlsx)"/>
+        <option key="application/vnd.openxmlformats-officedocument.wordprocessingml.document" description="Word (.docx)"/>
+        <option key="application/vnd.openxmlformats-officedocument.presentationml.presentation" description="Powerpoint (.pptx)"/>
+        <option key="application/vnd.ms-excel" description="Excel (.xls)"/>
+        <option key="application/vnd.ms-word" description="Word (.doc)"/>
+        <option key="application/vnd.ms-powerpoint" description="Powerpoint (.ppt)"/>
+        <option key="application/vnd.oasis.opendocument.spreadsheet" description="LibreOffice Calc (.ods)"/>
+        <option key="application/vnd.oasis.opendocument.text" description="LibreOffice Writer (.odt)"/>
+        <option key="application/vnd.oasis.opendocument.presentation" description="LibreOffice Impress (.odp)"/>
+      </drop-down>
+    </field>
+    <field name="rptDesignFile"><hidden value="component://birt/documents/OrderHeaderItemAndRoles_generated.rptdesign"/></field>  <!-- En dur pour l'instant... à dynamiser ;) ! -->
+    <field name="birtOutputFileName"><hidden value="OrderHeaderItemAndRoles_generated"/></field>  <!-- En dur pour l'instant... à dynamiser ;) ! -->
+    <field name="sendButton" widget-style="smallSubmit"><submit button-type="button"/></field>
+  </form>
+
+  <form name="viewChoice" type="single" target="reportParameters">
+      <field name="reportName" title="${uiLabelMap.reportName}" required-field="true"><text/></field>
+      <field name="contentId" title="${uiLabelMap.ContentChoice}" >
+      <drop-down>
+        <entity-options description="${description}" entity-name="Content" key-field-name="contentId">
+          <entity-constraint name="contentTypeId" value="REPORT_MASTER" />
+        </entity-options>
+      </drop-down>
+    </field>
+    <field name="description" required-field="true" title="${uiLabelMap.description}"><text /></field>
+    <field name="writeFilters" title="${uiLabelMap.writeFilters}"><check/></field>
+    <field name="sendButton" widget-style="smallSubmit">
+      <submit button-type="button" />
+    </field>
+  </form>
+  
+    <form name="reportChoice" type="single" target="filteringParameters">
+        <field name="contentId" title="${uiLabelMap.BirtReportchoice}" >
+            <drop-down>
+                <entity-options description="${description}" entity-name="ContentAssocViewTo" key-field-name="contentId">
+                    <entity-constraint name="contentTypeId" value="REPORT" />
+                    <entity-constraint name="statusId" value="CTNT_PUBLISHED"/>
+                </entity-options>
+            </drop-down>
+        </field>
+        <field name="sendButton"><submit /></field>
+    </form>
+
+    <form name="editReport" type="single" target="updateContent" default-entity-name="content">
+        <actions>
+            <entity-one entity-name="Content">
+                <field-map field-name="contentId" from-field="contentId"/>
+            </entity-one>
+        </actions>
+        <field name="contentId"><hidden/></field>
+        <field name="contentName" title="${uiLabelMap.reportName}"><display/></field>
+        <field name="description" title="${uiLabelMap.description}"><text/></field>
+        <field name="statusId">
+            <drop-down>
+                <entity-options description="${description}" entity-name="StatusItem">
+                    <entity-constraint name="statusId" operator="in" value="CTNT_PUBLISHED,CTNT_IN_PROGRESS"/>
+                </entity-options>
+            </drop-down>
+        </field>
+        <field name="submit" title="${uiLabelMap.CommonSubmit}"><submit/></field>
+    </form>
+    
+    <form name="uploadRptDesign" type="upload" target="uploadRptDesign">
+        <field name="dataResourceIdRpt"><hidden/></field>
+        <field name="uploadRptDesign" title=" "><file/></field>
+        <field name="submit" title="${uiLabelMap.CommonUpload}"><submit/></field>
+    </form>
+    
+    <form name="editFormParameters" type="single" target="editReportForm">
+        <actions>
+            <entity-one entity-name="Content" value-field="reportContent">
+                <field-map field-name="contentId" from-field="contentId"/>
+            </entity-one>
+            <set field="statusId" from-field="reportContent.statusId"/>
+            <set field="reportContentId" from-field="reportContent.contentId"/>
+            <entity-and entity-name="ContentAssoc" list="masterContent">
+                <field-map field-name="contentIdTo" from-field="contentId"/>
+                <field-map field-name="contentAssocTypeId" value="SUB_CONTENT"/>
+            </entity-and>
+        </actions>
+        <field name="reportContentId"><hidden value="${reportContentId}"/></field>
+        <field name="contentId"><hidden value="${masterContent[0].contentId}"/></field>
+        <field name="submit" title="${uiLabelMap.editFormParameter}" use-when="&quot;CTNT_IN_PROGRESS&quot;.equals(statusId)" widget-style="buttontext"><submit/></field>
+    </form>
+
+    <form name="manageReports" type="list" target="" odd-row-style="alternate-row" list-name="contentTypeReport" header-row-style="header-row-2" default-table-style="basic-table hover-bar">
+        <row-actions>
+            <set field="contentId" from-field="contentId"/>
+            <entity-and entity-name="ContentAssoc" use-cache="true" list="contentAssocs">
+                <field-map field-name="contentId"/>
+            </entity-and>
+            <set field="contentAssoc" from-field="contentAssocs[0]" type="Object"/>
+            <entity-one entity-name="Content" value-field="contentRpt">
+                <field-map from-field="contentAssoc.contentIdTo" field-name="contentId"/>
+            </entity-one>
+        </row-actions>
+        <field name="contentName" sort-field="true"><display/></field>
+        <field name="statusId" sort-field="true"><display-entity entity-name="StatusItem" /></field>
+        <field name="description" sort-field="true"><display/></field>
+        <field name="downloadRptDesignLink" title=" " widget-style="buttontext" use-when="(&quot;CTNT_IN_PROGRESS&quot;.equals(statusId))&amp;&amp;(hasUpdatePermission||hasCreatePermission)">
+            <hyperlink also-hidden="false" description="${uiLabelMap.downloadRptDesign}" target="ViewBinaryDataResource" target-window="_blank">
+                <parameter param-name="dataResourceId" from-field="contentRpt.dataResourceId"/>
+            </hyperlink>
+        </field>
+        <field name="editReportLink" title=" " widget-style="buttontext" use-when="&quot;CTNT_IN_PROGRESS&quot;.equals(statusId)&amp;&amp;(hasUpdatePermission||hasCreatePermission)">
+            <hyperlink also-hidden="false" description="${uiLabelMap.CommonEdit}" target="editReport">
+                <parameter param-name="contentId"/>
+                <parameter param-name="dataResourceIdRpt" from-field="contentRpt.dataResourceId"/>
+            </hyperlink>
+        </field>
+        <field name="updateStatusLink" title=" " widget-style="buttontext" use-when="hasUpdatePermission||hasCreatePermission">
+            <hyperlink also-hidden="false" description="${groovy: if(statusId.equals('CTNT_IN_PROGRESS')) return uiLabelMap.CommonPublish else uiLabelMap.reOpenReport}" target="updateContent">
+                <parameter param-name="contentId"/>
+                <parameter param-name="statusId" value="${groovy: if(statusId.equals('CTNT_IN_PROGRESS')) return 'CTNT_PUBLISHED' else return 'CTNT_IN_PROGRESS'}"/>
+            </hyperlink>
+        </field>
+        <field name="deleteLink" title=" " widget-style="buttontext" use-when="hasDeletePermission">
+           <hyperlink also-hidden="false" description="${uiLabelMap.CommonDelete}" target="deleteOneReport">
+                <parameter param-name="contentId"/>
+            </hyperlink>
+        </field>
+  </form>
+
+>>>>>>> e767f704f2d27e0036c38335f4a88863c19c5093
 </forms>
