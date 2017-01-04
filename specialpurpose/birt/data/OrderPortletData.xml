@@ -23,7 +23,7 @@
                    screenName="SaleOrdersByChannelReport"
                    screenLocation="component://birt/widget/order/OrderScreens.xml"
                    description=""/>
-    <PortletPortletCategory portalPortletId="OrderByChannel" portletCategoryId="REPORT"/>
+    <PortletPortletCategory portalPortletId="OrderByChannel" portletCategoryId="FLEXIBLE_REPORT"/>
     <PortalPagePortlet portalPageId="OrderReportPage" portalPortletId="OrderByChannel" portletSeqId="00001" columnSeqId="00001" sequenceNum="6"/>
 
     <PortalPortlet portalPortletId="OrderDiscountCode"
@@ -31,7 +31,7 @@
                    screenName="SaleOrderDiscountCodeReport"
                    screenLocation="component://birt/widget/order/OrderScreens.xml"
                    description=""/>
-    <PortletPortletCategory portalPortletId="OrderDiscountCode" portletCategoryId="REPORT"/>
+    <PortletPortletCategory portalPortletId="OrderDiscountCode" portletCategoryId="FLEXIBLE_REPORT"/>
     <PortalPagePortlet portalPageId="OrderReportPage" portalPortletId="OrderDiscountCode" portletSeqId="00001" columnSeqId="00001" sequenceNum="7"/>
 
     <PortalPortlet portalPortletId="Last3MSalesReport"
@@ -39,7 +39,7 @@
                    screenName="Last3MonthsSalesReport"
                    screenLocation="component://birt/widget/order/OrderScreens.xml"
                    description=""/>
-    <PortletPortletCategory portalPortletId="Last3MSalesReport" portletCategoryId="REPORT"/>
+    <PortletPortletCategory portalPortletId="Last3MSalesReport" portletCategoryId="FLEXIBLE_REPORT"/>
     <PortalPagePortlet portalPageId="OrderReportPage" portalPortletId="Last3MSalesReport" portletSeqId="00001" columnSeqId="00002" sequenceNum="8"/>
 
     <PortalPortlet portalPortletId="CouponSalesReport"
@@ -47,7 +47,7 @@
                    screenName="CouponSalesReport"
                    screenLocation="component://birt/widget/order/OrderScreens.xml"
                    description=""/>
-    <PortletPortletCategory portalPortletId="CouponSalesReport" portletCategoryId="REPORT"/>
+    <PortletPortletCategory portalPortletId="CouponSalesReport" portletCategoryId="FLEXIBLE_REPORT"/>
     <PortalPagePortlet portalPageId="OrderReportPage" portalPortletId="CouponSalesReport" portletSeqId="00001" columnSeqId="00002" sequenceNum="9"/>
 
     <PortalPortlet portalPortletId="SalesReport"
@@ -55,7 +55,7 @@
                    screenName="SalesReport"
                    screenLocation="component://birt/widget/order/OrderScreens.xml"
                    description=""/>
-    <PortletPortletCategory portalPortletId="SalesReport" portletCategoryId="REPORT"/>
+    <PortletPortletCategory portalPortletId="SalesReport" portletCategoryId="FLEXIBLE_REPORT"/>
     <PortalPagePortlet portalPageId="OrderReportPage" portalPortletId="SalesReport" portletSeqId="00001" columnSeqId="00002" sequenceNum="10"/>
 
     <PortalPortlet portalPortletId="PDR_Report"
@@ -63,6 +63,6 @@
                    screenName="ProductDemandReport"
                    screenLocation="component://birt/widget/order/OrderScreens.xml"
                    description=""/>
-    <PortletPortletCategory portalPortletId="PDR_Report" portletCategoryId="REPORT"/>
+    <PortletPortletCategory portalPortletId="PDR_Report" portletCategoryId="FLEXIBLE_REPORT"/>
     <PortalPagePortlet portalPageId="OrderReportPage" portalPortletId="PDR_Report" portletSeqId="00001" columnSeqId="00002" sequenceNum="12"/>
 </entity-engine-xml>

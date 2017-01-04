@@ -3209,4 +3209,8 @@
         <value xml:lang="zh">发布点</value>
         <value xml:lang="zh-TW">發佈點</value>
     </property>
+    <property key="Content.description.CTNT_MASTER_EXAMPLE">
+        <value xml:lang="en">Example</value>
+        <value xml:lang="fr">Exemple</value>
+    </property>
 </resource>

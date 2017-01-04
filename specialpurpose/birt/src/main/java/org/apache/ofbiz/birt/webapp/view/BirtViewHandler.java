@@ -105,7 +105,7 @@ public class BirtViewHandler implements ViewHandler {
             }
 
             // set override content type
-            String overrideContentType = (String) request.getAttribute(BirtWorker.getBirtContentType());
+            String overrideContentType = (String) request.getParameter(BirtWorker.getBirtContentType());
             if (UtilValidate.isNotEmpty(overrideContentType)) {
                 contentType = overrideContentType;
             }

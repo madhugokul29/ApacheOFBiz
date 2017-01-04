@@ -231,7 +231,7 @@ public class BirtServices {
         } else if (attrName.equalsIgnoreCase("Service")) {
             String serviceName = masterContentAttribute.getString("attrValue");
             try {
-                ModelService modelService = dctx.getModelService("serviceName");
+                ModelService modelService = dctx.getModelService(serviceName);
             } catch (GenericServiceException e) {
                 return ServiceUtil.returnError("No service define with name" + serviceName); //TODO labelise
             }
@@ -278,59 +278,18 @@ public class BirtServices {
 
         // safety check : do not accept "${groovy", "${bsh" and "javascript"
         String overideFiltersNoWhiteSpace = overrideFilters.replaceAll("\\s", "");
-        if (overideFiltersNoWhiteSpace.contains("${groovy") || overideFiltersNoWhiteSpace.contains("${bsh") || overideFiltersNoWhiteSpace.contains("javascript:")) {
+        if (overideFiltersNoWhiteSpace.contains("${groovy:") || overideFiltersNoWhiteSpace.contains("${bsh:") || overideFiltersNoWhiteSpace.contains("javascript:")) {
             return ServiceUtil.returnError(UtilProperties.getMessage(resource_error, "UnauthorisedCharacter", locale));
         }
 
-        GenericValue content;
-        List<GenericValue> contentAssocViewTos;
-        GenericValue rptContent;
-        List<GenericValue> contentAttributes;
-        GenericValue contentAttribute;
-        String dataResourceId;
-        String rptDesignName;
-        String fieldName;
-        String serviceOrEntityName;
         try {
-            content = delegator.findOne("Content", true, UtilMisc.toMap("contentId", reportContentId));
-            dataResourceId = content.getString("dataResourceId");
-            EntityExpr conditionAssocType = EntityCondition.makeCondition("caContentAssocTypeId", "SUB_CONTENT");
-            EntityExpr conditionContentIdStart = EntityCondition.makeCondition("contentIdStart", reportContentId);
-            EntityExpr conditionContentTypeId = EntityCondition.makeCondition("contentTypeId", "RPTDESIGN");
-            EntityConditionList<EntityExpr> ecl = EntityCondition.makeCondition(UtilMisc.toList(conditionAssocType, conditionContentIdStart, conditionContentTypeId));
-            contentAssocViewTos = delegator.findList("ContentAssocDataResourceViewTo", ecl, null, null, null, true);
-            rptContent = contentAssocViewTos.get(0);
-            rptDesignName = rptContent.getString("contentName");
-
-            EntityExpr conditionAttrNameEntity = EntityCondition.makeCondition("attrName", "Entity");
-            EntityExpr conditionAttrNameService = EntityCondition.makeCondition("attrName", "Service");
-            EntityConditionList<EntityExpr> conditionAttrName = EntityCondition.makeCondition(UtilMisc.toList(conditionAttrNameEntity, conditionAttrNameService), EntityOperator.OR);
-            EntityExpr conditionContentId = EntityCondition.makeCondition("contentId", reportContentId);
-            EntityConditionList<EntityCondition> eclAttribute = EntityCondition.makeCondition(conditionAttrName, conditionContentId);
-            contentAttributes = delegator.findList("ContentAttribute", eclAttribute, UtilMisc.toSet("attrName", "attrValue"), null, null, true);
-            contentAttribute = contentAttributes.get(0);
-            serviceOrEntityName = contentAttribute.getString("attrValue");
-            if (contentAttribute.getString("attrName").equalsIgnoreCase("entity")) {
-                fieldName = "entityViewName";
-            } else {
-                fieldName = "serviceName";
-            }
-        } catch (GenericEntityException e1) {
-            e1.printStackTrace();
-            return ServiceUtil.returnError(e1.getMessage());
-        }
-        try {
-            StringBuffer overrideForm = new StringBuffer(overrideFilters);
-            int indexEndForm = overrideForm.indexOf("</form>");
-            String formStart = overrideForm.substring(0, indexEndForm);
-            String formEnd = overrideForm.substring(indexEndForm, overrideForm.length());
+            GenericValue content = delegator.findOne("Content", true, UtilMisc.toMap("contentId", reportContentId));
+            String dataResourceId = content.getString("dataResourceId");
             StringBuffer newForm = new StringBuffer("<?xml version=\"1.0\" encoding=\"UTF-8\"?> <forms xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"http://ofbiz.apache.org/dtds/widget-form.xsd\">");
-            newForm.append(formStart);
-            newForm.append(BirtWorker.getBirtStandardFields(rptDesignName, fieldName, serviceOrEntityName, rptContent.getString("drObjectInfo")));
-            newForm.append(formEnd);
+            newForm.append(overrideFilters);
             newForm.append("</forms>");
-            dispatcher.runSync("updateElectronicTextForm", UtilMisc.toMap("dataResourceId", dataResourceId, "textData", newForm.toString(), "userLogin", userLogin, "locale", locale));
-        } catch (Exception e) {
+            dispatcher.runSync("updateElectronicText", UtilMisc.toMap("dataResourceId", dataResourceId, "textData", newForm.toString(), "userLogin", userLogin, "locale", locale));
+        } catch (GeneralException e) {
             e.printStackTrace();
             return ServiceUtil.returnError(e.getMessage());
         }
@@ -372,12 +331,19 @@ public class BirtServices {
             contentId = BirtWorker.recordReportContent(delegator, dispatcher, context);
             // callPerformFindFromBirt is the customMethod for Entity workflow
             String rptDesignFileName = BirtUtil.resolveRptDesignFilePathFromContent(delegator, contentId);
+            GenericValue content = delegator.findOne("Content", true, "contentId", contentId);
+            String customMethodId = content.getString("customMethodId");
+            if (UtilValidate.isEmpty(customMethodId)) customMethodId = "CM_FB_PERFORM_FIND";
+            GenericValue customMethod = delegator.findOne("CustomMethod", true, "customMethodId", customMethodId);
+            if (customMethod == null) {
+                return ServiceUtil.returnError("CustomMethod not exist : " + customMethodId); //todo labelise
+            }
             result = dispatcher.runSync("reportGeneration", UtilMisc.toMap(
                     "locale", locale,
                     "dataMap", dataMap,
                     "userLogin", userLogin,
                     "filterMap", filterMap,
-                    "serviceName", delegator.findOne("CustomMethod", true, "customMethodId", "CM_FB_PERFORM_FIND").get("customMethodName"),
+                    "serviceName", customMethod.get("customMethodName"),
                     "writeFilters", writeFilters,
                     "rptDesignName", rptDesignFileName,
                     "fieldDisplayLabels", fieldDisplayLabels,
@@ -508,25 +474,20 @@ public class BirtServices {
         Delegator delegator = dctx.getDelegator();
         Map<String, Object> result = ServiceUtil.returnSuccess();
 
-        String textData;
+        String textData = null;
         try {
             GenericValue content = delegator.findOne("Content", true, "contentId", reportContentId);
             String dataResourceId = content.getString("dataResourceId");
             GenericValue electronicText = delegator.findOne("ElectronicText", true, "dataResourceId", dataResourceId);
             textData = electronicText.getString("textData");
         } catch (GenericEntityException e) {
-            e.printStackTrace();
             return ServiceUtil.returnError(e.getMessage());
         }
         //TODO utiliser un parser XML
-        textData = textData.substring(textData.indexOf("<form name=\"CTNT_MASTER_"), textData.length());
-        textData = textData.substring(0, textData.indexOf("</forms>"));
-        textData = StringUtil.replaceString(textData, textData.substring(textData.indexOf("<field name=\"rptDesignFile\">"), textData.indexOf("</drop-down></field>") + 20), "");
-        textData = StringUtil.replaceString(textData, textData.substring(textData.indexOf("<sort-order>"), textData.indexOf("</form>")), "\n\n");
-//        String textFormString = UtilFormatOut.encodeXmlValue(textData);
-        String textFormString = textData;
-        textFormString = StringUtil.replaceString(textFormString, "$", "&#36;");
-        result.put("textForm", textFormString);
+        textData = textData.substring(textData.indexOf("<form name=\""), textData.length());
+        textData = textData.substring(0, textData.indexOf("</form>") + 7);
+        textData = StringUtil.replaceString(textData, "$", "&#36;");
+        result.put("textForm", textData);
         return result;
     }
 
@@ -540,7 +501,7 @@ public class BirtServices {
         List<String> listRptDesignFiles = null;
         List<GenericValue> listRptDesignFilesGV = null;
         List<GenericValue> listContent = null;
-        EntityCondition entityConditionContent = EntityCondition.makeCondition("contentTypeId", "REPORT");
+        EntityCondition entityConditionContent = EntityCondition.makeCondition("contentTypeId", "FLEXIBLE_REPORT");
         EntityCondition entityConditionContentRpt = EntityCondition.makeCondition("contentTypeId", "RPTDESIGN");
         try {
             listContent = delegator.findList("Content", entityConditionContent, UtilMisc.toSet("contentId"), null, null, false);

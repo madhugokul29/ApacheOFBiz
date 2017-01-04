@@ -176,8 +176,7 @@ under the License.
             </widgets>
         </section>
     </screen>
-<<<<<<< HEAD
-=======
+
     <screen name="useReport">
         <section>
             <actions>
@@ -230,7 +229,7 @@ under the License.
                 <set field="tabButtonItem" value="manageReports" />
                 <set field="sortField" from-field="parameters.sortField" default-value="contentName"/>
                 <entity-and entity-name="Content" use-cache="true" list="contentTypeReport">
-                    <field-map field-name="contentTypeId" value="REPORT"/>
+                    <field-map field-name="contentTypeId" value="FLEXIBLE_REPORT"/>
                     <order-by field-name="${sortField}"/>
                 </entity-and>
                 <service service-name="genericBirtPermission" result-map="permCreateResult">
@@ -354,7 +353,7 @@ under the License.
                           </condition>
                           <widgets>
                               <screenlet title="${uiLabelMap.CreateNewReport}">
-                                  <content content-id="${parameters.contentId}"/>
+                                  <include-form name="editFormParameters" location="component://birt/widget/birt/BirtForms.xml"/>
                               </screenlet>
                           </widgets>
                           <fail-widgets>
@@ -413,9 +412,9 @@ under the License.
                             </condition>
                             <widgets>
                                 <screenlet title="${uiLabelMap.editReport}">
-                                        <include-form name="editReport" location="component://birt/widget/birt/BirtForms.xml"/>
-                                        <include-form name="uploadRptDesign" location="component://birt/widget/birt/BirtForms.xml" />
-                                        <include-form name="editFormParameters" location="component://birt/widget/birt/BirtForms.xml" />
+                                    <include-form name="editReport" location="component://birt/widget/birt/BirtForms.xml"/>
+                                    <include-form name="uploadRptDesign" location="component://birt/widget/birt/BirtForms.xml" />
+                                    <include-form name="editFormParameters" location="component://birt/widget/birt/BirtForms.xml"/>
                                 </screenlet>
                             </widgets>
                             <fail-widgets>
@@ -427,5 +426,4 @@ under the License.
             </widgets>
         </section>
     </screen>
->>>>>>> e767f704f2d27e0036c38335f4a88863c19c5093
 </screens>

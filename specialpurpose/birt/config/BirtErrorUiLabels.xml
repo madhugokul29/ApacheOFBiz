@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+-->
+
+<resource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:noNamespaceSchemaLocation="http://ofbiz.apache.org/dtds/ofbiz-properties.xsd">
+    <property key="conversion.field_to_birt.failed">
+        <value xml:lang="en">Failed to convert fieldType to birtType</value>
+        <value xml:lang="fr">Conversion du type de champ en type birt échouée</value>
+    </property>
+    <property key="performFind.call.failed">
+        <value xml:lang="en">Failed to call performFind service</value>
+        <value xml:lang="fr">Échec de l'appel du service performFind</value>
+    </property>
+    <property key="retrieve.multi_field_list.failed">
+        <value xml:lang="en">Failed to retrieve listMultiFields.</value>
+        <value xml:lang="fr">Échec de la construction de la listMultiFields</value>
+    </property>
+    <property key="unknown.viewName">
+        <value xml:lang="en">Service failed to identify the view name</value>
+        <value xml:lang="fr">Le nom de la vue n'a pas été trouvé</value>
+    </property>
+    <property key="failed_to_retrieve_entity_names">
+        <value xml:lang="en">Service failed to retrieve all entity names</value>
+        <value xml:lang="fr">Le service n'a pas pu récupérer l'ensemble des noms d'entités</value>
+    </property>
+    <property key="entity_view_does_not_exist">
+        <value xml:lang="en">This entity/view name is not valid</value>
+        <value xml:lang="fr">Ce nom de vue/entité n'est pas valide</value>
+    </property>
+    <property key="failed_to_retrieve_attribute_for_content">
+        <value xml:lang="en">Service failed to retrieve the attribute for this contentId</value>
+        <value xml:lang="fr">Le service n'a pas pu trouver d'attribut pour ce contenu</value>
+    </property>
+    <property key="failed_service_call_check">
+        <value xml:lang="en">Failed call to service CheckEntityViewExistence</value>
+        <value xml:lang="fr">Appel du service "CheckEntityViewExistence" échoué</value>
+    </property>
+    <property key="cannot_determine_data_source">
+        <value xml:lang="en">Failed to determine data source for report</value>
+        <value xml:lang="fr">La détermination de la source de données à échoué</value>
+    </property>
+    <property key="report_generation_call_failed">
+        <value xml:lang="en">Failed to call report generation service</value>
+        <value xml:lang="fr">L'appel du service de génération de rapport a échoué</value>
+    </property>
+    <property key="report_generation_failed">
+        <value xml:lang="en">Failed generate report</value>
+        <value xml:lang="fr">La génération du rapport à échoué</value>
+    </property>
+    <property key="unexpected_number_reports_to_delete">
+        <value xml:lang="en">Unexpected number of reports selected for deletion</value>
+        <value xml:lang="fr">Tentative de suppression d'un nombre inattendu de rapports</value>
+    </property>
+    <property key="cannot_locate_report_folder">
+        <value xml:lang="en">Report folder cannot be located. Are you sure you configured correctly birt.properties for the report folder path?</value>
+        <value xml:lang="fr">Le dossier de stockage des rapports n'a pu être localisé. Êtes-vous sûr d'avoir bien configuré birt.properties pour le chemin du dossier ?</value>
+    </property>
+    <property key="cannot_locate_report_file">
+        <value xml:lang="en">Report file cannot be located. It does not exist in specified directory.</value>
+        <value xml:lang="fr">Le fichier de rapport n'a pas pu être localisé. Il n'existe pas dans le dossier spécifié.</value>
+    </property>
+    <property key="cannot_find_uploaded_file">
+        <value xml:lang="en">Could not find uploaded file</value>
+        <value xml:lang="fr">Impossible de trouver le fichier uploadé</value>
+    </property>
+    <property key="error_creating_default_form">
+        <value xml:lang="en">An error happened while creating the display of current form.</value>
+        <value xml:lang="fr">Erreur à la création de l'affichage du formulaire actuel</value>
+    </property>
+    <property key="no_attribute_found">
+        <value xml:lang="en">Master workflow attribute not found</value>
+        <value xml:lang="fr">L'attribut de workflow du master n'as pas pu être trouvé</value>
+    </property>
+    <property key="noReportToDelete">
+        <value xml:lang="en">No report to delete</value>
+        <value xml:lang="fr">Aucun rapport à supprimer</value>
+    </property>
+    <property key="errorRunningPerformFind">
+        <value xml:lang="en">Error running performFind</value>
+        <value xml:lang="fr">Erreur lors de l'exécution du performFind</value>
+    </property>
+    <property key="ErrorRetrievingTurnOver">
+        <value xml:lang="en">Error while retrieving turnover informations</value>
+        <value xml:lang="fr">Erreur lors de l'accès aux informations liées au chiffre d'affaire</value>
+    </property>
+    <property key="errorCreatingReport">
+        <value xml:lang="en">Error while generating report</value>
+        <value xml:lang="fr">Erreur lors de la création du rapport</value>
+    </property>
+    <property key="UnauthorisedCharacter">
+        <value xml:lang="en">Form refused: unauthorised character detected</value>
+        <value xml:lang="fr">Formulaire refusé : caractère non autorisé</value>
+    </property>
+</resource>

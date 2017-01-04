@@ -39,9 +39,7 @@ under the License.
         <attribute name="webSiteId" type="String" mode="IN" optional="true"/>
         <attribute name="body" type="String" mode="OUT" optional="false"/>
     </service>
-<<<<<<< HEAD
-=======
-    
+
     <!-- SERVICES FOR REPORTS -->
     <service name="reportGeneration" engine="java" auth="true" location="org.apache.ofbiz.birt.birt.BirtServices" invoke="generateReport">
         <description>BIRT report generation</description>
@@ -209,5 +207,4 @@ under the License.
         <attribute name="filterDisplayLabels" type="Map" mode="OUT" optional="true"/>
         <attribute name="customMethodName" type="String" mode="OUT" optional="false"/>
     </service>
->>>>>>> e767f704f2d27e0036c38335f4a88863c19c5093
 </services>

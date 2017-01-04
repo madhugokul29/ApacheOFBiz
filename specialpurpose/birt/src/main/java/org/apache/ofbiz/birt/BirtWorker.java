@@ -38,12 +38,15 @@ import org.apache.ofbiz.base.util.UtilGenerics;
 import org.apache.ofbiz.base.util.UtilMisc;
 import org.apache.ofbiz.base.util.UtilProperties;
 import org.apache.ofbiz.base.util.UtilValidate;
+import org.apache.ofbiz.base.util.string.FlexibleStringExpander;
 import org.apache.ofbiz.base.util.template.FreeMarkerWorker;
+import org.apache.ofbiz.content.content.ContentWorker;
 import org.apache.ofbiz.entity.Delegator;
 import org.apache.ofbiz.entity.GenericValue;
 import org.apache.ofbiz.entity.condition.EntityCondition;
 import org.apache.ofbiz.service.GenericServiceException;
 import org.apache.ofbiz.service.LocalDispatcher;
+import org.apache.ofbiz.service.ServiceUtil;
 import org.apache.ofbiz.webapp.WebAppUtil;
 import org.eclipse.birt.report.engine.api.EXCELRenderOption;
 import org.eclipse.birt.report.engine.api.EngineException;
@@ -107,9 +110,9 @@ public final class BirtWorker {
         }
 
         // set parameters if exists
-        Map<String, Object> parameters = UtilGenerics.cast(context.get(BirtWorker.BIRT_PARAMETERS));
+        Map<String, Object> parameters = UtilGenerics.cast(context.get(BirtWorker.getBirtParameters()));
         if (parameters != null) {
-            Debug.logInfo("Set BIRT parameters:" + parameters, module);
+            //Debug.logInfo("Set BIRT parameters:" + parameters, module);
             task.setParameterValues(parameters);
         }
 
@@ -137,8 +140,10 @@ public final class BirtWorker {
         task.setRenderOption(options);
 
         // run report
-        Debug.logInfo("BIRT's locale is: " + task.getLocale(), module);
-        Debug.logInfo("Run report's task", module);
+        if (Debug.infoOn()) {
+            Debug.logInfo("BIRT's locale is: " + task.getLocale(), module);
+            Debug.logInfo("Run report's task", module);
+        }
         task.run();
         task.close();
     }
@@ -186,46 +191,6 @@ public final class BirtWorker {
         return BIRT_OUTPUT_FILE_NAME;
     }
 
-    //TODO use ftl rendering
-    public static String getBirtStandardFields(String rptDesignName, String fieldName, String serviceOrEntityName) {
-        String reportPath = BirtUtil.resolveTemplatePathLocation().concat(rptDesignName);
-        return getBirtStandardFields(rptDesignName, fieldName, serviceOrEntityName, reportPath);
-    }
-
-    public static String getBirtStandardFields(String reportName, String fieldName, String serviceOrEntityName, String templateFileLocation) {
-        StringBuffer birtContentTypeField = new StringBuffer("<field name=\"rptDesignFile\"><hidden value=\"");
-        birtContentTypeField.append(templateFileLocation);
-        birtContentTypeField.append("\"/></field>");
-        birtContentTypeField.append("<field name=\"birtOutputFileName\"><hidden value=\"");
-        birtContentTypeField.append(BirtUtil.encodeReportName(reportName));
-        birtContentTypeField.append("\"/></field>");
-        birtContentTypeField.append("<field name=\"");
-        birtContentTypeField.append(fieldName);
-        birtContentTypeField.append("\"><hidden value=\"");
-        birtContentTypeField.append(serviceOrEntityName);
-        birtContentTypeField.append("\"/></field>");
-        birtContentTypeField.append("<field name=\"birtContentType\" title=\"${uiLabelMap.birtContentType}\">");
-        birtContentTypeField.append("<drop-down>");
-        birtContentTypeField.append("<option key=\"text/html\" description=\"Text (.html)\"/>");
-        birtContentTypeField.append("<option key=\"application/pdf\" description=\"Pdf (.pdf)\"/>");
-        birtContentTypeField.append("<option key=\"application/postscript\" description=\"Postscript (.ps)\"/>");
-        birtContentTypeField.append("<option key=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet\" description=\"Excel (.xlsx)\"/>");
-        birtContentTypeField.append("<option key=\"application/vnd.openxmlformats-officedocument.wordprocessingml.document\" description=\"Word (.docx)\"/>");
-        birtContentTypeField.append("<option key=\"application/vnd.openxmlformats-officedocument.presentationml.presentation\" description=\"Powerpoint (.pptx)\"/>");
-        birtContentTypeField.append("<option key=\"application/vnd.ms-excel\" description=\"Excel (.xls)\"/>");
-        birtContentTypeField.append("<option key=\"application/vnd.ms-word\" description=\"Word (.doc)\"/>");
-        birtContentTypeField.append("<option key=\"application/vnd.ms-powerpoint\" description=\"Powerpoint (.ppt)\"/>");
-        birtContentTypeField.append("<option key=\"application/vnd.oasis.opendocument.spreadsheet\" description=\"LibreOffice Calc (.ods)\"/>");
-        birtContentTypeField.append("<option key=\"application/vnd.oasis.opendocument.text\" description=\"LibreOffice Writer (.odt)\"/>");
-        birtContentTypeField.append("<option key=\"application/vnd.oasis.opendocument.presentation\" description=\"LibreOffice Impress (.odp)\"/>");
-        birtContentTypeField.append("</drop-down>");
-        birtContentTypeField.append("</field>");
-        birtContentTypeField.append("<sort-order>");
-        birtContentTypeField.append("<sort-field name=\"birtContentType\"/>");
-        birtContentTypeField.append("</sort-order>");
-        return birtContentTypeField.toString();
-    }
-
     //TODO documentation
     public static String recordReportContent(Delegator delegator, LocalDispatcher dispatcher, Map<String, Object> context) throws GeneralException {
         Locale locale = (Locale) context.get("locale");
@@ -238,22 +203,20 @@ public final class BirtWorker {
         String masterContentId = (String) context.get("masterContentId");
         String dataResourceId = delegator.getNextSeqId("DataResource");
         String contentId = delegator.getNextSeqId("Content");
-        String reportFormScreenName = masterContentId + "_" + contentId;
+        context.put("contentId", contentId);
 
         if (UtilValidate.isEmpty(serviceName) && UtilValidate.isEmpty(entityViewName)) {
             throw new GenericServiceException("Service and entity name cannot be both empty");
         }
 
-        String fieldName = null;
-        String serviceOrEntityName = null;
+        String modelType = null;
+        String modelElementName = null;
         String workflowType = null;
         if (UtilValidate.isEmpty(serviceName)) {
-            fieldName = "entityViewName";
-            serviceOrEntityName = entityViewName;
+            modelElementName = entityViewName;
             workflowType = "Entity";
         } else {
-            fieldName = "serviceName";
-            serviceOrEntityName = serviceName;
+            modelElementName = serviceName;
             workflowType = "Service";
         }
 
@@ -282,10 +245,25 @@ public final class BirtWorker {
             i++;
         } while (delegator.findCountByCondition("ContentDataResourceView", ecl, null, null) > 0);
 
-        String reportForm = BirtWorker.renderInitialFormFlow(context);
+        //resolve the initial form structure from master content
+        Map<String, Object> resultElectronicText = dispatcher.runSync("getElectronicText", UtilMisc.toMap("contentId", masterContentId, "locale", locale, "userLogin", userLogin));
+        if (ServiceUtil.isError(resultElectronicText)) {
+            new GeneralException(ServiceUtil.getErrorMessage(resultElectronicText));
+        }
+        String reportForm = (String) resultElectronicText.get("textData");
+        if (! reportForm.contains("<?xml")) {
+            StringBuffer xmlHeaderForm = new StringBuffer("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+            xmlHeaderForm.append("<forms xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"http://ofbiz.apache.org/dtds/widget-form.xsd\">");
+            xmlHeaderForm.append(reportForm);
+            xmlHeaderForm.append("</forms>");
+        }
+        FlexibleStringExpander reportFormExpd = FlexibleStringExpander.getInstance(reportForm);
+        reportForm = reportFormExpd.expandString(context);
+
+        //create content and dataressource strucutre
         dispatcher.runSync("createDataResource", UtilMisc.toMap("dataResourceId", dataResourceId, "dataResourceTypeId", "ELECTRONIC_TEXT", "dataTemplateTypeId", "FORM_COMBINED", "userLogin", userLogin));
-        dispatcher.runSync("createElectronicTextForm", UtilMisc.toMap("dataResourceId", dataResourceId, "textData", reportForm, "userLogin", userLogin));
-        dispatcher.runSync("createContent", UtilMisc.toMap("contentId", contentId, "contentTypeId", "REPORT", "dataResourceId", dataResourceId, "statusId", "CTNT_IN_PROGRESS", "contentName", reportName, "description", description, "userLogin", userLogin));
+        dispatcher.runSync("createElectronicText", UtilMisc.toMap("dataResourceId", dataResourceId, "textData", reportForm, "userLogin", userLogin));
+        dispatcher.runSync("createContent", UtilMisc.toMap("contentId", contentId, "contentTypeId", "FLEXIBLE_REPORT", "dataResourceId", dataResourceId, "statusId", "CTNT_IN_PROGRESS", "contentName", reportName, "description", description, "userLogin", userLogin));
         String dataResourceIdRpt = delegator.getNextSeqId("DataResource");
         String contentIdRpt = delegator.getNextSeqId("Content");
         String rptDesignName = BirtUtil.encodeReportName(reportName);
@@ -296,20 +274,8 @@ public final class BirtWorker {
         dispatcher.runSync("createContent", UtilMisc.toMap("contentId", contentIdRpt, "contentTypeId", "RPTDESIGN", "dataResourceId", dataResourceIdRpt, "statusId", "CTNT_PUBLISHED", "contentName", reportName, "description", description + " (.rptDesign file)", "userLogin", userLogin));
         dispatcher.runSync("createContentAssoc", UtilMisc.toMap("contentId", masterContentId, "contentIdTo", contentId, "contentAssocTypeId", "SUB_CONTENT", "userLogin", userLogin));
         dispatcher.runSync("createContentAssoc", UtilMisc.toMap("contentId", contentId, "contentIdTo", contentIdRpt, "contentAssocTypeId", "SUB_CONTENT", "userLogin", userLogin));
-        dispatcher.runSync("createContentAttribute", UtilMisc.toMap("contentId", contentId, "attrName", workflowType, "attrValue", serviceOrEntityName, "userLogin", userLogin));
+        dispatcher.runSync("createContentAttribute", UtilMisc.toMap("contentId", contentId, "attrName", workflowType, "attrValue", modelElementName, "userLogin", userLogin));
         return contentId;
-    }
-
-    private static String renderInitialFormFlow(Map<String, Object> context) throws GeneralException {
-        //call ftl rendering
-        StringWriter writer = new StringWriter();
-        String location = UtilProperties.getPropertyValue("birt", "template.master.initial.form.location", "component://birt/template/MasterXmlForms.ftl");
-        try {
-            FreeMarkerWorker.renderTemplate(location, context, writer);
-        } catch (IOException | TemplateException e) {
-            throw new GeneralException(e.getMessage(), e);
-        }
-        return writer.toString();
     }
 
 }
