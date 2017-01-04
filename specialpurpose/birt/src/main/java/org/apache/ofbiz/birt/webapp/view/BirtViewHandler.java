@@ -84,7 +84,7 @@ public class BirtViewHandler implements ViewHandler {
                 InputStream reportInputStream = BirtFactory.getReportInputStreamFromLocation(page);
                 design = engine.openReportDesign(reportInputStream);
             } else {
-                design = engine.openReportDesign(servletContext.getRealPath(page));
+                design = engine.openReportDesign(page);
             }
 
             Map<String, Object> appContext = UtilGenerics.cast(engine.getConfig().getAppContext());

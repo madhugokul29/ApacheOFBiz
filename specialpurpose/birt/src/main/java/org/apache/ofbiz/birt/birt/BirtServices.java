@@ -288,7 +288,7 @@ public class BirtServices {
             StringBuffer newForm = new StringBuffer("<?xml version=\"1.0\" encoding=\"UTF-8\"?> <forms xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"http://ofbiz.apache.org/dtds/widget-form.xsd\">");
             newForm.append(overrideFilters);
             newForm.append("</forms>");
-            dispatcher.runSync("updateElectronicText", UtilMisc.toMap("dataResourceId", dataResourceId, "textData", newForm.toString(), "userLogin", userLogin, "locale", locale));
+            dispatcher.runSync("updateElectronicTextForm", UtilMisc.toMap("dataResourceId", dataResourceId, "textData", newForm.toString(), "userLogin", userLogin, "locale", locale));
         } catch (GeneralException e) {
             e.printStackTrace();
             return ServiceUtil.returnError(e.getMessage());

@@ -93,7 +93,7 @@ under the License.
 
     <request-map uri="produceReport">
         <security https="true" auth="true" />
-        <event type="groovy" path="component://birt/webapp/birt/WEB-INF/actions/reports/produceReport.groovy" />
+        <event type="groovy" path="component://birt/groovyScripts/report/PrepareBirtCall.groovy" />
         <response name="success" type="view" value="produceReport" />
 
     </request-map>

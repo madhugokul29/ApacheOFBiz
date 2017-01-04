@@ -95,7 +95,7 @@ import freemarker.template.TemplateException;
 /**
  * DataResourceWorker Class
  */
-public class DataResourceWorker implements org.apache.ofbiz.widget.content.DataResourceWorkerInterface {
+public class DataResourceWorker  implements org.apache.ofbiz.widget.content.DataResourceWorkerInterface {
 
     public static final String module = DataResourceWorker.class.getName();
     public static final String err_resource = "ContentErrorUiLabels";
@@ -592,8 +592,8 @@ public class DataResourceWorker implements org.apache.ofbiz.widget.content.DataR
         }
     }
 
-    public static String renderDataResourceAsText(LocalDispatcher dispatcher, Delegator delegator, String dataResourceId,
-             Map<String, Object> templateContext, Locale locale, String targetMimeTypeId, boolean cache) throws GeneralException, IOException {
+    public static String renderDataResourceAsText(LocalDispatcher dispatcher, Delegator delegator, String dataResourceId, Map<String, Object> templateContext,
+             Locale locale, String targetMimeTypeId, boolean cache) throws GeneralException, IOException {
         Writer writer = new StringWriter();
         renderDataResourceAsText(dispatcher, delegator, dataResourceId, writer, templateContext, locale, targetMimeTypeId, cache, null);
         return writer.toString();

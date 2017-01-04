@@ -25,19 +25,24 @@ under the License.
         with an auto attribute or something like that to use cache system
     -->
     <form name="abstractSearchForm" type="single" target="produceReport">
+        <actions>
+            <entity-one entity-name="Content" value-field="content"/>
+            <set field="rptDesignFile" value="${groovy: org.apache.ofbiz.birt.BirtUtil.resolveRptDesignFilePathFromContent(delegator, content.contentId)}"/>
+        </actions>
         <field name="birtContentType">
             <drop-down>
                 <entity-options entity-name="Enumeration" description="${enumCode}" key-field-name="description">
                     <entity-constraint name="enumTypeId" value="FLEXIBLE_BIRT"/>
-                    <entity-order-by field-name="sequenceNum"/>
+                    <entity-order-by field-name="sequenceId"/>
                 </entity-options>
             </drop-down>
         </field>
-        <field name="rptDesignFile"><hidden value="${templateFileLocation}"/></field>
-        <field name="birtOutputFileName"><hidden value="${reportName}"/></field>
+        <field name="rptDesignFile"><hidden/></field>
+        <field name="birtOutputFileName"><hidden value="${content.contentName}"/></field>
         <field name="sendButton"><submit/></field>
         <sort-order>
             <last-field name="birtContentType"/>
+            <last-field name="sendButton"/>
         </sort-order>
     </form>
 

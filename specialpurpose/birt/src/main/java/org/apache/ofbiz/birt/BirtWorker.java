@@ -117,7 +117,7 @@ public final class BirtWorker {
         }
 
         // set output options
-        if (BirtUtil.isSupportedMimeType(contentType)) {
+        if (! BirtUtil.isSupportedMimeType(contentType)) {
             throw new GeneralException("Unknown content type : " + contentType);
         }
         RenderOption options = new RenderOption();
@@ -251,18 +251,19 @@ public final class BirtWorker {
             new GeneralException(ServiceUtil.getErrorMessage(resultElectronicText));
         }
         String reportForm = (String) resultElectronicText.get("textData");
-        if (! reportForm.contains("<?xml")) {
+        if (! reportForm.startsWith("<?xml")) {
             StringBuffer xmlHeaderForm = new StringBuffer("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
             xmlHeaderForm.append("<forms xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"http://ofbiz.apache.org/dtds/widget-form.xsd\">");
             xmlHeaderForm.append(reportForm);
             xmlHeaderForm.append("</forms>");
+            reportForm = xmlHeaderForm.toString();
         }
         FlexibleStringExpander reportFormExpd = FlexibleStringExpander.getInstance(reportForm);
         reportForm = reportFormExpd.expandString(context);
 
         //create content and dataressource strucutre
         dispatcher.runSync("createDataResource", UtilMisc.toMap("dataResourceId", dataResourceId, "dataResourceTypeId", "ELECTRONIC_TEXT", "dataTemplateTypeId", "FORM_COMBINED", "userLogin", userLogin));
-        dispatcher.runSync("createElectronicText", UtilMisc.toMap("dataResourceId", dataResourceId, "textData", reportForm, "userLogin", userLogin));
+        dispatcher.runSync("createElectronicTextForm", UtilMisc.toMap("dataResourceId", dataResourceId, "textData", reportForm, "userLogin", userLogin));
         dispatcher.runSync("createContent", UtilMisc.toMap("contentId", contentId, "contentTypeId", "FLEXIBLE_REPORT", "dataResourceId", dataResourceId, "statusId", "CTNT_IN_PROGRESS", "contentName", reportName, "description", description, "userLogin", userLogin));
         String dataResourceIdRpt = delegator.getNextSeqId("DataResource");
         String contentIdRpt = delegator.getNextSeqId("Content");
