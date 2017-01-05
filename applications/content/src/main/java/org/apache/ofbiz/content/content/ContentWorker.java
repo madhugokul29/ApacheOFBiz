@@ -351,7 +351,7 @@ public class ContentWorker implements org.apache.ofbiz.widget.content.ContentWor
                     || rendered.contains("<a")) {
                 rendered = encoder.sanitize(rendered, contentTypeId);
             }
-        }*/
+        }
         return rendered; 
     }
 
