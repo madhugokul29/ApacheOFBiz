@@ -254,13 +254,12 @@ public class ContentMapFacade implements Map<Object, Object> {
                 // so we're only looking for a direct alias using contentId
                 if (webSiteId != null && delegator != null) {
                     try {
-                        
                         GenericValue webSitePathAlias = EntityQuery.use(delegator).from("WebSitePathAlias")
-                                .where("mapKey", null,
-                                        "webSiteId", webSiteId,
-                                        "contentId", this.contentId)
+                                .where("mapKey", null, "webSiteId", webSiteId,"contentId", this.contentId)
                                 .orderBy("-fromDate")
-                                .cache().filterByDate().queryFirst();
+                                .cache()
+                                .filterByDate()
+                                .queryFirst();
                         if (webSitePathAlias != null) {
                             contentUri = webSitePathAlias.getString("pathAlias");
                         }

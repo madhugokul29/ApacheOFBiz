@@ -18,37 +18,37 @@
     under the License.
 -->
 <entity-engine-xml>
-  <SecurityPermission permissionId="BIRT_ADMIN" description="ALL Birt component operations"/>
-  <SecurityPermission permissionId="BIRT_CREATE" description="Create report from master"/>
-  <SecurityPermission permissionId="BIRT_UPDATE" description="Update operations for reports"/>
-  <SecurityPermission permissionId="BIRT_DELETE" description="Delete reports"/>
-  <SecurityPermission permissionId="BIRT_VIEW" description="View and use all birt reports"/>
+    <SecurityPermission permissionId="BIRT_ADMIN" description="ALL Birt component operations"/>
+    <SecurityPermission permissionId="BIRT_CREATE" description="Create report from master"/>
+    <SecurityPermission permissionId="BIRT_UPDATE" description="Update operations for reports"/>
+    <SecurityPermission permissionId="BIRT_DELETE" description="Delete reports"/>
+    <SecurityPermission permissionId="BIRT_VIEW" description="View and use all birt reports"/>
 
-  <SecurityGroup groupId="BIRTADMIN" description="Birt - admin"/>
-  <SecurityGroup groupId="BIRTUSER" description="Birt - user"/>
+    <SecurityGroup groupId="BIRTADMIN" description="Birt - admin"/>
+    <SecurityGroup groupId="BIRTUSER" description="Birt - user"/>
 
-  <SecurityGroupPermission groupId="BIRTADMIN" permissionId="BIRT_CREATE"/>
-  <SecurityGroupPermission groupId="BIRTADMIN" permissionId="BIRT_UPDATE"/>
-  <SecurityGroupPermission groupId="BIRTADMIN" permissionId="BIRT_DELETE"/>
-  <SecurityGroupPermission groupId="BIRTADMIN" permissionId="BIRT_VIEW"/>
-  <SecurityGroupPermission groupId="BIRTADMIN" permissionId="OFBTOOLS_VIEW"/>
-  <SecurityGroupPermission groupId="BIRTADMIN" permissionId="CONTENTMGR_ROLE_VIEW"/>
-  <SecurityGroupPermission groupId="BIRTADMIN" permissionId="CONTENTMGR_VIEW"/>
-  <SecurityGroupPermission groupId="BIRTADMIN" permissionId="CONTENTMGR_ROLE_CREATE"/>
-  <SecurityGroupPermission groupId="BIRTADMIN" permissionId="CONTENTMGR_CREATE"/>
-  <SecurityGroupPermission groupId="BIRTADMIN" permissionId="CONTENTMGR_ROLE_UPDATE"/>
-  <SecurityGroupPermission groupId="BIRTADMIN" permissionId="CONTENTMGR_UPDATE"/>
-  <SecurityGroupPermission groupId="BIRTADMIN" permissionId="CONTENTMGR_DELETE"/>
+    <SecurityGroupPermission groupId="BIRTADMIN" permissionId="BIRT_CREATE"/>
+    <SecurityGroupPermission groupId="BIRTADMIN" permissionId="BIRT_UPDATE"/>
+    <SecurityGroupPermission groupId="BIRTADMIN" permissionId="BIRT_DELETE"/>
+    <SecurityGroupPermission groupId="BIRTADMIN" permissionId="BIRT_VIEW"/>
+    <SecurityGroupPermission groupId="BIRTADMIN" permissionId="OFBTOOLS_VIEW"/>
+    <SecurityGroupPermission groupId="BIRTADMIN" permissionId="CONTENTMGR_ROLE_VIEW"/>
+    <SecurityGroupPermission groupId="BIRTADMIN" permissionId="CONTENTMGR_VIEW"/>
+    <SecurityGroupPermission groupId="BIRTADMIN" permissionId="CONTENTMGR_ROLE_CREATE"/>
+    <SecurityGroupPermission groupId="BIRTADMIN" permissionId="CONTENTMGR_CREATE"/>
+    <SecurityGroupPermission groupId="BIRTADMIN" permissionId="CONTENTMGR_ROLE_UPDATE"/>
+    <SecurityGroupPermission groupId="BIRTADMIN" permissionId="CONTENTMGR_UPDATE"/>
+    <SecurityGroupPermission groupId="BIRTADMIN" permissionId="CONTENTMGR_DELETE"/>
 
-  <SecurityGroupPermission groupId="BIRTUSER" permissionId="BIRT_VIEW"/>
-  <SecurityGroupPermission groupId="BIRTUSER" permissionId="OFBTOOLS_VIEW"/>
-  
-  <SecurityGroupPermission groupId="FULLADMIN" permissionId="BIRT_CREATE"/>
-  <SecurityGroupPermission groupId="FULLADMIN" permissionId="BIRT_UPDATE"/>
-  <SecurityGroupPermission groupId="FULLADMIN" permissionId="BIRT_DELETE"/>
-  <SecurityGroupPermission groupId="FULLADMIN" permissionId="BIRT_VIEW"/>  
-  <SecurityGroupPermission groupId="FLEXADMIN" permissionId="BIRT_CREATE"/>
-  <SecurityGroupPermission groupId="FLEXADMIN" permissionId="BIRT_UPDATE"/>
-  <SecurityGroupPermission groupId="FLEXADMIN" permissionId="BIRT_DELETE"/>
-  <SecurityGroupPermission groupId="FLEXADMIN" permissionId="BIRT_VIEW"/>
+    <SecurityGroupPermission groupId="BIRTUSER" permissionId="BIRT_VIEW"/>
+    <SecurityGroupPermission groupId="BIRTUSER" permissionId="OFBTOOLS_VIEW"/>
+
+    <SecurityGroupPermission groupId="FULLADMIN" permissionId="BIRT_CREATE"/>
+    <SecurityGroupPermission groupId="FULLADMIN" permissionId="BIRT_UPDATE"/>
+    <SecurityGroupPermission groupId="FULLADMIN" permissionId="BIRT_DELETE"/>
+    <SecurityGroupPermission groupId="FULLADMIN" permissionId="BIRT_VIEW"/>
+    <SecurityGroupPermission groupId="FLEXADMIN" permissionId="BIRT_CREATE"/>
+    <SecurityGroupPermission groupId="FLEXADMIN" permissionId="BIRT_UPDATE"/>
+    <SecurityGroupPermission groupId="FLEXADMIN" permissionId="BIRT_DELETE"/>
+    <SecurityGroupPermission groupId="FLEXADMIN" permissionId="BIRT_VIEW"/>
 </entity-engine-xml>

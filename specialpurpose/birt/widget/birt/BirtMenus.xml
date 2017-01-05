@@ -27,8 +27,6 @@ under the License.
         <menu-item name="Report" title="${uiLabelMap.ExampleBirtReport}"><link target="Report"/></menu-item>
         <menu-item name="Export" title="${uiLabelMap.ExampleBirtViewHandler}"><link target="ViewHandler" target-window="_BLANK"/></menu-item>
         <menu-item name="Mail" title="${uiLabelMap.ExampleBirtMail}"><link target="Mail"/></menu-item>
-
-
         <!-- Reports using charts-->
         <menu-item name="chartReport" title="${uiLabelMap.ExampleBirtChartReport}"><link target="chartReport"/></menu-item>
         <menu-item name="chartExport" title="${uiLabelMap.ExampleBirtChartViewHandler}"><link target="chartViewHandler" target-window="_BLANK"/></menu-item>

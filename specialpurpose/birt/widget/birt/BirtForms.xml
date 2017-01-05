@@ -25,76 +25,37 @@ under the License.
         <field name="sendFrom"><text/></field>
         <field name="sendTo"><text/></field>
         <field name="subject"><text/></field>
-        <field name="birtReportLocation" tooltip="Example is component://birt/webapp/birt/report/example.rptdesign" required-field="true"><text/></field>
-        <field name="birtContentType">
-            <drop-down>
-                <option key="text/html" description="text/html"/>
-                <option key="application/pdf" description="application/pdf"/>
-                <option key="application/postscript" description="application/postscript"/>
-                <option key="application/vnd.ms-excel" description="application/vnd.ms-excel"/>
-                <option key="application/vnd.ms-word" description="application/vnd.ms-word"/>
-                <option key="application/vnd.ms-powerpoint" description="application/vnd.ms-powerpoint"/>
-                <option key="application/vnd.oasis.opendocument.text" description="application/vnd.oasis.opendocument.text"/>
-                <option key="application/vnd.oasis.opendocument.spreadsheet" description="application/vnd.oasis.opendocument.spreadsheet"/>
-                <option key="application/vnd.oasis.opendocument.presentation" description="application/vnd.oasis.opendocument.presentation"/>
-            </drop-down>
-        </field>
+        <field name="rptDesignFile"><hidden value="${templateFileLocation}"/></field>
+        <field name="birtOutputFileName"><hidden value="${reportName}"/></field>
         <field name="attachmentName" required-field="true"><text/></field>
-        <field name="sendButton" widget-style="smallSubmit"><submit button-type="button"/></field>
+        <field name="sendButton"><submit/></field>
     </form>
 
-  <form name="reportByEntityOrView" type="single" target="produceReport">
-    <auto-fields-entity entity-name="OrderHeaderItemAndRoles" default-field-type="find"/>
-    <field name="birtContentType" title="${uiLabelMap.birtContentType}">
-      <drop-down>
-        <option key="text/html" description="Text (.html)"/>
-        <option key="application/pdf" description="Pdf (.pdf)"/>
-        <option key="application/postscript" description="Postscript (.ps)"/>
-        <option key="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" description="Excel (.xlsx)"/>
-        <option key="application/vnd.openxmlformats-officedocument.wordprocessingml.document" description="Word (.docx)"/>
-        <option key="application/vnd.openxmlformats-officedocument.presentationml.presentation" description="Powerpoint (.pptx)"/>
-        <option key="application/vnd.ms-excel" description="Excel (.xls)"/>
-        <option key="application/vnd.ms-word" description="Word (.doc)"/>
-        <option key="application/vnd.ms-powerpoint" description="Powerpoint (.ppt)"/>
-        <option key="application/vnd.oasis.opendocument.spreadsheet" description="LibreOffice Calc (.ods)"/>
-        <option key="application/vnd.oasis.opendocument.text" description="LibreOffice Writer (.odt)"/>
-        <option key="application/vnd.oasis.opendocument.presentation" description="LibreOffice Impress (.odp)"/>
-      </drop-down>
-    </field>
-    <field name="rptDesignFile"><hidden value="component://birt/documents/OrderHeaderItemAndRoles_generated.rptdesign"/></field>  <!-- En dur pour l'instant... à dynamiser ;) ! -->
-    <field name="birtOutputFileName"><hidden value="OrderHeaderItemAndRoles_generated"/></field>  <!-- En dur pour l'instant... à dynamiser ;) ! -->
-    <field name="sendButton" widget-style="smallSubmit"><submit button-type="button"/></field>
-  </form>
-
-  <form name="viewChoice" type="single" target="reportParameters">
-      <field name="reportName" title="${uiLabelMap.reportName}" required-field="true"><text/></field>
-      <field name="contentId" title="${uiLabelMap.ContentChoice}" >
-      <drop-down>
-        <entity-options description="${description}" entity-name="Content" key-field-name="contentId">
-          <entity-constraint name="contentTypeId" value="REPORT_MASTER" />
-        </entity-options>
-      </drop-down>
-    </field>
-    <field name="description" required-field="true" title="${uiLabelMap.description}"><text /></field>
-    <field name="writeFilters" title="${uiLabelMap.writeFilters}"><check/></field>
-    <field name="sendButton" widget-style="smallSubmit">
-      <submit button-type="button" />
-    </field>
-  </form>
-  
+    <form name="viewChoice" type="single" target="reportParameters">
+        <field name="reportName" title="${uiLabelMap.reportName}" required-field="true"><text/></field>
+        <field name="contentId" title="${uiLabelMap.ContentChoice}" >
+            <drop-down>
+                <entity-options description="${description}" entity-name="Content" key-field-name="contentId">
+                    <entity-constraint name="contentTypeId" value="REPORT_MASTER" />
+                </entity-options>
+            </drop-down>
+        </field>
+        <field name="description" required-field="true" title="${uiLabelMap.description}"><text /></field>
+        <field name="writeFilters" title="${uiLabelMap.writeFilters}"><check/></field>
+        <field name="sendButton" widget-style="smallSubmit">
+            <submit button-type="button" />
+        </field>
+    </form>
     <form name="reportChoice" type="single" target="filteringParameters">
         <field name="contentId" title="${uiLabelMap.BirtReportchoice}" >
             <drop-down>
                 <entity-options description="${description}" entity-name="ContentAssocViewTo" key-field-name="contentId">
-                    <entity-constraint name="contentTypeId" value="REPORT" />
+                    <entity-constraint name="contentTypeId" value="FLEXIBLE_REPORT" />
                     <entity-constraint name="statusId" value="CTNT_PUBLISHED"/>
-                    <entity-constraint name="contentIdStart" value="${reportCategory}" ignore-if-empty="true"/>
                 </entity-options>
             </drop-down>
         </field>
-        <field name="sendButton" widget-style="smallSubmit">
-            <submit button-type="button" />
-        </field>
+        <field name="sendButton"><submit /></field>
     </form>
 
     <form name="editReport" type="single" target="updateContent" default-entity-name="content">
@@ -115,28 +76,29 @@ under the License.
         </field>
         <field name="submit" title="${uiLabelMap.CommonSubmit}"><submit/></field>
     </form>
-    
     <form name="uploadRptDesign" type="upload" target="uploadRptDesign">
         <field name="dataResourceIdRpt"><hidden/></field>
         <field name="uploadRptDesign" title=" "><file/></field>
         <field name="submit" title="${uiLabelMap.CommonUpload}"><submit/></field>
     </form>
-    
+
     <form name="editFormParameters" type="single" target="editReportForm">
         <actions>
-            <entity-one entity-name="Content" value-field="reportContent">
-                <field-map field-name="contentId" from-field="contentId"/>
-            </entity-one>
+            <entity-one entity-name="Content" value-field="reportContent"/>
             <set field="statusId" from-field="reportContent.statusId"/>
             <set field="reportContentId" from-field="reportContent.contentId"/>
             <entity-and entity-name="ContentAssoc" list="masterContent">
                 <field-map field-name="contentIdTo" from-field="contentId"/>
                 <field-map field-name="contentAssocTypeId" value="SUB_CONTENT"/>
             </entity-and>
+            <service service-name="createFormForDisplay" auto-field-map="true" result-map="displayFormMap"/>
         </actions>
-        <field name="reportContentId"><hidden value="${reportContentId}"/></field>
-        <field name="contentId"><hidden value="${masterContent[0].contentId}"/></field>
-        <field name="submit" title="${uiLabelMap.editFormParameter}" use-when="&quot;CTNT_IN_PROGRESS&quot;.equals(statusId)" widget-style="buttontext"><submit/></field>
+        <field name="overrideFilters" title="${uiLabelMap.overrideFilters}"><textarea cols="90" rows="20" default-value="${displayFormMap.textForm}"/></field>
+        <field name="reportContentId"><hidden value="${parameters.reportContentId}"/></field>
+        <field name="sendButton"><submit/></field>
+        <on-event-update-area event-type="submit" area-id="window" area-target="manageReports">
+            <parameter param-name="contentId" value="${parameters.reportContentId}"/>
+        </on-event-update-area>
     </form>
 
     <form name="manageReports" type="list" target="" odd-row-style="alternate-row" list-name="contentTypeReport" header-row-style="header-row-2" default-table-style="basic-table hover-bar">

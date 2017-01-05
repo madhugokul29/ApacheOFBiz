@@ -24,7 +24,7 @@ under the License.
          can be found in the following xml file. A component can override the
          elements found in the common-controller.xml file. -->
     <include location="component://common/webcommon/WEB-INF/common-controller.xml"/>
-
+    
     <description>BIRT Component Site Configuration File</description>
 
     <handler name="birt" type="view" class="org.apache.ofbiz.birt.webapp.view.BirtViewHandler"/>
@@ -77,8 +77,8 @@ under the License.
         <response name="success" type="view" value="chartReport"/>
     </request-map>
     <request-map uri="chartViewHandler">
-        <security https="true" auth="true" />
-        <response name="success" type="view" value="chartViewHandler" />
+        <security https="true" auth="true"/>
+        <response name="success" type="view" value="chartViewHandler"/>
     </request-map>
 
     <request-map uri="useReport">
@@ -93,7 +93,7 @@ under the License.
 
     <request-map uri="produceReport">
         <security https="true" auth="true" />
-        <event type="groovy" path="component://birt/webapp/birt/WEB-INF/actions/reports/produceReport.groovy" />
+        <event type="groovy" path="component://birt/groovyScripts/report/PrepareBirtCall.groovy" />
         <response name="success" type="view" value="produceReport" />
 
     </request-map>

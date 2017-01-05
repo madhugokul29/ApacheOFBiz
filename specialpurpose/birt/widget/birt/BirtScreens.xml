@@ -176,6 +176,7 @@ under the License.
             </widgets>
         </section>
     </screen>
+
     <screen name="useReport">
         <section>
             <actions>
@@ -209,6 +210,7 @@ under the License.
             </condition>
             <actions>
                 <property-map resource="BirtUiLabels" map-name="uiLabelMap" global="true" />
+                <set field="contentEntityNameView" from-field="contentEntityNameView" default-value=""/>
             </actions>
             <widgets>
                 <screenlet title="${uiLabelMap.BirtReportchoice}">
@@ -227,7 +229,7 @@ under the License.
                 <set field="tabButtonItem" value="manageReports" />
                 <set field="sortField" from-field="parameters.sortField" default-value="contentName"/>
                 <entity-and entity-name="Content" use-cache="true" list="contentTypeReport">
-                    <field-map field-name="contentTypeId" value="REPORT"/>
+                    <field-map field-name="contentTypeId" value="FLEXIBLE_REPORT"/>
                     <order-by field-name="${sortField}"/>
                 </entity-and>
                 <service service-name="genericBirtPermission" result-map="permCreateResult">
@@ -285,7 +287,7 @@ under the License.
         <section>
             <actions>
                 <set field="tabButtonItem" value="useReport" />
-            </actions>   
+            </actions>
             <widgets>
                 <decorator-screen name="CommonBirtDecorator" location="${parameters.mainDecoratorLocation}">
                     <decorator-section name="body">
@@ -351,7 +353,7 @@ under the License.
                           </condition>
                           <widgets>
                               <screenlet title="${uiLabelMap.CreateNewReport}">
-                                  <content content-id="${parameters.contentId}"/>
+                                  <include-form name="editFormParameters" location="component://birt/widget/birt/BirtForms.xml"/>
                               </screenlet>
                           </widgets>
                           <fail-widgets>
@@ -410,9 +412,9 @@ under the License.
                             </condition>
                             <widgets>
                                 <screenlet title="${uiLabelMap.editReport}">
-                                        <include-form name="editReport" location="component://birt/widget/birt/BirtForms.xml"/>
-                                        <include-form name="uploadRptDesign" location="component://birt/widget/birt/BirtForms.xml" />
-                                        <include-form name="editFormParameters" location="component://birt/widget/birt/BirtForms.xml" />
+                                    <include-form name="editReport" location="component://birt/widget/birt/BirtForms.xml"/>
+                                    <include-form name="uploadRptDesign" location="component://birt/widget/birt/BirtForms.xml" />
+                                    <include-form name="editFormParameters" location="component://birt/widget/birt/BirtForms.xml"/>
                                 </screenlet>
                             </widgets>
                             <fail-widgets>

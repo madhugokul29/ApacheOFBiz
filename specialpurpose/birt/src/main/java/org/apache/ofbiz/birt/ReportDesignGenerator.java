@@ -2,23 +2,16 @@ package org.apache.ofbiz.birt;
 
 import com.ibm.icu.util.ULocale;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import org.apache.ofbiz.base.util.Debug;
 import org.apache.ofbiz.base.util.GeneralException;
-import org.apache.ofbiz.base.util.UtilMisc;
 import org.apache.ofbiz.base.util.UtilProperties;
 import org.apache.ofbiz.base.util.UtilValidate;
-import org.apache.ofbiz.birt.birt.BirtServices;
-import org.apache.ofbiz.entity.GenericEntityException;
 import org.apache.ofbiz.entity.GenericValue;
 import org.apache.ofbiz.service.DispatchContext;
 import org.apache.ofbiz.service.GenericServiceException;
-import org.apache.ofbiz.service.LocalDispatcher;
-import org.apache.ofbiz.service.ServiceUtil;
 import org.eclipse.birt.core.framework.Platform;
 import org.eclipse.birt.report.model.api.CachedMetaDataHandle;
 import org.eclipse.birt.report.model.api.CellHandle;
@@ -55,7 +48,7 @@ public class ReportDesignGenerator {
     private ReportDesignHandle design;
     private Map<String, String> dataMap;
     private Map<String, String> filterMap;
-    private String customMethod;
+    private String serviceName;
     private Map<String, String> fieldDisplayLabels;
     private Map<String, String> filterDisplayLabels;
     private String rptDesignName;
@@ -68,7 +61,7 @@ public class ReportDesignGenerator {
         locale = (Locale) context.get("locale");
         dataMap = (Map<String, String>) context.get("dataMap");
         filterMap = (LinkedHashMap<String, String>) context.get("filterMap");
-        customMethod = (String) context.get("customMethod");
+        serviceName = (String) context.get("serviceName");
         fieldDisplayLabels = (Map<String, String>) context.get("fieldDisplayLabels");
         filterDisplayLabels = (LinkedHashMap<String, String>) context.get("filterDisplayLabels");
         rptDesignName = (String) context.get("rptDesignName");
@@ -217,14 +210,9 @@ public class ReportDesignGenerator {
 //        cell.getContent().add(label);
 //        label.setText("Dat is dat test !");
         // #####################
-        String str_pathRpt = UtilProperties.getPropertyValue("birt.properties", "rptDesign.output.path");
-        if (! Files.isDirectory(Paths.get(str_pathRpt))) {
-            throw new GeneralException(UtilProperties.getMessage(BirtServices.resource_error, "cannot_locate_report_folder", locale));
-        }
-        String pathAndName = str_pathRpt.concat("/").concat(rptDesignName);
-        design.saveAs(pathAndName);
+        design.saveAs(rptDesignName);
         design.close();
-        Debug.logInfo("####### Design generated: ".concat(pathAndName), module);
+        if (Debug.infoOn())Debug.logInfo("####### Design generated: " + rptDesignName, module);
         session.closeAll(false);
         Platform.shutdown();
     }
@@ -261,7 +249,7 @@ public class ReportDesignGenerator {
         StringBuffer dataSetOpenScript = new StringBuffer("importPackage(Packages.org.apache.ofbiz.birt);\n");
         dataSetOpenScript.append("Debug.logInfo(\"#### In open\", module)\n");
         dataSetOpenScript.append("try {\n");
-        dataSetOpenScript.append("    listRes = dispatcher.runSync(\"" + customMethod + "\", UtilMisc.toMap(\"userLogin\", reportContext.getParameterValue(\"userLogin\"), \"locale\", reportContext.getParameterValue(\"locale\"), \"reportContext\", reportContext));\n");
+        dataSetOpenScript.append("    listRes = dispatcher.runSync(\"" + serviceName + "\", UtilMisc.toMap(\"userLogin\", reportContext.getParameterValue(\"userLogin\"), \"locale\", reportContext.getParameterValue(\"locale\"), \"reportContext\", reportContext));\n");
         dataSetOpenScript.append("    if (ServiceUtil.isError(listRes)) {\n");
         dataSetOpenScript.append("         Debug.logError(ServiceUtil.getErrorMessage(listRes));\n");
         dataSetOpenScript.append("    }\n");

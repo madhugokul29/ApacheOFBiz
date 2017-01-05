@@ -17,23 +17,12 @@
  * under the License.
  */
 
-import org.apache.ofbiz.base.util.*
-import org.apache.ofbiz.entity.GenericValue
-
 def birtParameters = [:];
 
-String entityViewOrServiceName;
-if(UtilValidate.isNotEmpty(parameters.get("entityViewName"))){
-    entityViewOrServiceName = parameters.get("entityViewName");
-} else {
-    entityViewOrServiceName = parameters.get("serviceName");
-}
-
-GenericValue userLogin = (GenericValue) context.get("userLogin");
-
-birtParameters.put("parameters", parameters);
-birtParameters.put("entityViewOrServiceName", entityViewOrServiceName);
-birtParameters.put("userLogin",userLogin);
+birtParameters.parameters = parameters
+birtParameters.modelElementName = parameters.modelElementName
+birtParameters.userLogin = context.userLogin
+birtParameters.locale = locale
 
 request.setAttribute("birtParameters", birtParameters);
 return "success";
