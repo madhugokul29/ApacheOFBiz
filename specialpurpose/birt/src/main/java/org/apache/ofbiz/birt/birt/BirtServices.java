@@ -18,7 +18,6 @@
  *******************************************************************************/
 package org.apache.ofbiz.birt.birt;
 
-import com.ibm.icu.util.ULocale;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -75,6 +74,8 @@ import org.eclipse.birt.report.model.api.SlotHandle;
 import org.eclipse.birt.report.model.api.VariableElementHandle;
 import org.eclipse.birt.report.model.api.activity.SemanticException;
 import org.eclipse.birt.report.model.elements.SimpleMasterPage;
+
+import com.ibm.icu.util.ULocale;
 
 
 /**
