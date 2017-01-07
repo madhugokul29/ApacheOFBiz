@@ -46,6 +46,7 @@ import org.apache.ofbiz.entity.condition.EntityOperator;
 import org.apache.ofbiz.entity.util.EntityQuery;
 import org.apache.ofbiz.entity.util.EntityUtil;
 import org.apache.ofbiz.entity.util.EntityUtilProperties;
+
 public class ProductDocument implements LuceneDocument {
     private static final String module = ProductDocument.class.getName();
     private static final String NULL_STRING = "NULL";
