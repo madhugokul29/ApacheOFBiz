@@ -86,6 +86,17 @@ under the License.
             </widgets>
         </section>
     </screen>
+    <screen name="CommonBirtMinimalDecorator">
+        <section>
+            <actions>
+                <property-map resource="BirtUiLabels" map-name="uiLabelMap" global="true"/>
+                <property-map resource="CommonUiLabels" map-name="uiLabelMap" global="true"/>
+            </actions>
+            <widgets>
+                <decorator-section-include name="body"/>
+            </widgets>
+        </section>
+    </screen>
 
     <screen name="main">
         <section>
@@ -398,7 +409,8 @@ under the License.
         <section>
             <actions>
                 <set field="tabButtonItem" value="manageReport" />
-                <set field="contentId" from-field="parameters.contentId"/>
+                <set field="contentId" from-field="parameters.reportContentId" default-value="${parameters.contentId}"/>
+                <entity-one entity-name="Content" value-field="content"/>
             </actions>
             <widgets>
                 <decorator-screen name="CommonBirtDecorator" location="${parameters.mainDecoratorLocation}">
@@ -411,16 +423,39 @@ under the License.
                                 </or>
                             </condition>
                             <widgets>
-                                <screenlet title="${uiLabelMap.editReport}">
-                                    <include-form name="editReport" location="component://birt/widget/birt/BirtForms.xml"/>
-                                    <include-form name="uploadRptDesign" location="component://birt/widget/birt/BirtForms.xml" />
-                                    <include-form name="editFormParameters" location="component://birt/widget/birt/BirtForms.xml"/>
-                                </screenlet>
+                                <container id="edit-column" style="lefthalf">
+                                    <screenlet title="${uiLabelMap.editReport}">
+                                        <label style="h2">${uiLabelMap.ReportInformation}</label>
+                                        <include-form name="editReport" location="component://birt/widget/birt/BirtForms.xml"/>
+                                        <label style="h2">${uiLabelMap.uploadRptDesign}</label>
+                                        <include-form name="uploadRptDesign" location="component://birt/widget/birt/BirtForms.xml" />
+                                        <label style="h2">${uiLabelMap.overrideFilters}</label>
+                                        <include-form name="editFormParameters" location="component://birt/widget/birt/BirtForms.xml"/>
+                                    </screenlet>
+                                </container>
+                                <container id="preview-column" style="righthalf"><include-screen name="PreviewReportSearchForm"/></container>
                             </widgets>
                             <fail-widgets>
                                 <label style="h3">${uiLabelMap.BirtPermissionError}</label>
                             </fail-widgets>
                         </section>
+                    </decorator-section>
+                </decorator-screen>
+            </widgets>
+        </section>
+    </screen>
+
+    <screen name="PreviewReportSearchForm">
+        <section>
+            <actions>
+                <entity-one entity-name="Content" value-field="content" use-cache="true"/>
+            </actions>
+            <widgets>
+                <decorator-screen name="CommonBirtMinimalDecorator" location="${parameters.mainDecoratorLocation}">
+                    <decorator-section name="body">
+                        <screenlet title="${uiLabelMap.CommonPreview}" id="content-form-preview">
+                            <content content-id="${content.contentId}"/>
+                        </screenlet>
                     </decorator-section>
                 </decorator-screen>
             </widgets>

@@ -32,7 +32,6 @@ under the License.
     </form>
 
     <form name="viewChoice" type="single" target="reportParameters">
-        <field name="reportName" title="${uiLabelMap.reportName}" required-field="true"><text/></field>
         <field name="contentId" title="${uiLabelMap.ContentChoice}" >
             <drop-down>
                 <entity-options description="${description}" entity-name="Content" key-field-name="contentId">
@@ -40,11 +39,10 @@ under the License.
                 </entity-options>
             </drop-down>
         </field>
-        <field name="description" required-field="true" title="${uiLabelMap.description}"><text /></field>
-        <field name="writeFilters" title="${uiLabelMap.writeFilters}"><check/></field>
-        <field name="sendButton" widget-style="smallSubmit">
-            <submit button-type="button" />
-        </field>
+        <field name="reportName" required-field="true"><text/></field>
+        <field name="description" required-field="true"><text /></field>
+        <field name="writeFilters"><check/></field>
+        <field name="sendButton"><submit/></field>
     </form>
     <form name="reportChoice" type="single" target="filteringParameters">
         <field name="contentId" title="${uiLabelMap.BirtReportchoice}" >
@@ -58,15 +56,10 @@ under the License.
         <field name="sendButton"><submit /></field>
     </form>
 
-    <form name="editReport" type="single" target="updateContent" default-entity-name="content">
-        <actions>
-            <entity-one entity-name="Content">
-                <field-map field-name="contentId" from-field="contentId"/>
-            </entity-one>
-        </actions>
+    <form name="editReport" type="single" target="updateContent" default-map-name="content">
         <field name="contentId"><hidden/></field>
         <field name="contentName" title="${uiLabelMap.reportName}"><display/></field>
-        <field name="description" title="${uiLabelMap.description}"><text/></field>
+        <field name="description"><text/></field>
         <field name="statusId">
             <drop-down>
                 <entity-options description="${description}" entity-name="StatusItem">
@@ -77,27 +70,40 @@ under the License.
         <field name="submit" title="${uiLabelMap.CommonSubmit}"><submit/></field>
     </form>
     <form name="uploadRptDesign" type="upload" target="uploadRptDesign">
-        <field name="dataResourceIdRpt"><hidden/></field>
+        <actions>
+            <entity-and entity-name="ContentAssoc" use-cache="true" list="contentAssocs">
+                <field-map field-name="contentId" from-field="content.contentId"/>
+            </entity-and>
+            <set field="contentAssoc" from-field="contentAssocs[0]" type="Object"/>
+            <entity-one entity-name="Content" value-field="contentRpt">
+                <field-map from-field="contentAssoc.contentIdTo" field-name="contentId"/>
+            </entity-one>
+        </actions>
+        <field name="dataResourceIdRpt"><hidden value="${contentRpt.dataResourceId}"/></field>
+        <field name="downloadRptDesignLink" title=" " widget-style="buttontext">
+            <hyperlink also-hidden="false" description="${uiLabelMap.downloadRptDesign}" target="ViewBinaryDataResource" target-window="_blank">
+                <parameter param-name="dataResourceId" from-field="contentRpt.dataResourceId"/>
+            </hyperlink>
+        </field>
         <field name="uploadRptDesign" title=" "><file/></field>
-        <field name="submit" title="${uiLabelMap.CommonUpload}"><submit/></field>
+        <field name="upload" title="${uiLabelMap.CommonUpload}" position="2"><submit/></field>
     </form>
 
     <form name="editFormParameters" type="single" target="editReportForm">
         <actions>
-            <entity-one entity-name="Content" value-field="reportContent"/>
-            <set field="statusId" from-field="reportContent.statusId"/>
-            <set field="reportContentId" from-field="reportContent.contentId"/>
+            <set field="statusId" from-field="content.statusId"/>
+            <set field="reportContentId" from-field="content.contentId"/>
             <entity-and entity-name="ContentAssoc" list="masterContent">
                 <field-map field-name="contentIdTo" from-field="contentId"/>
                 <field-map field-name="contentAssocTypeId" value="SUB_CONTENT"/>
             </entity-and>
             <service service-name="createFormForDisplay" auto-field-map="true" result-map="displayFormMap"/>
         </actions>
-        <field name="overrideFilters" title="${uiLabelMap.overrideFilters}"><textarea cols="90" rows="20" default-value="${displayFormMap.textForm}"/></field>
-        <field name="reportContentId"><hidden value="${parameters.reportContentId}"/></field>
-        <field name="sendButton"><submit/></field>
-        <on-event-update-area event-type="submit" area-id="window" area-target="manageReports">
-            <parameter param-name="contentId" value="${parameters.reportContentId}"/>
+        <field name="overrideFilters" title=" "><textarea cols="90" rows="20" default-value="${displayFormMap.textForm}"/></field>
+        <field name="reportContentId"><hidden/></field>
+        <field name="previewButton" title="${uiLabelMap.CommonSave}"><submit/></field>
+        <on-event-update-area event-type="submit" area-id="preview-column" area-target="PreviewReportSearchForm">
+            <parameter param-name="contentId" value="${contentId}"/>
         </on-event-update-area>
     </form>
 
@@ -115,28 +121,7 @@ under the License.
         <field name="contentName" sort-field="true"><display/></field>
         <field name="statusId" sort-field="true"><display-entity entity-name="StatusItem" /></field>
         <field name="description" sort-field="true"><display/></field>
-        <field name="downloadRptDesignLink" title=" " widget-style="buttontext" use-when="(&quot;CTNT_IN_PROGRESS&quot;.equals(statusId))&amp;&amp;(hasUpdatePermission||hasCreatePermission)">
-            <hyperlink also-hidden="false" description="${uiLabelMap.downloadRptDesign}" target="ViewBinaryDataResource" target-window="_blank">
-                <parameter param-name="dataResourceId" from-field="contentRpt.dataResourceId"/>
-            </hyperlink>
-        </field>
-        <field name="editReportLink" title=" " widget-style="buttontext" use-when="&quot;CTNT_IN_PROGRESS&quot;.equals(statusId)&amp;&amp;(hasUpdatePermission||hasCreatePermission)">
-            <hyperlink also-hidden="false" description="${uiLabelMap.CommonEdit}" target="editReport">
-                <parameter param-name="contentId"/>
-                <parameter param-name="dataResourceIdRpt" from-field="contentRpt.dataResourceId"/>
-            </hyperlink>
-        </field>
-        <field name="updateStatusLink" title=" " widget-style="buttontext" use-when="hasUpdatePermission||hasCreatePermission">
-            <hyperlink also-hidden="false" description="${groovy: if(statusId.equals('CTNT_IN_PROGRESS')) return uiLabelMap.CommonPublish else uiLabelMap.reOpenReport}" target="updateContent">
-                <parameter param-name="contentId"/>
-                <parameter param-name="statusId" value="${groovy: if(statusId.equals('CTNT_IN_PROGRESS')) return 'CTNT_PUBLISHED' else return 'CTNT_IN_PROGRESS'}"/>
-            </hyperlink>
-        </field>
-        <field name="deleteLink" title=" " widget-style="buttontext" use-when="hasDeletePermission">
-           <hyperlink also-hidden="false" description="${uiLabelMap.CommonDelete}" target="deleteOneReport">
-                <parameter param-name="contentId"/>
-            </hyperlink>
-        </field>
+        <field name="manageLink"><include-menu name="ListFlexibleBirtAction" location="component://birt/widget/birt/BirtMenus.xml"/></field>
   </form>
 
 </forms>

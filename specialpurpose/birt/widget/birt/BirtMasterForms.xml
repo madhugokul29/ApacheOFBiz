@@ -19,7 +19,8 @@ under the License.
 -->
 
 <forms xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns="http://ofbiz.apache.org/Widget-Form" xsi:schemaLocation="http://ofbiz.apache.org/Widget-Form http://ofbiz.apache.org/dtds/widget-form.xsd">
+       xmlns="http://ofbiz.apache.org/Widget-Form"
+       xsi:schemaLocation="http://ofbiz.apache.org/Widget-Form http://ofbiz.apache.org/dtds/widget-form.xsd">
 
     <!--This form present std field for the flexible birt engine, you need to heritate it for each domain
         with an auto attribute or something like that to use cache system
@@ -27,6 +28,15 @@ under the License.
     <form name="abstractSearchForm" type="single" target="produceReport">
         <actions>
             <entity-one entity-name="Content" value-field="content"/>
+            <entity-condition entity-name="ContentAttribute" list="contentAttrs">
+                <condition-list>
+                    <condition-expr field-name="contentId" from-field="content.contentId"/>
+                    <condition-list combine="or">
+                        <condition-expr field-name="attrName" value="Service"/>
+                        <condition-expr field-name="attrName" value="Entity"/>
+                    </condition-list>
+                </condition-list>
+            </entity-condition>
             <set field="rptDesignFile" value="${groovy: org.apache.ofbiz.birt.BirtUtil.resolveRptDesignFilePathFromContent(delegator, content.contentId)}"/>
         </actions>
         <field name="birtContentType">
@@ -39,6 +49,7 @@ under the License.
         </field>
         <field name="rptDesignFile"><hidden/></field>
         <field name="birtOutputFileName"><hidden value="${content.contentName}"/></field>
+        <field name="modelElementName"><hidden value="${contentAttrs[0].attrValue}"/></field>
         <field name="sendButton"><submit/></field>
         <sort-order>
             <last-field name="birtContentType"/>

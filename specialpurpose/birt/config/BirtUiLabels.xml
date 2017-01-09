@@ -292,8 +292,8 @@
         <value xml:lang="fr">Le fichier de rapport a été uploadé avec succès</value>
     </property>
     <property key="overrideFilters">
-        <value xml:lang="en">Xml override of report form</value>
-        <value xml:lang="fr">Surcharge Xml du formulaire du rapport</value>
+        <value xml:lang="en">Xml override of report search form</value>
+        <value xml:lang="fr">Surcharge Xml du formulaire de recherche du rapport</value>
     </property>
     <property key="BirtPermissionError">
         <value xml:lang="en">Birt Permission Error</value>

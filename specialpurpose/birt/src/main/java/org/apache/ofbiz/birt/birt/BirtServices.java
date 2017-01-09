@@ -33,12 +33,15 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.xml.parsers.ParserConfigurationException;
+import org.xml.sax.SAXException;
 import org.apache.ofbiz.base.util.Debug;
 import org.apache.ofbiz.base.util.GeneralException;
 import org.apache.ofbiz.base.util.StringUtil;
 import org.apache.ofbiz.base.util.UtilMisc;
 import org.apache.ofbiz.base.util.UtilProperties;
 import org.apache.ofbiz.base.util.UtilValidate;
+import org.apache.ofbiz.base.util.UtilXml;
 import org.apache.ofbiz.base.util.string.FlexibleStringExpander;
 import org.apache.ofbiz.birt.BirtUtil;
 import org.apache.ofbiz.birt.BirtWorker;
@@ -76,6 +79,7 @@ import org.eclipse.birt.report.model.api.activity.SemanticException;
 import org.eclipse.birt.report.model.elements.SimpleMasterPage;
 
 import com.ibm.icu.util.ULocale;
+import org.w3c.dom.Document;
 
 
 /**
@@ -151,14 +155,17 @@ public class BirtServices {
         IReportContext reportContext = (IReportContext) context.get("reportContext");
         Locale locale = (Locale) context.get("locale");
         GenericValue userLogin = (GenericValue) context.get("userLogin");
-        String entityViewName = (String) reportContext.getParameterValue("entityViewOrServiceName");
+        String entityViewName = (String) reportContext.getParameterValue("modelElementName");
         Map<String, Object> inputFields = (Map<String, Object>) reportContext.getParameterValue("parameters");
         Map<String, Object> resultPerformFind = new HashMap<String, Object>();
         Map<String, Object> resultToBirt = null;
         List<GenericValue> list = null;
 
         if (UtilValidate.isEmpty(entityViewName)) {
-            return ServiceUtil.returnError(UtilProperties.getMessage(resource_error, "unknown.entityViewName", locale));
+            entityViewName = (String) inputFields.get("modelElementName");
+            if (UtilValidate.isEmpty(entityViewName)) {
+                return ServiceUtil.returnError(UtilProperties.getMessage(resource_error, "unknown.entityViewName", locale));
+            }
         }
 
         try {
@@ -289,8 +296,9 @@ public class BirtServices {
             StringBuffer newForm = new StringBuffer("<?xml version=\"1.0\" encoding=\"UTF-8\"?> <forms xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"http://ofbiz.apache.org/dtds/widget-form.xsd\">");
             newForm.append(overrideFilters);
             newForm.append("</forms>");
-            dispatcher.runSync("updateElectronicTextForm", UtilMisc.toMap("dataResourceId", dataResourceId, "textData", newForm.toString(), "userLogin", userLogin, "locale", locale));
-        } catch (GeneralException e) {
+            Document xmlForm = UtilXml.readXmlDocument(newForm.toString());
+            dispatcher.runSync("updateElectronicTextForm", UtilMisc.toMap("dataResourceId", dataResourceId, "textData", UtilXml.writeXmlDocument(xmlForm), "userLogin", userLogin, "locale", locale));
+        } catch (GeneralException | SAXException | ParserConfigurationException | IOException e) {
             e.printStackTrace();
             return ServiceUtil.returnError(e.getMessage());
         }
@@ -485,8 +493,13 @@ public class BirtServices {
             return ServiceUtil.returnError(e.getMessage());
         }
         //TODO utiliser un parser XML
-        textData = textData.substring(textData.indexOf("<form name=\""), textData.length());
-        textData = textData.substring(0, textData.indexOf("</form>") + 7);
+        Debug.logInfo(textData, module);
+        textData = textData.substring(textData.indexOf("<form "), textData.length());
+        if (textData.contains("</form>")) {
+            textData = textData.substring(0, textData.indexOf("</form>") + 7);
+        } else {
+            textData = textData.substring(0, textData.indexOf("/>") + 2);
+        }
         textData = StringUtil.replaceString(textData, "$", "&#36;");
         result.put("textForm", textData);
         return result;
@@ -607,9 +620,7 @@ public class BirtServices {
 
         // the idea is to allow only design to be uploaded. We use the stored file and add the new design from the uploaded file within.
         DesignConfig config = new DesignConfig();
-
         IDesignEngine engine = null;
-
         try {
             Platform.startup();
             IDesignEngineFactory factory = (IDesignEngineFactory) Platform.createFactoryObject(IDesignEngineFactory.EXTENSION_DESIGN_ENGINE_FACTORY);
@@ -629,7 +640,7 @@ public class BirtServices {
         String uploadedFilename = (String) context.get("_uploadRptDesign_fileName");
         GenericValue dataResource;
         try {
-            dataResource = delegator.findOne("DataResource", false, UtilMisc.toMap("dataResourceId", dataResourceId));
+            dataResource = delegator.findOne("DataResource", false, "dataResourceId", dataResourceId);
         } catch (GenericEntityException e1) {
             e1.printStackTrace();
             return ServiceUtil.returnError(e1.getMessage());
@@ -694,7 +705,6 @@ public class BirtServices {
 
         //copy cube
         SlotHandle cubesFromUser = designFromUser.getCubes();
-
         Iterator<DesignElementHandle> iterCube = cubesFromUser.iterator();
 
         while (iterCube.hasNext()) {
@@ -710,7 +720,6 @@ public class BirtServices {
 
         // copy body
         SlotHandle bodyFromUser = designFromUser.getBody();
-
         Iterator<DesignElementHandle> iter = bodyFromUser.iterator();
 
         while (iter.hasNext()) {
