@@ -779,37 +779,9 @@ public class DataResourceWorker  implements org.apache.ofbiz.widget.content.Data
                 } catch (Exception e) {
                     throw new GeneralException("Error rendering Screen template", e);
                 }
-                    } else {
-                        if ("FORM_COMBINED".equals(dataTemplateTypeId)) {
-                            try {
-                                Map<String, Object> context = (Map<String, Object>) templateContext.get("globalContext");
-                                context.put("locale", locale);
-                                context.put("simpleEncoder", UtilCodec.getEncoder(UtilProperties.getPropertyValue("widget", "screen.encoder")));
-                                HttpServletRequest request = (HttpServletRequest) context.get("request");
-                                HttpServletResponse response = (HttpServletResponse) context.get("response");
-                                ModelForm modelForm = null;
-                                ModelReader entityModelReader = delegator.getModelReader();
-                                String formText = getDataResourceText(dataResource, targetMimeTypeId, locale, templateContext, delegator, cache);
-                                Document formXml = UtilXml.readXmlDocument(formText, true, true);
-                                Map<String, ModelForm> modelFormMap = FormFactory.readFormDocument(formXml, entityModelReader, dispatcher.getDispatchContext(), null);
-                                if (UtilValidate.isNotEmpty(modelFormMap)) {
-                                    Map.Entry<String, ModelForm> entry = modelFormMap.entrySet().iterator().next(); // get first entry, only one form allowed per file
-                                    modelForm = entry.getValue();
-                                }
-                                MacroFormRenderer renderer = new MacroFormRenderer(UtilProperties.getPropertyValue("widget", "screen.formrenderer"), request, response);
-                                FormRenderer formRenderer = new FormRenderer(modelForm, renderer);
-                                formRenderer.render(out, context);
-                            } catch (SAXException | ParserConfigurationException e) {
-                                throw new GeneralException("Error rendering Screen template", e);
-                            } catch (TemplateException e) {
-                                throw new GeneralException("Error creating Screen renderer", e);
-                            } catch (Exception e) {
-                                throw new GeneralException("Error rendering Screen template", e);
-                            }
-                        } else {
-                            throw new GeneralException("The dataTemplateTypeId [" + dataTemplateTypeId + "] is not yet supported");
-                        }
-                    }
+            } else {
+                throw new GeneralException("The dataTemplateTypeId [" + dataTemplateTypeId + "] is not yet supported");
+            }
         }
     }
 
