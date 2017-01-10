@@ -130,7 +130,7 @@ public final class BirtUtil {
 
     private final static Map<String, String> mimeTypeOutputFormatMap = UtilMisc.toMap(
             "text/html", RenderOption.OUTPUT_FORMAT_HTML,
-            "application/pdf", RenderOption.OUTPUT_FORMAT_HTML,
+            "application/pdf", RenderOption.OUTPUT_FORMAT_PDF,
             "application/postscript", "postscript",
             "application/vnd.ms-word", "doc",
             "application/vnd.ms-excel", "xls",
