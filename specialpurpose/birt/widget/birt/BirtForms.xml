@@ -31,7 +31,8 @@ under the License.
         <field name="sendButton"><submit/></field>
     </form>
 
-    <form name="viewChoice" type="single" target="reportParameters">
+    <!-- Flexible Report Form -->
+    <form name="CreateFlexibleReport" type="single" target="reportParameters">
         <field name="contentId" title="${uiLabelMap.ContentChoice}" >
             <drop-down>
                 <entity-options description="${description}" entity-name="Content" key-field-name="contentId">
@@ -44,10 +45,10 @@ under the License.
         <field name="writeFilters"><check/></field>
         <field name="sendButton"><submit/></field>
     </form>
-    <form name="reportChoice" type="single" target="filteringParameters">
+    <form name="ListPublishFlexibleReport" type="single" target="DisplayFlexibleReportSearchForm">
         <field name="contentId" title="${uiLabelMap.BirtReportchoice}" >
             <drop-down>
-                <entity-options description="${description}" entity-name="ContentAssocViewTo" key-field-name="contentId">
+                <entity-options description="[${contentName}] ${description}" entity-name="ContentAssocViewTo" key-field-name="contentId">
                     <entity-constraint name="contentTypeId" value="FLEXIBLE_REPORT" />
                     <entity-constraint name="statusId" value="CTNT_PUBLISHED"/>
                 </entity-options>
@@ -56,7 +57,7 @@ under the License.
         <field name="sendButton"><submit /></field>
     </form>
 
-    <form name="editReport" type="single" target="updateContent" default-map-name="content">
+    <form name="EditFlexibleReport" type="single" target="updateContent" default-map-name="content">
         <field name="contentId"><hidden/></field>
         <field name="contentName" title="${uiLabelMap.reportName}"><display/></field>
         <field name="description"><text/></field>
@@ -69,7 +70,7 @@ under the License.
         </field>
         <field name="submit" title="${uiLabelMap.CommonSubmit}"><submit/></field>
     </form>
-    <form name="uploadRptDesign" type="upload" target="uploadRptDesign">
+    <form name="UploadRptDesign" type="upload" target="UploadRptDesign">
         <actions>
             <entity-and entity-name="ContentAssoc" use-cache="true" list="contentAssocs">
                 <field-map field-name="contentId" from-field="content.contentId"/>
@@ -85,11 +86,11 @@ under the License.
                 <parameter param-name="dataResourceId" from-field="contentRpt.dataResourceId"/>
             </hyperlink>
         </field>
-        <field name="uploadRptDesign" title=" "><file/></field>
+        <field name="UploadRptDesign" title=" "><file/></field>
         <field name="upload" title="${uiLabelMap.CommonUpload}" position="2"><submit/></field>
     </form>
 
-    <form name="editFormParameters" type="single" target="editReportForm">
+    <form name="EditFlexibleReportSearchForm" type="single" target="editReportForm">
         <actions>
             <set field="statusId" from-field="content.statusId"/>
             <set field="reportContentId" from-field="content.contentId"/>
@@ -107,9 +108,10 @@ under the License.
         </on-event-update-area>
     </form>
 
-    <form name="manageReports" type="list" target="" odd-row-style="alternate-row" list-name="contentTypeReport" header-row-style="header-row-2" default-table-style="basic-table hover-bar">
+    <form name="ListFlexibleReport" type="list" target="" odd-row-style="alternate-row" list-name="contentTypeReport" header-row-style="header-row-2" default-table-style="basic-table hover-bar">
         <row-actions>
-            <set field="contentId" from-field="contentId"/>
+            <entity-one entity-name="Content" value-field="content" />
+            <set field="contentId" from-field="content.contentId"/>
             <entity-and entity-name="ContentAssoc" use-cache="true" list="contentAssocs">
                 <field-map field-name="contentId"/>
             </entity-and>
@@ -117,8 +119,16 @@ under the License.
             <entity-one entity-name="Content" value-field="contentRpt">
                 <field-map from-field="contentAssoc.contentIdTo" field-name="contentId"/>
             </entity-one>
+            <entity-and entity-name="ContentAssoc" use-cache="true" list="masterContentAssocs">
+                <field-map field-name="contentIdTo" from-field="contentId"/>
+            </entity-and>
+            <set field="masterContentAssoc" from-field="masterContentAssocs[0]" type="Object"/>
+            <entity-one entity-name="Content" value-field="masterContent">
+                <field-map from-field="masterContentAssoc.contentId" field-name="contentId"/>
+            </entity-one>
         </row-actions>
         <field name="contentName" sort-field="true"><display/></field>
+        <field name="masterContentName" sort-field="true" map-name="masterContent" entry-name="contentName"><display /></field>
         <field name="statusId" sort-field="true"><display-entity entity-name="StatusItem" /></field>
         <field name="description" sort-field="true"><display/></field>
         <field name="manageLink"><include-menu name="ListFlexibleBirtAction" location="component://birt/widget/birt/BirtMenus.xml"/></field>

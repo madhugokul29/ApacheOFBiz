@@ -93,7 +93,7 @@ public class BirtServices {
     public static final String resource_error = "BirtErrorUiLabels";
     public static final String resourceProduct = "BirtUiLabels";
 
-    public static Map<String, Object> generateReport(DispatchContext dctx, Map<String, Object> context) {
+    public static Map<String, Object> createFlexibleReportFromMaster(DispatchContext dctx, Map<String, Object> context) {
         ReportDesignGenerator rptGenerator;
         try {
             rptGenerator = new ReportDesignGenerator(context, dctx);
@@ -347,7 +347,7 @@ public class BirtServices {
             if (customMethod == null) {
                 return ServiceUtil.returnError("CustomMethod not exist : " + customMethodId); //todo labelise
             }
-            result = dispatcher.runSync("reportGeneration", UtilMisc.toMap(
+            result = dispatcher.runSync("createFlexibleReportFromMaster", UtilMisc.toMap(
                     "locale", locale,
                     "dataMap", dataMap,
                     "userLogin", userLogin,
@@ -390,7 +390,7 @@ public class BirtServices {
             Map<String, String> filterDisplayLabels = (Map<String, String>) resultService.get("filterDisplayLabels");
             String customMethodName = (String) resultService.get("customMethodName");
             contentId = BirtWorker.recordReportContent(delegator, dispatcher, context);
-            Map<String, Object> resultGeneration = dispatcher.runSync("reportGeneration", UtilMisc.toMap("dataMap", dataMap, "fieldDisplayLabels", fieldDisplayLabels, "filterMap", filterMap, "filterDisplayLabels", filterDisplayLabels, "reportName", reportName, "writeFilters", writeFilters, "customMethodId", "", "userLogin", userLogin, "locale", locale));
+            Map<String, Object> resultGeneration = dispatcher.runSync("createFlexibleReportFromMaster", UtilMisc.toMap("dataMap", dataMap, "fieldDisplayLabels", fieldDisplayLabels, "filterMap", filterMap, "filterDisplayLabels", filterDisplayLabels, "reportName", reportName, "writeFilters", writeFilters, "customMethodId", "", "userLogin", userLogin, "locale", locale));
             if (ServiceUtil.isError(resultGeneration)) {
                 return ServiceUtil.returnError(UtilProperties.getMessage(resource_error, "errorCreatingReport", locale));
             }

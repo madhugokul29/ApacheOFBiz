@@ -76,7 +76,7 @@ public class BirtViewHandler implements ViewHandler {
             IReportRunnable design = null;
 
             // add dynamic parameter for page
-            if (UtilValidate.isEmpty(page) || page.equals("produceReport")) {
+            if (UtilValidate.isEmpty(page) || page.equals("ExecuteFlexibleReport")) {
                 page = (String) request.getParameter("rptDesignFile");
             }
 

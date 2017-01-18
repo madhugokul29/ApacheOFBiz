@@ -75,6 +75,10 @@
     <property key="BirtErrorSQLRenderingAttachmentForEmail">
         <value xml:lang="en">Error SQL rendering ${birtContentType} attachment for email: ${errorString}</value>
     </property>
+    <property key="BirtFlexibleReport">
+        <value xml:lang="en">Flexible Report</value>
+        <value xml:lang="fr">Rapport configurable</value>
+    </property>
     <property key="BirtFacilityReportInventoryHistoryReport">
         <value xml:lang="en">Inventory History Report</value>
         <value xml:lang="fr">Historique du stock</value>

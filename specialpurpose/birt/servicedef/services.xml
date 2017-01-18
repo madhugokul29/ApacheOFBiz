@@ -41,7 +41,7 @@ under the License.
     </service>
 
     <!-- SERVICES FOR REPORTS -->
-    <service name="reportGeneration" engine="java" auth="true" location="org.apache.ofbiz.birt.birt.BirtServices" invoke="generateReport">
+    <service name="createFlexibleReportFromMaster" engine="java" auth="true" location="org.apache.ofbiz.birt.birt.BirtServices" invoke="createFlexibleReportFromMaster">
         <description>BIRT report generation</description>
         <required-permissions join-type="AND"><check-permission permission="BIRT_CREATE"/></required-permissions>
         <attribute name="dataMap" type="Map" mode="IN" optional="false" />
@@ -133,15 +133,15 @@ under the License.
         <attribute name="contentId" type="String" mode="IN" optional="false" />
     </service>
 
-    <service name="uploadRptDesign" auth="true" engine="java" location="org.apache.ofbiz.birt.birt.BirtServices" invoke="uploadRptDesign">
+    <service name="UploadRptDesign" auth="true" engine="java" location="org.apache.ofbiz.birt.birt.BirtServices" invoke="uploadRptDesign">
         <description>Upload design-modified rptdesign file</description>
         <required-permissions join-type="AND"><check-permission permission="BIRT_UPDATE"/></required-permissions>
         <attribute name="dataResourceIdRpt" type="String" mode="IN" optional="false" />
-        <attribute name="uploadRptDesign" type="java.nio.ByteBuffer" mode="IN" optional="false" />
+        <attribute name="UploadRptDesign" type="java.nio.ByteBuffer" mode="IN" optional="false" />
         <attribute name="_uploadRptDesign_fileName" type="String" mode="IN" optional="false" />
     </service>
 
-    <service name="editReport" auth="true" engine="java" location="org.apache.ofbiz.birt.birt.BirtServices" invoke="editReport">
+    <service name="EditFlexibleReport" auth="true" engine="java" location="org.apache.ofbiz.birt.birt.BirtServices" invoke="editFlexibleReport">
         <description>Edit report</description>
         <required-permissions join-type="AND"><check-permission permission="BIRT_UPDATE"/></required-permissions>
         <attribute name="contentId" type="String" mode="IN" optional="false" />

@@ -25,7 +25,7 @@ under the License.
     <!--This form present std field for the flexible birt engine, you need to heritate it for each domain
         with an auto attribute or something like that to use cache system
     -->
-    <form name="abstractSearchForm" type="single" target="produceReport">
+    <form name="AbstractFlexibleReportSearchForm" type="single" target="ExecuteFlexibleReport">
         <actions>
             <entity-one entity-name="Content" value-field="content"/>
             <entity-condition entity-name="ContentAttribute" list="contentAttrs">
@@ -57,7 +57,7 @@ under the License.
         </sort-order>
     </form>
 
-    <form name="CTNT_MASTER_EXAMPLE" type="single" extends="abstractSearchForm">
+    <form name="CTNT_MASTER_EXAMPLE" type="single" extends="AbstractFlexibleReportSearchForm">
         <auto-fields-entity entity-name="Example" default-field-type="find"/>
     </form>
 
