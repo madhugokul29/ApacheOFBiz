@@ -32,7 +32,7 @@ under the License.
     </form>
 
     <!-- Flexible Report Form -->
-    <form name="CreateFlexibleReport" type="single" target="reportParameters">
+    <form name="CreateFlexibleReport" type="single" target="CreateFlexibleReport">
         <field name="contentId" title="${uiLabelMap.ContentChoice}" >
             <drop-down>
                 <entity-options description="${description}" entity-name="Content" key-field-name="contentId">
@@ -57,7 +57,7 @@ under the License.
         <field name="sendButton"><submit /></field>
     </form>
 
-    <form name="EditFlexibleReport" type="single" target="updateContent" default-map-name="content">
+    <form name="EditFlexibleReport" type="single" target="UpdateFlexibleReport" default-map-name="content">
         <field name="contentId"><hidden/></field>
         <field name="contentName" title="${uiLabelMap.reportName}"><display/></field>
         <field name="description"><text/></field>
@@ -80,17 +80,18 @@ under the License.
                 <field-map from-field="contentAssoc.contentIdTo" field-name="contentId"/>
             </entity-one>
         </actions>
+        <field name="contentId"><hidden value="${content.contentId}"/></field>
         <field name="dataResourceIdRpt"><hidden value="${contentRpt.dataResourceId}"/></field>
         <field name="downloadRptDesignLink" title=" " widget-style="buttontext">
             <hyperlink also-hidden="false" description="${uiLabelMap.downloadRptDesign}" target="ViewBinaryDataResource" target-window="_blank">
                 <parameter param-name="dataResourceId" from-field="contentRpt.dataResourceId"/>
             </hyperlink>
         </field>
-        <field name="UploadRptDesign" title=" "><file/></field>
+        <field name="uploadRptDesign" title=" "><file/></field>
         <field name="upload" title="${uiLabelMap.CommonUpload}" position="2"><submit/></field>
     </form>
 
-    <form name="EditFlexibleReportSearchForm" type="single" target="editReportForm">
+    <form name="EditFlexibleReportSearchForm" type="single" target="EditFlexibleReportSearchForm">
         <actions>
             <set field="statusId" from-field="content.statusId"/>
             <set field="reportContentId" from-field="content.contentId"/>
@@ -98,7 +99,7 @@ under the License.
                 <field-map field-name="contentIdTo" from-field="contentId"/>
                 <field-map field-name="contentAssocTypeId" value="SUB_CONTENT"/>
             </entity-and>
-            <service service-name="createFormForDisplay" auto-field-map="true" result-map="displayFormMap"/>
+            <service service-name="prepareFlexibleReportSearchFormToEdit" auto-field-map="true" result-map="displayFormMap"/>
         </actions>
         <field name="overrideFilters" title=" "><textarea cols="90" rows="20" default-value="${displayFormMap.textForm}"/></field>
         <field name="reportContentId"><hidden/></field>

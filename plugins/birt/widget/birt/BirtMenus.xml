@@ -47,7 +47,7 @@ under the License.
             <condition>
                 <if-has-permission permission="BIRT_DELETE"/>
             </condition>
-            <link target="deleteReports" confirmation-message="${uiLabelMap.ConfirmDeleteReports}" request-confirmation="true"/>
+            <link target="DeleteAllFlexibleReports" confirmation-message="${uiLabelMap.ConfirmDeleteReports}" request-confirmation="true"/>
         </menu-item>
         -->
     </menu>
@@ -56,14 +56,25 @@ under the License.
             <condition>
                 <if-compare field="content.statusId" operator="not-equals" value="CTNT_PUBLISHED"/>
             </condition>
-            <link target="updateContent">
+            <link target="UpdateFlexibleReport">
                 <parameter param-name="contentId" from-field="content.contentId"/>
                 <parameter param-name="statusId" value="CTNT_PUBLISHED"/>
             </link>
         </menu-item>
-        <menu-item name="updateLink" title="${groovy: content.statusId=='CTNT_PUBLISHED'?uiLabelMap.CommonOpen:uiLabelMap.CommonEdit}">
-            <link target="editContent">
+        <menu-item name="updateLink" title="${uiLabelMap.CommonOpen}">
+            <condition>
+                <if-compare field="content.statusId" operator="not-equals" value="CTNT_IN_PROGRESS"/>
+            </condition>
+            <link target="UpdateFlexibleReport">
                 <parameter param-name="statusId" value="CTNT_IN_PROGRESS"/>
+                <parameter param-name="contentId" from-field="content.contentId"/>
+            </link>
+        </menu-item>
+        <menu-item name="editLink" title="${uiLabelMap.CommonEdit}">
+            <condition>
+                <if-compare field="content.statusId" operator="equals" value="CTNT_IN_PROGRESS"/>
+            </condition>
+            <link target="EditFlexibleReport">
                 <parameter param-name="contentId" from-field="content.contentId"/>
             </link>
         </menu-item>
@@ -71,7 +82,7 @@ under the License.
             <condition>
                 <if-compare field="content.statusId" operator="equals" value="CTNT_IN_PROGRESS"/>
             </condition>
-            <link target="updateContent">
+            <link target="DeleteFlexibleReport">
                 <parameter param-name="contentId" from-field="content.contentId"/>
             </link>
         </menu-item>

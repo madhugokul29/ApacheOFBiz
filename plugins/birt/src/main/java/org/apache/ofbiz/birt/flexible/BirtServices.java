@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  *******************************************************************************/
-package org.apache.ofbiz.birt.birt;
+package org.apache.ofbiz.birt.flexible;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,9 +43,7 @@ import org.apache.ofbiz.base.util.UtilProperties;
 import org.apache.ofbiz.base.util.UtilValidate;
 import org.apache.ofbiz.base.util.UtilXml;
 import org.apache.ofbiz.base.util.string.FlexibleStringExpander;
-import org.apache.ofbiz.birt.BirtUtil;
 import org.apache.ofbiz.birt.BirtWorker;
-import org.apache.ofbiz.birt.ReportDesignGenerator;
 import org.apache.ofbiz.entity.Delegator;
 import org.apache.ofbiz.entity.GenericEntityException;
 import org.apache.ofbiz.entity.GenericValue;
@@ -112,7 +110,7 @@ public class BirtServices {
 
     @Deprecated
     public static Map<String, Object> getListMultiFieldsByView(DispatchContext dctx,
-                                                               Map<String, ? extends Object> context) {
+                                                               Map<String, Object> context) {
         String entityViewName = (String) context.get("entityViewName");
         GenericValue userLogin = (GenericValue) context.get("userLogin");
         List<String> listMultiFields = new ArrayList<String>();
@@ -150,7 +148,7 @@ public class BirtServices {
         return result;
     }
 
-    public static Map<String, Object> callPerformFindFromBirt(DispatchContext dctx, Map<String, ? extends Object> context) {
+    public static Map<String, Object> callPerformFindFromBirt(DispatchContext dctx, Map<String, Object> context) {
         LocalDispatcher dispatcher = dctx.getDispatcher();
         IReportContext reportContext = (IReportContext) context.get("reportContext");
         Locale locale = (Locale) context.get("locale");
@@ -190,11 +188,11 @@ public class BirtServices {
             e.printStackTrace();
         }
         resultToBirt = ServiceUtil.returnSuccess();
-        resultToBirt.put("list", list);
+        resultToBirt.put("records", list);
         return resultToBirt;
     }
 
-    public static Map<String, Object> determineReportGenerationPath(DispatchContext dctx, Map<String, ? extends Object> context) {
+    public static Map<String, Object> determineReportGenerationPath(DispatchContext dctx, Map<String, Object> context) {
         Delegator delegator = dctx.getDelegator();
         LocalDispatcher dispatcher = dctx.getDispatcher();
         Locale locale = (Locale) context.get("locale");
@@ -227,7 +225,7 @@ public class BirtServices {
                     return ServiceUtil.returnError(UtilProperties.getMessage(resource_error, "entity_view_does_not_exist", locale) + " " + entityViewName);
                 }
             try {
-                Map<String, Object> resultContent = dispatcher.runSync("createReportContentFromMasterEntityWorkflow", UtilMisc.toMap("entityViewName", entityViewName, "reportName", reportName, "description", description, "writeFilters", writeFilters, "masterContentId", masterContentId, "userLogin", userLogin, "locale", locale));
+                Map<String, Object> resultContent = dispatcher.runSync("createFlexibleReportFromMasterEntityWorkflow", UtilMisc.toMap("entityViewName", entityViewName, "reportName", reportName, "description", description, "writeFilters", writeFilters, "masterContentId", masterContentId, "userLogin", userLogin, "locale", locale));
                 if(ServiceUtil.isError(resultContent)) {
                     return ServiceUtil.returnError(ServiceUtil.getErrorMessage(resultContent));
                 }
@@ -244,7 +242,7 @@ public class BirtServices {
                 return ServiceUtil.returnError("No service define with name" + serviceName); //TODO labelise
             }
             try {
-                Map<String, Object> resultContent = dispatcher.runSync("createReportContentFromMasterServiceWorkflow", UtilMisc.toMap("serviceName", serviceName, "reportName", reportName, "description", description, "writeFilters", writeFilters, "masterContentId", masterContentId, "userLogin", userLogin, "locale", locale));
+                Map<String, Object> resultContent = dispatcher.runSync("createFlexibleReportFromMasterServiceWorkflow", UtilMisc.toMap("serviceName", serviceName, "reportName", reportName, "description", description, "writeFilters", writeFilters, "masterContentId", masterContentId, "userLogin", userLogin, "locale", locale));
                 if (ServiceUtil.isError(resultContent)) {
                     return ServiceUtil.returnError(ServiceUtil.getErrorMessage(resultContent));
                 }
@@ -262,7 +260,7 @@ public class BirtServices {
         String textForm;
         Map<String, Object> resultFormDisplay;
         try {
-            resultFormDisplay = dispatcher.runSync("createFormForDisplay", UtilMisc.toMap("reportContentId", reportContentId, "userLogin", userLogin, "locale", locale));
+            resultFormDisplay = dispatcher.runSync("prepareFlexibleReportSearchFormToEdit", UtilMisc.toMap("reportContentId", reportContentId, "userLogin", userLogin, "locale", locale));
             textForm = (String) resultFormDisplay.get("textForm");
         } catch (GenericServiceException e) {
             e.printStackTrace();
@@ -276,7 +274,7 @@ public class BirtServices {
     }
 
     // I'm not a big fan of how I did the createFormForDisplay / overrideReportForm. Could probably be improved using a proper formForReport object or something similar.
-    public static Map<String, Object> overrideReportForm(DispatchContext dctx, Map<String, ? extends Object> context) {
+    public static Map<String, Object> overrideReportForm(DispatchContext dctx, Map<String, Object> context) {
         LocalDispatcher dispatcher = dctx.getDispatcher();
         Delegator delegator = dctx.getDelegator();
         Locale locale = (Locale) context.get("locale");
@@ -305,7 +303,7 @@ public class BirtServices {
         return ServiceUtil.returnSuccess(UtilProperties.getMessage(resource, "form_successfully_overridden", locale));
     }
 
-    public static Map<String, Object> createReportContentFromMasterEntityWorkflow(DispatchContext dctx, Map<String, Object> context) {
+    public static Map<String, Object> createFlexibleReportFromMasterEntityWorkflow(DispatchContext dctx, Map<String, Object> context) {
         LocalDispatcher dispatcher = dctx.getDispatcher();
         Delegator delegator = dctx.getDelegator();
         Locale locale = (Locale) context.get("locale");
@@ -368,7 +366,7 @@ public class BirtServices {
         return result;
     }
 
-    public static Map<String, Object> createReportContentFromMasterServiceWorkflow(DispatchContext dctx, Map<String, Object> context) {
+    public static Map<String, Object> createFlexibleReportFromMasterServiceWorkflow(DispatchContext dctx, Map<String, Object> context) {
         LocalDispatcher dispatcher = dctx.getDispatcher();
         Delegator delegator = dctx.getDelegator();
         Locale locale = (Locale) context.get("locale");
@@ -402,7 +400,7 @@ public class BirtServices {
         return result;
     }
 
-    public static Map<String, Object> createBirtMaps(DispatchContext dctx, Map<String, ? extends Object> context) {
+    public static Map<String, Object> createBirtMaps(DispatchContext dctx, Map<String, Object> context) {
         Locale locale = (Locale) context.get("locale");
         ModelEntity modelEntity = (ModelEntity) context.get("modelEntity");
 
@@ -478,7 +476,7 @@ public class BirtServices {
         return result;
     }
 
-    public static Map<String, Object> createFormForDisplay(DispatchContext dctx, Map<String, ? extends Object> context) {
+    public static Map<String, Object> createFormForDisplay(DispatchContext dctx, Map<String, Object> context) {
         String reportContentId = (String) context.get("reportContentId");
         Delegator delegator = dctx.getDelegator();
         Map<String, Object> result = ServiceUtil.returnSuccess();
@@ -505,7 +503,7 @@ public class BirtServices {
         return result;
     }
 
-    public static Map<String, Object> deleteAllReports(DispatchContext dctx, Map<String, ? extends Object> context) {
+    public static Map<String, Object> deleteAllReports(DispatchContext dctx, Map<String, Object> context) {
         Delegator delegator = dctx.getDelegator();
         LocalDispatcher dispatcher = dctx.getDispatcher();
         Locale locale = (Locale) context.get("locale");
@@ -562,7 +560,7 @@ public class BirtServices {
     }
 
     // me demande si j'aurais pas dû faire un seul service de suppression avec listContentId en optionnel... 
-    public static Map<String, Object> deleteOneReport(DispatchContext dctx, Map<String, ? extends Object> context) {
+    public static Map<String, Object> deleteOneReport(DispatchContext dctx, Map<String, Object> context) {
         Delegator delegator = dctx.getDelegator();
         LocalDispatcher dispatcher = dctx.getDispatcher();
         Locale locale = (Locale) context.get("locale");
@@ -611,7 +609,7 @@ public class BirtServices {
         return ServiceUtil.returnSuccess(UtilProperties.getMessage(resource, "report_successfully_deleted", locale));
     }
 
-    public static Map<String, Object> uploadRptDesign(DispatchContext dctx, Map<String, ? extends Object> context) {
+    public static Map<String, Object> uploadRptDesign(DispatchContext dctx, Map<String, Object> context) {
         String dataResourceId = (String) context.get("dataResourceIdRpt");
         Locale locale = (Locale) context.get("locale");
         Delegator delegator = dctx.getDelegator();
@@ -636,9 +634,7 @@ public class BirtServices {
             return ServiceUtil.returnError(UtilProperties.getMessage(resource_error, "cannot_find_uploaded_file", locale));
         }
 
-        // check file name
-        String uploadedFilename = (String) context.get("_uploadRptDesign_fileName");
-        GenericValue dataResource;
+        GenericValue dataResource = null;
         try {
             dataResource = delegator.findOne("DataResource", false, "dataResourceId", dataResourceId);
         } catch (GenericEntityException e1) {
@@ -646,11 +642,6 @@ public class BirtServices {
             return ServiceUtil.returnError(e1.getMessage());
         }
         String rptDesignName = dataResource.getString("objectInfo");
-
-        if (! uploadedFilename.equals(rptDesignName.substring(rptDesignName.lastIndexOf('/') + 1))) {
-            listSuccessMessage.add(UtilProperties.getMessage(resource, "file_name_consistency_warning", locale));
-        }
-
         // start Birt API platfrom
         try {
             Platform.startup();

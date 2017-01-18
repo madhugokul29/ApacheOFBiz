@@ -1,4 +1,4 @@
-package org.apache.ofbiz.birt;
+package org.apache.ofbiz.birt.flexible;
 
 import com.ibm.icu.util.ULocale;
 import java.io.IOException;
@@ -255,14 +255,14 @@ public class ReportDesignGenerator {
         dataSetOpenScript.append("    }\n");
         dataSetOpenScript.append("}\n");
         dataSetOpenScript.append("catch (e) { Debug.logError(e, module); }\n");
-        dataSetOpenScript.append("list = listRes.get(\"list\");\n");
+        dataSetOpenScript.append("records = listRes.get(\"records\");\n");
         dataSetOpenScript.append("countOfRow = 0;\n");
-        dataSetOpenScript.append("totalRow = list.size();\n");
+        dataSetOpenScript.append("totalRow = records.size();\n");
         dataSetHandle.setOpen(dataSetOpenScript.toString());
 
         // set fetch Birt script
         StringBuffer dataSetFetchScript = new StringBuffer("if (countOfRow == totalRow) return false;\n");
-        dataSetFetchScript.append("line = list.get(countOfRow);\n");
+        dataSetFetchScript.append("line = records.get(countOfRow);\n");
         for (String field : dataMap.keySet()) {
             dataSetFetchScript.append(field);
             dataSetFetchScript.append(" = line.get(\"");

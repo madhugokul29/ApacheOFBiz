@@ -1,4 +1,4 @@
-package org.apache.ofbiz.birt.birt;
+package org.apache.ofbiz.birt.flexible;
 
 import java.io.PrintWriter;
 import java.sql.Timestamp;
@@ -33,7 +33,7 @@ public class BirtMasterReportServices {
     public static final String resource_error = "BirtErrorUiLabels";
     public static final String resourceProduct = "BirtUiLabels";
     
-    public static Map<String, Object> workEffortPerPersonSkeleton(DispatchContext dctx, Map<String, ? extends Object> context) {
+    public static Map<String, Object> workEffortPerPersonSkeleton(DispatchContext dctx, Map<String, Object> context) {
         Map<String, String> dataMap = UtilMisc.toMap("lastName", "name", "firstName", "name", "hours", "floating-point", "fromDate", "date-time", "thruDate", "date-time");
         LinkedHashMap<String, String> filterMap = new LinkedHashMap<String, String>(); 
         filterMap.put("firstName", "name");
@@ -50,7 +50,7 @@ public class BirtMasterReportServices {
         return UtilMisc.toMap("dataMap", dataMap, "fieldDisplayLabels", fieldDisplayLabels, "filterMap", filterMap, "filterDisplayLabels", filterDisplayLabels, "customMethodName", customMethodName);
     }
     
-    public static Map<String, Object> workEffortPerPerson(DispatchContext dctx, Map<String, ? extends Object> context) {
+    public static Map<String, Object> workEffortPerPerson(DispatchContext dctx, Map<String, Object> context) {
         Delegator delegator = (Delegator) dctx.getDelegator();
         IReportContext reportContext = (IReportContext) context.get("reportContext");
         Map<String, Object> parameters = (Map<String, Object>) reportContext.getParameterValue("parameters");
@@ -112,11 +112,11 @@ public class BirtMasterReportServices {
         listCompiled.addAll(listWorkEffortTime);
         listCompiled.addAll(listPersons);
         Map<String, Object> result = ServiceUtil.returnSuccess();
-        result.put("list", listCompiled);
+        result.put("records", listCompiled);
         return result;
     }
 
-    public static Map<String, Object> turnOverSkeleton(DispatchContext dctx, Map<String, ? extends Object> context) {
+    public static Map<String, Object> turnOverSkeleton(DispatchContext dctx, Map<String, Object> context) {
         Map<String, String> dataMap = UtilMisc.toMap("invoiceTypeId", "short-varchar", "invoicePartyId", "short-varchar", "statusId", "short-varchar", "invoiceDate", "date", "dueDate", "date", "currencyUomId", "short-varchar", "invoiceItemTypeId", "short-varchar", "invoiceItemSeqId", "short-varchar", "productId", "short-varchar", "partyId", "short-varchar", "partyName", "short-varchar", "primaryProductCategoryId", "short-varchar", "quantity", "numeric", "amount", "currency-amount", "productStoreId", "short-varchar", "storeName", "short-varchar");
         Map<String, String> fieldDisplayLabels = UtilMisc.toMap("invoiceTypeId", "Type de facture", "invoicePartyId", "Ref. client facture", "statusId", "Statut de la facture", "invoiceDate", "Date de la facture", "dueDate", "Date d'échéance", "currencyUomId", "Monnaie", "invoiceItemTypeId", "Type de ligne de facture", "invoiceItemSeqId", "Ref. de ligne de facture", "productId", "Ref. produit", "partyId", "Ref. client", "partyName", "Client", "primaryProductCategoryId", "Catégorie de produit", "quantity", "Quantité", "amount", "Montant", "productStoreId", "Ref. de centre de profit", "storeName", "Centre de profit");
         LinkedHashMap<String, String> filterMap = new LinkedHashMap<String, String>(); 
@@ -133,7 +133,7 @@ public class BirtMasterReportServices {
         return UtilMisc.toMap("dataMap", dataMap, "fieldDisplayLabels", fieldDisplayLabels, "filterMap", filterMap, "filterDisplayLabels", filterDisplayLabels, "customMethodName", customMethodName);
     }
 
-    public static Map<String, Object> turnOver(DispatchContext dctx, Map<String, ? extends Object> context) {
+    public static Map<String, Object> turnOver(DispatchContext dctx, Map<String, Object> context) {
         Delegator delegator = (Delegator) dctx.getDelegator();
         Locale locale = (Locale) context.get("locale");
         IReportContext reportContext = (IReportContext) context.get("reportContext");
@@ -295,7 +295,7 @@ public class BirtMasterReportServices {
             return ServiceUtil.returnError(UtilProperties.getMessage(resource, "ErrorRetrievingTurnOver", locale));
         }
         Map<String, Object> result = ServiceUtil.returnSuccess();
-        result.put("list", listInvoiceEditable);
+        result.put("records", listInvoiceEditable);
         return result;
     }
 }

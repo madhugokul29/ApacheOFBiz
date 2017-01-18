@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  *******************************************************************************/
-package org.apache.ofbiz.birt;
+package org.apache.ofbiz.birt.flexible;
 
 import java.io.OutputStream;
 import java.io.StringWriter;

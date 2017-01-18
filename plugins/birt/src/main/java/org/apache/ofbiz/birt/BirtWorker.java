@@ -40,6 +40,7 @@ import org.apache.ofbiz.base.util.UtilProperties;
 import org.apache.ofbiz.base.util.UtilValidate;
 import org.apache.ofbiz.base.util.string.FlexibleStringExpander;
 import org.apache.ofbiz.base.util.template.FreeMarkerWorker;
+import org.apache.ofbiz.birt.flexible.BirtUtil;
 import org.apache.ofbiz.content.content.ContentWorker;
 import org.apache.ofbiz.entity.Delegator;
 import org.apache.ofbiz.entity.GenericValue;

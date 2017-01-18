@@ -37,7 +37,7 @@ under the License.
                     </condition-list>
                 </condition-list>
             </entity-condition>
-            <set field="rptDesignFile" value="${groovy: org.apache.ofbiz.birt.BirtUtil.resolveRptDesignFilePathFromContent(delegator, content.contentId)}"/>
+            <set field="rptDesignFile" value="${groovy: org.apache.ofbiz.birt.flexible.BirtUtil.resolveRptDesignFilePathFromContent(delegator, content.contentId)}"/>
         </actions>
         <field name="birtContentType">
             <drop-down>

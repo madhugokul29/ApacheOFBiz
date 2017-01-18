@@ -96,56 +96,43 @@ under the License.
         <response name="success" type="view" value="ExecuteFlexibleReport" />
         <response name="error" type="request" value="viewLast" />
     </request-map>
-    <request-map uri="reportParameters">
+    <request-map uri="CreateFlexibleReport">
         <security https="true" auth="true" />
-        <event type="service" invoke="determineReportGenerationPath" />
+        <event type="service" invoke="determineFlexibleReportGenerationPath" />
         <response name="error" type="view" value="CreateFlexibleReport" />
         <response name="success" type="view" value="EditFlexibleReport" />
     </request-map>
-    <request-map uri="editReportForm">
+    <request-map uri="EditFlexibleReportSearchForm">
         <security https="true" auth="true" />
-        <event type="service" invoke="overrideReportForm" />
-        <response name="error" type="view" value="reportParameters" />
-        <response name="success" type="view" value="reportParameters" />
+        <event type="service" invoke="updateFlexibleReportSearchForm" />
+        <response name="error" type="view" value="DisplayFlexibleReportSearchForm" />
+        <response name="success" type="view" value="DisplayFlexibleReportSearchForm" />
     </request-map>
 
-    <request-map uri="deleteReports">
+    <request-map uri="DeleteAllFlexibleReports">
         <security https="true" auth="true" />
-        <event type="service" invoke="deleteAllReports" />
+        <event type="service" invoke="deleteAllFlexibleReports" />
         <response name="success" type="view" value="main" />
         <response name="error" type="view" value="main" />
     </request-map>
-    <request-map uri="deleteOneReport">
+    <request-map uri="DeleteFlexibleReport">
         <security https="true" auth="true" />
-        <event type="service" invoke="deleteOneReport" />
+        <event type="service" invoke="deleteFlexibleReport" />
         <response name="success" type="view" value="ListFlexibleReport" />
         <response name="error" type="view" value="ListFlexibleReport" />
     </request-map>
 
-    <request-map uri="EditFlexibleReportSearchForm">
-        <security https="true" auth="true" />
-        <event type="service" invoke="overrideReportForm" />
-        <response name="success" type="view" value="ListFlexibleReport" />
-        <response name="error" type="request" value="json" />
-    </request-map>
-
-    <request-map uri="updateContent">
+    <request-map uri="UpdateFlexibleReport">
         <security https="true" auth="true" />
         <event type="service" invoke="updateContent" />
         <response name="success" type="view" value="ListFlexibleReport" />
-        <response name="error" type="view" value="ListFlexibleReport" />
-    </request-map>
-    <request-map uri="editContent">
-        <security https="true" auth="true" />
-        <event type="service" invoke="updateContent" />
-        <response name="success" type="view" value="EditFlexibleReport" />
         <response name="error" type="view" value="ListFlexibleReport" />
     </request-map>
     <request-map uri="UploadRptDesign">
         <security https="true" auth="true" />
-        <event type="service" invoke="UploadRptDesign" />
-        <response name="success" type="view" value="ListFlexibleReport" />
-        <response name="error" type="view" value="ListFlexibleReport" />
+        <event type="service" invoke="uploadFlexibleReportRptDesign" />
+        <response name="success" type="view" value="EditFlexibleReport" />
+        <response name="error" type="view" value="EditFlexibleReport" />
     </request-map>
     <!-- end of request mappings -->
 
