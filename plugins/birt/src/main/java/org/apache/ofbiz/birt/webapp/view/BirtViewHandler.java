@@ -113,6 +113,7 @@ public class BirtViewHandler implements ViewHandler {
             // set output file name to get also file extension
             String outputFileName = (String) request.getParameter(BirtWorker.getBirtOutputFileName());
             if (UtilValidate.isNotEmpty(outputFileName)) {
+                outputFileName = BirtUtil.encodeReportName(outputFileName);
                 String format = BirtUtil.getMimeTypeFileExtension(contentType);
                 if (! outputFileName.endsWith(format)) {
                     outputFileName = outputFileName.concat(format);
