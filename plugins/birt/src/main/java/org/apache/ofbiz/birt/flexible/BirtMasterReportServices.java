@@ -292,7 +292,7 @@ public class BirtMasterReportServices {
             writer.close();
         } catch (Exception e) {
             e.printStackTrace();
-            return ServiceUtil.returnError(UtilProperties.getMessage(resource, "ErrorRetrievingTurnOver", locale));
+            return ServiceUtil.returnError(UtilProperties.getMessage(resource, "BirtErrorRetrievingTurnOver", locale));
         }
         Map<String, Object> result = ServiceUtil.returnSuccess();
         result.put("records", listInvoiceEditable);

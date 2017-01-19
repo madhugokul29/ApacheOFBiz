@@ -131,7 +131,7 @@ public class ReportDesignGenerator {
             for (String filter : filterMap.keySet()) {
                 String birtType = BirtUtil.convertFieldTypeToBirtParameterType(filterMap.get(filter));
                 if (birtType == null) {
-                    throw new GeneralException(UtilProperties.getMessage(resource_error, "conversion.field_to_birt.failed", locale));
+                    throw new GeneralException(UtilProperties.getMessage(resource_error, "BirtErrorConversionFieldToBirtFailed", locale));
                 }
                 // get label
                 String displayFilterName;
@@ -289,7 +289,7 @@ public class ReportDesignGenerator {
             resultSetCol.setColumnName(field);
             String birtType = BirtUtil.convertFieldTypeToBirtType(dataMap.get(field));
             if (birtType == null) {
-                 throw new GeneralException(UtilProperties.getMessage(resource_error, "conversion.field_to_birt.failed", locale));
+                 throw new GeneralException(UtilProperties.getMessage(resource_error, "BirtErrorConversionFieldToBirtFailed", locale));
             }
             resultSetCol.setPosition(i);
             resultSetCol.setDataType(birtType);

@@ -229,7 +229,7 @@ public final class BirtWorker {
             if (!templatePathLocationDir.exists()) {
                 boolean created = templatePathLocationDir.mkdirs();
                 if (!created) {
-                    new GeneralException(UtilProperties.getMessage(resourceError, "cannot_locate_report_folder", locale));
+                    new GeneralException(UtilProperties.getMessage(resourceError, "BirtErrorCannotLocateReportFolder", locale));
                 }
             }
         int i = 0;
