@@ -18,13 +18,25 @@
     under the License.
 -->
 <entity-engine-xml>
-  <DataResource dataResourceId="DR_MASTER_EXAMPLE" dataResourceTypeId="ELECTRONIC_TEXT" dataTemplateTypeId="FORM_COMBINED" />
-  <ElectronicText dataResourceId="DR_MASTER_EXAMPLE">
-    <textData><![CDATA[<!--default domain form-->
+    <DataResource dataResourceId="DR_MASTER_EXAMPLE" dataResourceTypeId="ELECTRONIC_TEXT" dataTemplateTypeId="FORM_COMBINED" />
+    <ElectronicText dataResourceId="DR_MASTER_EXAMPLE">
+        <textData><![CDATA[<!--default domain form-->
 <form name="${masterContentId}_${contentId}" type="single" extends="${masterContentId}" extends-resource="component://birt/widget/birt/BirtMasterForms.xml">
 </form>]]>
-    </textData>
-  </ElectronicText>
-  <Content contentId="CTNT_MASTER_EXAMPLE" contentTypeId="REPORT_MASTER"  dataResourceId="DR_MASTER_EXAMPLE" statusId="CTNT_PUBLISHED" contentName="Example" description="Master Content for Example" />
-  <ContentAttribute contentId="CTNT_MASTER_EXAMPLE" attrName="Entity" attrValue="Example"/>
+        </textData>
+    </ElectronicText>
+    <Content contentId="CTNT_MASTER_EXAMPLE" contentTypeId="REPORT_MASTER"  dataResourceId="DR_MASTER_EXAMPLE" statusId="CTNT_PUBLISHED" contentName="Example" description="Master Content for Example" />
+    <ContentAttribute contentId="CTNT_MASTER_EXAMPLE" attrName="Entity" attrValue="Example"/>
+
+    <CustomMethod customMethodId="CM_FB_TURNOVER" customMethodTypeId="FLEXIBLE_BIRT" customMethodName="flexibleReportTurnOver" description="service to resolve invoice for turnover report domain"/>
+    <DataResource dataResourceId="DR_MASTER_TURNOVER" dataResourceTypeId="ELECTRONIC_TEXT" dataTemplateTypeId="FORM_COMBINED" />
+    <ElectronicText dataResourceId="DR_MASTER_TURNOVER">
+        <textData><![CDATA[<!--default domain form-->
+<form name="${masterContentId}_${contentId}" type="single" extends="${masterContentId}" extends-resource="component://birt/widget/birt/BirtMasterForms.xml">
+</form>]]>
+        </textData>
+    </ElectronicText>
+    <Content contentId="CTNT_MASTER_TURNOVER" customMethodId="CM_FB_TURNOVER" contentTypeId="REPORT_MASTER" dataResourceId="DR_MASTER_TURNOVER" statusId="CTNT_PUBLISHED" contentName="Turnover" description="Master Content for TURNOVER domain" />
+    <ContentAttribute contentId="CTNT_MASTER_TURNOVER" attrName="Service" attrValue="default"/>
+
 </entity-engine-xml>

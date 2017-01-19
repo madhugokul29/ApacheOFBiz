@@ -109,8 +109,7 @@ public class BirtServices {
     }
 
     @Deprecated
-    public static Map<String, Object> getListMultiFieldsByView(DispatchContext dctx,
-                                                               Map<String, Object> context) {
+    public static Map<String, Object> prepareFlexibleReportOptionFieldsFromEntity(DispatchContext dctx, Map<String, Object> context) {
         String entityViewName = (String) context.get("entityViewName");
         GenericValue userLogin = (GenericValue) context.get("userLogin");
         List<String> listMultiFields = new ArrayList<String>();
@@ -237,11 +236,6 @@ public class BirtServices {
         } else if (attrName.equalsIgnoreCase("Service")) {
             String serviceName = masterContentAttribute.getString("attrValue");
             try {
-                ModelService modelService = dctx.getModelService(serviceName);
-            } catch (GenericServiceException e) {
-                return ServiceUtil.returnError("No service define with name" + serviceName); //TODO labelise
-            }
-            try {
                 Map<String, Object> resultContent = dispatcher.runSync("createFlexibleReportFromMasterServiceWorkflow", UtilMisc.toMap("serviceName", serviceName, "reportName", reportName, "description", description, "writeFilters", writeFilters, "masterContentId", masterContentId, "userLogin", userLogin, "locale", locale));
                 if (ServiceUtil.isError(resultContent)) {
                     return ServiceUtil.returnError(ServiceUtil.getErrorMessage(resultContent));
@@ -307,18 +301,15 @@ public class BirtServices {
         LocalDispatcher dispatcher = dctx.getDispatcher();
         Delegator delegator = dctx.getDelegator();
         Locale locale = (Locale) context.get("locale");
-        String description = (String) context.get("description");
-        String reportName = (String) context.get("reportName");
         String writeFilters = (String) context.get("writeFilters");
         GenericValue userLogin = (GenericValue) context.get("userLogin");
         String entityViewName = (String) context.get("entityViewName");
-        String masterContentId = (String) context.get("masterContentId");
 
         ModelEntity modelEntity = delegator.getModelEntity(entityViewName);
         String contentId = null;
         Map<String, Object> result = ServiceUtil.returnSuccess();
         try {
-            Map<String, Object> resultMapsForGeneration = dispatcher.runSync("createBirtMaps", UtilMisc.toMap("modelEntity", modelEntity, "userLogin", userLogin, "locale", locale));
+            Map<String, Object> resultMapsForGeneration = dispatcher.runSync("prepareFlexibleReportFieldsFromEntity", UtilMisc.toMap("modelEntity", modelEntity, "userLogin", userLogin, "locale", locale));
             if (ServiceUtil.isError(resultMapsForGeneration)) {
                 return ServiceUtil.returnError(ServiceUtil.getErrorMessage(resultMapsForGeneration));
             }
@@ -370,8 +361,6 @@ public class BirtServices {
         LocalDispatcher dispatcher = dctx.getDispatcher();
         Delegator delegator = dctx.getDelegator();
         Locale locale = (Locale) context.get("locale");
-        String description = (String) context.get("description");
-        String reportName = (String) context.get("reportName");
         String writeFilters = (String) context.get("writeFilters");
         String serviceName = (String) context.get("serviceName");
         GenericValue userLogin = (GenericValue) context.get("userLogin");
@@ -380,27 +369,52 @@ public class BirtServices {
         Map<String, Object> result = ServiceUtil.returnSuccess();
 
         try {
-            //FIXME comprend pas
+            GenericValue masterContent = delegator.findOne("Content", true, "contentId", masterContentId);
+            String customMethodId = masterContent.getString("customMethodId");
+            if (UtilValidate.isEmpty(customMethodId)) {
+                throw new GeneralException("The master content " + masterContentId + " haven't a customMethod");
+            }
+            GenericValue customMethod = delegator.findOne("CustomMethod", true, "customMethodId", customMethodId);
+            if (customMethod == null) {
+                return ServiceUtil.returnError("CustomMethod not exist : " + customMethodId); //todo labelise
+            }
+            String customMethodName = (String) customMethod.getString("customMethodName");
+            if ("default".equalsIgnoreCase(serviceName)) {
+                serviceName = customMethodName + "PrepareFields";
+            }
+            try {
+                ModelService modelService = dctx.getModelService(serviceName);
+            } catch (GenericServiceException e) {
+                return ServiceUtil.returnError("No service define with name " + serviceName); //TODO labelise
+            }
+            contentId = BirtWorker.recordReportContent(delegator, dispatcher, context);
+            String rptDesignFileName = BirtUtil.resolveRptDesignFilePathFromContent(delegator, contentId);
             Map<String, Object> resultService = dispatcher.runSync(serviceName, UtilMisc.toMap("locale", locale, "userLogin", userLogin));
             Map<String, String> dataMap = (Map<String, String>) resultService.get("dataMap");
             Map<String, String> filterMap = (Map<String, String>) resultService.get("filterMap");
             Map<String, String> fieldDisplayLabels = (Map<String, String>) resultService.get("fieldDisplayLabels");
             Map<String, String> filterDisplayLabels = (Map<String, String>) resultService.get("filterDisplayLabels");
-            String customMethodName = (String) resultService.get("customMethodName");
-            contentId = BirtWorker.recordReportContent(delegator, dispatcher, context);
-            Map<String, Object> resultGeneration = dispatcher.runSync("createFlexibleReportFromMaster", UtilMisc.toMap("dataMap", dataMap, "fieldDisplayLabels", fieldDisplayLabels, "filterMap", filterMap, "filterDisplayLabels", filterDisplayLabels, "reportName", reportName, "writeFilters", writeFilters, "customMethodId", "", "userLogin", userLogin, "locale", locale));
+            Map<String, Object> resultGeneration = dispatcher.runSync("createFlexibleReportFromMaster", UtilMisc.toMap(
+                    "locale", locale,
+                    "dataMap", dataMap,
+                    "userLogin", userLogin,
+                    "filterMap", filterMap,
+                    "serviceName", customMethodName,
+                    "writeFilters", writeFilters,
+                    "rptDesignName", rptDesignFileName,
+                    "fieldDisplayLabels", fieldDisplayLabels,
+                    "filterDisplayLabels", filterDisplayLabels));
             if (ServiceUtil.isError(resultGeneration)) {
                 return ServiceUtil.returnError(UtilProperties.getMessage(resource_error, "BirtErrorCreatingFlexibleReport", locale));
             }
         } catch (GeneralException e) {
-            e.printStackTrace();
             return ServiceUtil.returnError(e.getMessage());
         }
         result.put("contentId", contentId);
         return result;
     }
 
-    public static Map<String, Object> createBirtMaps(DispatchContext dctx, Map<String, Object> context) {
+    public static Map<String, Object> prepareFlexibleReportFieldsFromEntity(DispatchContext dctx, Map<String, Object> context) {
         Locale locale = (Locale) context.get("locale");
         ModelEntity modelEntity = (ModelEntity) context.get("modelEntity");
 

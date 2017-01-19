@@ -119,7 +119,7 @@ public class BirtViewHandler implements ViewHandler {
                     outputFileName = outputFileName.concat(format);
                 }
                 outputFileName = UtilHttp.canonicalizeParameter(outputFileName);
-                response.setHeader("Content-Disposition", "attachment; filename=" + outputFileName + format);
+                response.setHeader("Content-Disposition", "attachment; filename=" + outputFileName);
             }
 
             // checking consistency between Birt content type and response content type

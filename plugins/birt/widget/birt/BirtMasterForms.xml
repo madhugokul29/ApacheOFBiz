@@ -60,5 +60,11 @@ under the License.
     <form name="CTNT_MASTER_EXAMPLE" type="single" extends="AbstractFlexibleReportSearchForm">
         <auto-fields-entity entity-name="Example" default-field-type="find"/>
     </form>
+    <form name="CTNT_MASTER_TURNOVER" type="single" extends="AbstractFlexibleReportSearchForm">
+        <field name="fromDate"><date-time type="date"/></field>
+        <field name="thruDate"><date-time type="date"/></field>
+        <field name="productCategoryId"><lookup target-form-name="LookupProductCategory"/></field>
+        <field name="productStoreId"><lookup target-form-name="LookupProductStore"/></field>
+    </form>
 
 </forms>
