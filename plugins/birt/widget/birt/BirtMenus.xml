@@ -43,11 +43,11 @@ under the License.
         </menu-item>
         <menu-item name="UseFlexibleReport" title="${uiLabelMap.BirtGenericReport}"><link target="UseFlexibleReport"/></menu-item>
         <!-- enable this onl for test
-        <menu-item name="deleteReports" title="${uiLabelMap.BirtDeleteReports}">
+        <menu-item name="deleteReports" title="${uiLabelMap.BirtDeleteFlexibeReports}">
             <condition>
                 <if-has-permission permission="BIRT_DELETE"/>
             </condition>
-            <link target="DeleteAllFlexibleReports" confirmation-message="${uiLabelMap.ConfirmDeleteReports}" request-confirmation="true"/>
+            <link target="DeleteAllFlexibleReports" confirmation-message="${uiLabelMap.BirtConfirmDeleteFlexibleReports}" request-confirmation="true"/>
         </menu-item>
         -->
     </menu>

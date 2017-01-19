@@ -33,7 +33,7 @@ under the License.
 
     <!-- Flexible Report Form -->
     <form name="CreateFlexibleReport" type="single" target="CreateFlexibleReport">
-        <field name="contentId" title="${uiLabelMap.ContentChoice}" >
+        <field name="contentId" title="${uiLabelMap.BirtSelectMasterFlexibleReport}" >
             <drop-down>
                 <entity-options description="${description}" entity-name="Content" key-field-name="contentId">
                     <entity-constraint name="contentTypeId" value="REPORT_MASTER" />
@@ -46,7 +46,7 @@ under the License.
         <field name="sendButton"><submit/></field>
     </form>
     <form name="ListPublishFlexibleReport" type="single" target="DisplayFlexibleReportSearchForm">
-        <field name="contentId" title="${uiLabelMap.BirtReportchoice}" >
+        <field name="contentId" title="${uiLabelMap.BirtSelectFlexibleReport}" >
             <drop-down>
                 <entity-options description="[${contentName}] ${description}" entity-name="ContentAssocViewTo" key-field-name="contentId">
                     <entity-constraint name="contentTypeId" value="FLEXIBLE_REPORT" />
@@ -59,7 +59,7 @@ under the License.
 
     <form name="EditFlexibleReport" type="single" target="UpdateFlexibleReport" default-map-name="content">
         <field name="contentId"><hidden/></field>
-        <field name="contentName" title="${uiLabelMap.reportName}"><display/></field>
+        <field name="contentName" title="${uiLabelMap.FormFieldTitle_eportName}"><display/></field>
         <field name="description"><text/></field>
         <field name="statusId">
             <drop-down>
@@ -83,7 +83,7 @@ under the License.
         <field name="contentId"><hidden value="${content.contentId}"/></field>
         <field name="dataResourceIdRpt"><hidden value="${contentRpt.dataResourceId}"/></field>
         <field name="downloadRptDesignLink" title=" " widget-style="buttontext">
-            <hyperlink also-hidden="false" description="${uiLabelMap.downloadRptDesign}" target="ViewBinaryDataResource" target-window="_blank">
+            <hyperlink also-hidden="false" description="${uiLabelMap.BirtDownloadRptDesign}" target="ViewBinaryDataResource" target-window="_blank">
                 <parameter param-name="dataResourceId" from-field="contentRpt.dataResourceId"/>
             </hyperlink>
         </field>

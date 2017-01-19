@@ -245,7 +245,7 @@ under the License.
                 <set field="contentEntityNameView" from-field="contentEntityNameView" default-value=""/>
             </actions>
             <widgets>
-                <screenlet title="${uiLabelMap.BirtReportchoice}">
+                <screenlet title="${uiLabelMap.BirtSelectFlexibleReport}">
                     <include-form location="component://birt/widget/birt/BirtForms.xml" name="ListPublishFlexibleReport" />
                 </screenlet>
             </widgets>
@@ -292,9 +292,9 @@ under the License.
                             </condition>
                             <widgets>
                                 <container style="button-bar">
-                                    <link target="SelectMasterFlexibleReport" text="${uiLabelMap.BirtReportGeneration}" style="buttontext create"/>
+                                    <link target="SelectMasterFlexibleReport" text="${uiLabelMap.BirtFlexibleReportGeneration}" style="buttontext create"/>
                                 </container>
-                                <screenlet title="${uiLabelMap.BirtReportManagement}">
+                                <screenlet title="${uiLabelMap.BirtFlexibleReportManagement}">
                                     <section>
                                         <condition>
                                             <not><if-empty field="contentTypeReport"/></not>
@@ -303,7 +303,7 @@ under the License.
                                             <include-form location="component://birt/widget/birt/BirtForms.xml" name="ListFlexibleReport" />
                                         </widgets>
                                         <fail-widgets>
-                                            <label text="${uiLabelMap.NoKnownReport}"/>
+                                            <label text="${uiLabelMap.BirtNoKnownFlexibleReport}"/>
                                         </fail-widgets>
                                     </section>
                                 </screenlet>
@@ -331,7 +331,7 @@ under the License.
                                 <if-has-permission permission="BIRT" action="_CREATE"/>
                             </condition>
                             <widgets>
-                                <screenlet title="${uiLabelMap.ContentChoice}">
+                                <screenlet title="${uiLabelMap.BirtSelectMasterFlexibleReport}">
                                     <include-form location="component://birt/widget/birt/BirtForms.xml" name="CreateFlexibleReport" />
                                 </screenlet>
                             </widgets>
@@ -363,10 +363,10 @@ under the License.
                             </condition>
                             <widgets>
                                 <container id="edit-column" style="lefthalf">
-                                    <screenlet title="${uiLabelMap.editReport}">
-                                        <label style="h2">${uiLabelMap.ReportInformation}</label>
+                                    <screenlet title="${uiLabelMap.BirtEditFlexibleReport}">
+                                        <label style="h2">${uiLabelMap.BirtFlexibleReportInformation}</label>
                                         <include-form name="EditFlexibleReport" location="component://birt/widget/birt/BirtForms.xml"/>
-                                        <label style="h2">${uiLabelMap.uploadRptDesign}</label>
+                                        <label style="h2">${uiLabelMap.BirtUploadRptDesign}</label>
                                         <include-form name="UploadRptDesign" location="component://birt/widget/birt/BirtForms.xml" />
                                         <label style="h2">${uiLabelMap.overrideFilters}</label>
                                         <include-form name="EditFlexibleReportSearchForm" location="component://birt/widget/birt/BirtForms.xml"/>

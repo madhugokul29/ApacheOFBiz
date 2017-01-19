@@ -264,10 +264,10 @@ public class BirtServices {
             textForm = (String) resultFormDisplay.get("textForm");
         } catch (GenericServiceException e) {
             e.printStackTrace();
-            return ServiceUtil.returnError(UtilProperties.getMessage(resource_error, "BirtErrorCreatingDefaultSearchForm", locale).concat(UtilProperties.getMessage(resource, "withMessage", locale)).concat(e.getMessage()));
+            return ServiceUtil.returnError(UtilProperties.getMessage(resource_error, "BirtErrorCreatingDefaultSearchForm", locale).concat(": ").concat(e.getMessage()));
         }
 
-        Map<String, Object> result = ServiceUtil.returnSuccess(UtilProperties.getMessage(resource, "report_successfully_generated", locale).concat(" ").concat(reportName));
+        Map<String, Object> result = ServiceUtil.returnSuccess(UtilProperties.getMessage(resource, "BirtFlexibleReportSuccessfullyGenerated", locale).concat(" ").concat(reportName));
         result.put("textForm", textForm);
         result.put("reportContentId", reportContentId);
         return result;
@@ -300,7 +300,7 @@ public class BirtServices {
             e.printStackTrace();
             return ServiceUtil.returnError(e.getMessage());
         }
-        return ServiceUtil.returnSuccess(UtilProperties.getMessage(resource, "form_successfully_overridden", locale));
+        return ServiceUtil.returnSuccess(UtilProperties.getMessage(resource, "BirtSearchFormSuccessfullyOverridde", locale));
     }
 
     public static Map<String, Object> createFlexibleReportFromMasterEntityWorkflow(DispatchContext dctx, Map<String, Object> context) {
@@ -450,16 +450,16 @@ public class BirtServices {
                 filterMap.put(field, mField.getType());
                 filterMap.put(field.concat("_op"), "short-varchar");
                 filterDisplayLabels.put(field, fieldDisplayLabels.get(field));
-                filterDisplayLabels.put(field.concat("_op"), fieldDisplayLabels.get(field).concat(UtilProperties.getMessage(resource, "operator", locale)));
+                filterDisplayLabels.put(field.concat("_op"), fieldDisplayLabels.get(field).concat(UtilProperties.getMessage(resource, "BirtFindCompareOperator", locale)));
             } else { // remaining types need 4 fields (fld0-1_op-value)
                 filterMap.put(field.concat("_fld0_value"), mField.getType());
                 filterMap.put(field.concat("_fld0_op"), "short-varchar");
                 filterMap.put(field.concat("_fld1_value"), mField.getType());
                 filterMap.put(field.concat("_fld1_op"), "short-varchar");
-                filterDisplayLabels.put(field.concat("_fld0_value"), fieldDisplayLabels.get(field).concat(UtilProperties.getMessage(resource, "fieldZero", locale)));
-                filterDisplayLabels.put(field.concat("_fld0_op"), fieldDisplayLabels.get(field).concat(UtilProperties.getMessage(resource, "fieldZero", locale).concat(UtilProperties.getMessage(resource, "operator", locale))));
-                filterDisplayLabels.put(field.concat("_fld1_value"), fieldDisplayLabels.get(field).concat(UtilProperties.getMessage(resource, "fieldOne", locale)));
-                filterDisplayLabels.put(field.concat("_fld1_op"), fieldDisplayLabels.get(field).concat(UtilProperties.getMessage(resource, "fieldOne", locale).concat(UtilProperties.getMessage(resource, "operator", locale))));
+                filterDisplayLabels.put(field.concat("_fld0_value"), fieldDisplayLabels.get(field).concat(UtilProperties.getMessage(resource, "BirtFindFieldOptionValue0", locale)));
+                filterDisplayLabels.put(field.concat("_fld0_op"), fieldDisplayLabels.get(field).concat(UtilProperties.getMessage(resource, "BirtFindFieldOptionValue0", locale).concat(UtilProperties.getMessage(resource, "BirtFindCompareOperator", locale))));
+                filterDisplayLabels.put(field.concat("_fld1_value"), fieldDisplayLabels.get(field).concat(UtilProperties.getMessage(resource, "BirtFindFieldOptionValue1", locale)));
+                filterDisplayLabels.put(field.concat("_fld1_op"), fieldDisplayLabels.get(field).concat(UtilProperties.getMessage(resource, "BirtFindFieldOptionValue1", locale).concat(UtilProperties.getMessage(resource, "BirtFindCompareOperator", locale))));
             }
         }
         Map<String, Object> result = ServiceUtil.returnSuccess();
@@ -556,7 +556,7 @@ public class BirtServices {
             e.printStackTrace();
             return ServiceUtil.returnError(e.getMessage());
         }
-        return ServiceUtil.returnSuccess(UtilProperties.getMessage(resource, "reports_successfully_deleted", locale));
+        return ServiceUtil.returnSuccess(UtilProperties.getMessage(resource, "BirtFlexibleReportsSuccessfullyDeleted", locale));
     }
 
     // me demande si j'aurais pas dû faire un seul service de suppression avec listContentId en optionnel... 
@@ -606,7 +606,7 @@ public class BirtServices {
             e.printStackTrace();
             return ServiceUtil.returnError(e.getMessage());
         }
-        return ServiceUtil.returnSuccess(UtilProperties.getMessage(resource, "report_successfully_deleted", locale));
+        return ServiceUtil.returnSuccess(UtilProperties.getMessage(resource, "BirtFlexibleReportSuccessfullyDeleted", locale));
     }
 
     public static Map<String, Object> uploadRptDesign(DispatchContext dctx, Map<String, Object> context) {
@@ -795,7 +795,7 @@ public class BirtServices {
         if (Debug.infoOn()) Debug.logInfo("####### Design uploaded: ".concat(rptDesignName), module);
 
         // should we as a secondary safety precaution delete any file finishing with _TEMP_.rptdesign?
-        listSuccessMessage.add(UtilProperties.getMessage(resource, "report_file_successfully_uploaded", locale));
+        listSuccessMessage.add(UtilProperties.getMessage(resource, "BirtFlexibleRptDesignSuccessfullyUploaded", locale));
         result = ServiceUtil.returnSuccess(listSuccessMessage);
         return result;
     }
