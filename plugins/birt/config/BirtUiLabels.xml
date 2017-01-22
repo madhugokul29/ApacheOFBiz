@@ -129,6 +129,10 @@
         <value xml:lang="en">Generate report</value>
         <value xml:lang="fr">Générer un rapport</value>
     </property>
+    <property key="BirtFlexibleReportInformation">
+        <value xml:lang="en">Report information</value>
+        <value xml:lang="fr">Informations du rapport</value>
+    </property>
     <property key="BirtFlexibleReportManagement">
         <value xml:lang="en">Reports management</value>
         <value xml:lang="fr">Gestion des rapports</value>

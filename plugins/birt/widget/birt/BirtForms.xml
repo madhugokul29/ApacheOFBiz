@@ -59,7 +59,7 @@ under the License.
 
     <form name="EditFlexibleReport" type="single" target="UpdateFlexibleReport" default-map-name="content">
         <field name="contentId"><hidden/></field>
-        <field name="contentName" title="${uiLabelMap.FormFieldTitle_eportName}"><display/></field>
+        <field name="contentName" title="${uiLabelMap.FormFieldTitle_reportName}"><display/></field>
         <field name="description"><text/></field>
         <field name="statusId">
             <drop-down>
