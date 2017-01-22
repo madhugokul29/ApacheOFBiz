@@ -164,7 +164,7 @@ public class BirtServices {
         if (UtilValidate.isEmpty(entityViewName)) {
             entityViewName = (String) inputFields.get("modelElementName");
             if (UtilValidate.isEmpty(entityViewName)) {
-                return ServiceUtil.returnError(UtilProperties.getMessage(resource_error, "unknown.entityViewName", locale));
+                return ServiceUtil.returnError(UtilProperties.getMessage(resource_error, "BirtErrorEntityViewNotFound", locale));
             }
         }
 
