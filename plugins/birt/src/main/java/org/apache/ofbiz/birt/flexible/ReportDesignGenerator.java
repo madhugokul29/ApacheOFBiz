@@ -40,14 +40,21 @@ import org.eclipse.birt.report.model.api.elements.structures.HideRule;
 import org.eclipse.birt.report.model.api.elements.structures.ResultSetColumn;
 import org.eclipse.birt.report.model.elements.ReportItem;
 
+/**
+ * Report Design Generator Object - Handles flexible report design Generation from Master.
+ */
+
 public class ReportDesignGenerator {
 
     private static final String module = ReportDesignGenerator.class.getName();
     private Locale locale;
     private ElementFactory factory;
+    /** The generated design */
     private ReportDesignHandle design;
     private Map<String, String> dataMap;
+    /** Map of all filter supported by the report design */
     private Map<String, String> filterMap;
+    /** Service name to populate dataset of the report design*/
     private String serviceName;
     private Map<String, String> fieldDisplayLabels;
     private Map<String, String> filterDisplayLabels;
@@ -75,9 +82,14 @@ public class ReportDesignGenerator {
         }
     }
 
+    /**
+     * Generate report design (rtdesign file).
+     * @throws IOException
+     * @throws SemanticException
+     * @throws GeneralException
+     */
     public void buildReport() throws IOException, SemanticException, GeneralException {
         DesignConfig config = new DesignConfig();
-
         IDesignEngine engine = null;
 
         try {
@@ -217,6 +229,10 @@ public class ReportDesignGenerator {
         Platform.shutdown();
     }
 
+    /**
+     * Create the script that will be called within "Before Factory" step in Birt Report rendering process.
+     * <p>This script is used to populate Birt design parameters from input</p>
+     */
     private void createScriptedBeforeFactory() {
         StringBuffer beforeFactoryScript = new StringBuffer("Debug.logInfo(\"###### In beforeFactory\", module);\n");
         beforeFactoryScript.append("var inputFields = reportContext.getParameterValue(\"parameters\");\n");
@@ -230,6 +246,13 @@ public class ReportDesignGenerator {
         design.setBeforeFactory(beforeFactoryScript.toString());
     }
 
+    /**
+     * Create the script that will define the OFBiz dataset in Birt Report design.
+     * <p>This dataset will populate the OFBiz datasource of the design
+     * with <code>records</code> returned by <code>serviceName</code> service</p>
+     * @throws SemanticException
+     * @throws GeneralException
+     */
     private void createScriptedDataset() throws SemanticException, GeneralException {
         ScriptDataSetHandle dataSetHandle = factory.newScriptDataSet("Data Set");
         dataSetHandle.setDataSource("OFBiz");
@@ -313,6 +336,7 @@ public class ReportDesignGenerator {
         design.getDataSets().add(dataSetHandle);
     }
 
+    /** Create new dataSource named OFBiz */
     private void createScriptedDataSource() throws SemanticException {
         ScriptDataSourceHandle dataSource = factory.newScriptDataSource("OFBiz");
         design.getDataSources().add(dataSource);
