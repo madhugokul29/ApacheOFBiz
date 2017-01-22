@@ -91,7 +91,10 @@ public class BirtServices {
     public static final String resource_error = "BirtErrorUiLabels";
     public static final String resourceProduct = "BirtUiLabels";
 
-    public static Map<String, Object> createFlexibleReportFromMaster(DispatchContext dctx, Map<String, Object> context) {
+    /**
+     * Instanciate a new Flexible report, using the data given in parameters and <code>ReportDesignGenerator</code> class.
+     */
+    public static Map<String, Object> createFlexibleReport(DispatchContext dctx, Map<String, Object> context) {
         ReportDesignGenerator rptGenerator;
         try {
             rptGenerator = new ReportDesignGenerator(context, dctx);
@@ -191,7 +194,7 @@ public class BirtServices {
         return resultToBirt;
     }
 
-    public static Map<String, Object> determineReportGenerationPath(DispatchContext dctx, Map<String, Object> context) {
+    public static Map<String, Object> createFlexibleReportFromMaster(DispatchContext dctx, Map<String, Object> context) {
         Delegator delegator = dctx.getDelegator();
         LocalDispatcher dispatcher = dctx.getDispatcher();
         Locale locale = (Locale) context.get("locale");
@@ -336,7 +339,7 @@ public class BirtServices {
             if (customMethod == null) {
                 return ServiceUtil.returnError("CustomMethod not exist : " + customMethodId); //todo labelise
             }
-            result = dispatcher.runSync("createFlexibleReportFromMaster", UtilMisc.toMap(
+            result = dispatcher.runSync("createFlexibleReport", UtilMisc.toMap(
                     "locale", locale,
                     "dataMap", dataMap,
                     "userLogin", userLogin,
@@ -394,7 +397,7 @@ public class BirtServices {
             Map<String, String> filterMap = (Map<String, String>) resultService.get("filterMap");
             Map<String, String> fieldDisplayLabels = (Map<String, String>) resultService.get("fieldDisplayLabels");
             Map<String, String> filterDisplayLabels = (Map<String, String>) resultService.get("filterDisplayLabels");
-            Map<String, Object> resultGeneration = dispatcher.runSync("createFlexibleReportFromMaster", UtilMisc.toMap(
+            Map<String, Object> resultGeneration = dispatcher.runSync("createFlexibleReport", UtilMisc.toMap(
                     "locale", locale,
                     "dataMap", dataMap,
                     "userLogin", userLogin,

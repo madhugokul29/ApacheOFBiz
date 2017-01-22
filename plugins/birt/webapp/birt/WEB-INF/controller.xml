@@ -98,7 +98,7 @@ under the License.
     </request-map>
     <request-map uri="CreateFlexibleReport">
         <security https="true" auth="true" />
-        <event type="service" invoke="determineFlexibleReportGenerationPath" />
+        <event type="service" invoke="createFlexibleReportFromMaster" />
         <response name="error" type="view" value="CreateFlexibleReport" />
         <response name="success" type="view" value="EditFlexibleReport" />
     </request-map>

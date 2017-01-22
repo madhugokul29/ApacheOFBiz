@@ -66,7 +66,7 @@ under the License.
         <attribute name="records" type="List" mode="OUT" />
     </service>
 
-    <service name="createFlexibleReportFromMaster" engine="java" auth="true" location="org.apache.ofbiz.birt.flexible.BirtServices" invoke="createFlexibleReportFromMaster">
+    <service name="createFlexibleReport" engine="java" auth="true" location="org.apache.ofbiz.birt.flexible.BirtServices" invoke="createFlexibleReport">
         <description>BIRT report generation</description>
         <required-permissions join-type="AND"><check-permission permission="BIRT_CREATE"/></required-permissions>
         <attribute name="dataMap" type="Map" mode="IN" optional="false" />
@@ -78,8 +78,8 @@ under the License.
         <attribute name="rptDesignName" type="String" mode="IN" optional="false" />
     </service>
 
-    <service name="determineFlexibleReportGenerationPath" auth="true" engine="java" location="org.apache.ofbiz.birt.flexible.BirtServices" invoke="determineReportGenerationPath">
-        <description>Call report generator with appropriate workflow</description>
+    <service name="createFlexibleReportFromMaster" auth="true" engine="java" location="org.apache.ofbiz.birt.flexible.BirtServices" invoke="createFlexibleReportFromMaster">
+        <description>Call report generator with appropriate workflow required by the given master report</description>
         <required-permissions join-type="AND"><check-permission permission="BIRT_CREATE"/></required-permissions>
         <attribute name="contentId" type="String" mode="IN" optional="false" />
         <attribute name="reportName" type="String" mode="IN" optional="false" />
@@ -89,13 +89,13 @@ under the License.
         <attribute name="textForm" type="String" mode="OUT" optional="false" allow-html="any"/>
     </service>
     <service name="createFlexibleReportFromMasterEntityWorkflow" engine="java" location="org.apache.ofbiz.birt.flexible.BirtServices" invoke="createFlexibleReportFromMasterEntityWorkflow">
-        <description>Create and save in db content for a new report following entity workflow</description>
+        <description>Create and save in db content, a new report design following entity workflow</description>
         <required-permissions join-type="AND"><check-permission permission="BIRT_CREATE"/></required-permissions>
         <implements service="createFlexibleReportFromMasterInterface"/>
         <attribute name="entityViewName" type="String" mode="IN" optional="false" />
     </service>
     <service name="createFlexibleReportFromMasterServiceWorkflow" engine="java" location="org.apache.ofbiz.birt.flexible.BirtServices" invoke="createFlexibleReportFromMasterServiceWorkflow">
-        <description>Create and save in db content for a new report following service workflow</description>
+        <description>Create and save in db content, a new report design following service workflow</description>
         <required-permissions join-type="AND"><check-permission permission="BIRT_CREATE"/></required-permissions>
         <implements service="createFlexibleReportFromMasterInterface"/>
         <attribute name="serviceName" type="String" mode="IN" optional="false" />
