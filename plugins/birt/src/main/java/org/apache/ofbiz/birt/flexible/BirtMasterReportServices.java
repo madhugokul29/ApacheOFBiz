@@ -31,7 +31,7 @@ public class BirtMasterReportServices {
     public static final String resource = "BirtUiLabels";
     public static final String resource_error = "BirtErrorUiLabels";
 
-    // The following funtion are flexile service as example for reporting
+    // The following funtion are flexible service as example for reporting
     public static Map<String, Object> workEffortPerPersonPrepareDate(DispatchContext dctx, Map<String, Object> context) {
         Map<String, String> dataMap = UtilMisc.toMap("lastName", "name", "firstName", "name", "hours", "floating-point", "fromDate", "date-time", "thruDate", "date-time");
         LinkedHashMap<String, String> filterMap = new LinkedHashMap<String, String>();
