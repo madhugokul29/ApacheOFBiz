@@ -35,7 +35,7 @@ under the License.
         <attribute name="bodyParameters" type="Map" mode="IN" optional="true"/>
         <attribute name="birtParameters" type="Map" mode="IN" optional="true"/>
         <attribute name="birtLocale" type="Locale" mode="IN" optional="true"/>
-        <attribute name="birtContentType" type="String" mode="IN" optional="true"></attribute>
+        <attribute name="birtContentType" type="String" mode="IN" optional="true"/>
         <attribute name="webSiteId" type="String" mode="IN" optional="true"/>
         <attribute name="body" type="String" mode="OUT" optional="false"/>
     </service>
@@ -95,7 +95,7 @@ under the License.
         <attribute name="entityViewName" type="String" mode="IN" optional="false" />
     </service>
     <service name="createFlexibleReportFromMasterServiceWorkflow" engine="java" location="org.apache.ofbiz.birt.flexible.BirtServices" invoke="createFlexibleReportFromMasterServiceWorkflow">
-        <description>Create and save in db content, a new report design following service workflow</description>
+        <description>Create and save in db content, a new report following service workflow</description>
         <required-permissions join-type="AND"><check-permission permission="BIRT_CREATE"/></required-permissions>
         <implements service="createFlexibleReportFromMasterInterface"/>
         <attribute name="serviceName" type="String" mode="IN" optional="false" />
@@ -104,7 +104,7 @@ under the License.
         <description>Delete all reports (admin purposes)</description>
         <required-permissions join-type="AND"><check-permission permission="BIRT_DELETE"/></required-permissions>
     </service>
-    <service name="deleteFlexibleReport" auth="true" engine="java" location="org.apache.ofbiz.birt.flexible.BirtServices" invoke="deleteOneReport">
+    <service name="deleteFlexibleReport" auth="true" engine="java" location="org.apache.ofbiz.birt.flexible.BirtServices" invoke="deleteFlexibleReport">
         <description>Delete a report</description>
         <required-permissions join-type="AND"><check-permission permission="BIRT_DELETE"/></required-permissions>
         <attribute name="contentId" type="String" mode="IN" optional="false" />

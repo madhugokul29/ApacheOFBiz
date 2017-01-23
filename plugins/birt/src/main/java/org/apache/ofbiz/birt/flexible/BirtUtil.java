@@ -144,6 +144,12 @@ public final class BirtUtil {
 
     private BirtUtil() {}
 
+    /**
+     * Return birt field type corresponding to given entity field type
+     * @param entityFieldType
+     * @return
+     * @throws GeneralException
+     */
     public static String convertFieldTypeToBirtType(String entityFieldType) {
         if (UtilValidate.isEmpty(entityFieldType)) {
             return null;
@@ -151,6 +157,12 @@ public final class BirtUtil {
         return entityFieldTypeBirtTypeMap.get(entityFieldType.toLowerCase());
     }
 
+    /**
+     * Return birt parameter type corresponding to given entity field type
+     * @param entityFieldType
+     * @return
+     * @throws GeneralException
+     */
     public static String convertFieldTypeToBirtParameterType(String entityFieldType) {
         if (UtilValidate.isEmpty(entityFieldType)) {
             return null;
@@ -158,10 +170,22 @@ public final class BirtUtil {
         return entityFieldTypeBirtParameterTypeMap.get(entityFieldType.toLowerCase());
     }
 
+    /**
+     * Return true if mime type related to a contentType is supported by Birt
+     * @param contentType
+     * @return
+     * @throws GeneralException
+     */
     public static boolean isSupportedMimeType(String contentType) {
         return mimeTypeOutputFormatMap.containsKey(contentType);
     }
 
+    /**
+     * Return mime type related to a contentType supported by Birt
+     * @param contentType
+     * @return
+     * @throws GeneralException
+     */
     public static String getMimeTypeOutputFormat(String contentType) throws GeneralException {
         if (isSupportedMimeType(contentType)) {
             return mimeTypeOutputFormatMap.get(contentType);

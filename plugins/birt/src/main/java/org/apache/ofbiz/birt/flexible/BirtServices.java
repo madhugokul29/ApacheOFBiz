@@ -150,6 +150,11 @@ public class BirtServices {
         return result;
     }
 
+    /**
+     * Perform find data on given view/entity and return these into birt cmopatible format.
+     * This service is meant to be used as default for View/entity report design
+     *
+     */
     public static Map<String, Object> callPerformFindFromBirt(DispatchContext dctx, Map<String, Object> context) {
         LocalDispatcher dispatcher = dctx.getDispatcher();
         IReportContext reportContext = (IReportContext) context.get("reportContext");
@@ -194,6 +199,14 @@ public class BirtServices {
         return resultToBirt;
     }
 
+    /**
+     * Analyse given master and create report design from its data
+     * Two cases are implemented :
+     * <ul>
+     *     <li>Entity : data retieval is based on a simple view/entity</li>
+     *     <li>Service : data retrieval is based on service</li>
+     * </ul>
+     */
     public static Map<String, Object> createFlexibleReportFromMaster(DispatchContext dctx, Map<String, Object> context) {
         Delegator delegator = dctx.getDelegator();
         LocalDispatcher dispatcher = dctx.getDispatcher();
@@ -221,7 +234,6 @@ public class BirtServices {
         String reportContentId;
         if (attrName.equalsIgnoreCase("Entity")) {
             String entityViewName = masterContentAttribute.getString("attrValue");
-            //FIXME use entity model control
                 ModelEntity modelEntity = delegator.getModelEntity(entityViewName);
                 if (modelEntity == null) {
                     return ServiceUtil.returnError(UtilProperties.getMessage(resource_error, "BirtErrorEntityViewNotExist", locale) + " " + entityViewName);
@@ -271,6 +283,10 @@ public class BirtServices {
     }
 
     // I'm not a big fan of how I did the createFormForDisplay / overrideReportForm. Could probably be improved using a proper formForReport object or something similar.
+
+    /**
+     * Update search form of a report design
+     */
     public static Map<String, Object> overrideReportForm(DispatchContext dctx, Map<String, Object> context) {
         LocalDispatcher dispatcher = dctx.getDispatcher();
         Delegator delegator = dctx.getDelegator();
@@ -300,6 +316,9 @@ public class BirtServices {
         return ServiceUtil.returnSuccess(UtilProperties.getMessage(resource, "BirtSearchFormSuccessfullyOverridde", locale));
     }
 
+    /**
+     * Create report design from View/Entity master report
+     */
     public static Map<String, Object> createFlexibleReportFromMasterEntityWorkflow(DispatchContext dctx, Map<String, Object> context) {
         LocalDispatcher dispatcher = dctx.getDispatcher();
         Delegator delegator = dctx.getDelegator();
@@ -360,6 +379,9 @@ public class BirtServices {
         return result;
     }
 
+    /**
+     * Create report design from service master report
+     */
     public static Map<String, Object> createFlexibleReportFromMasterServiceWorkflow(DispatchContext dctx, Map<String, Object> context) {
         LocalDispatcher dispatcher = dctx.getDispatcher();
         Delegator delegator = dctx.getDelegator();
@@ -417,6 +439,9 @@ public class BirtServices {
         return result;
     }
 
+    /**
+     * Define which data fields and its label, filter fields and label that will be supported by the View/Entity report design
+     */
     public static Map<String, Object> prepareFlexibleReportFieldsFromEntity(DispatchContext dctx, Map<String, Object> context) {
         Locale locale = (Locale) context.get("locale");
         ModelEntity modelEntity = (ModelEntity) context.get("modelEntity");
@@ -493,6 +518,9 @@ public class BirtServices {
         return result;
     }
 
+    /**
+     * Prepare and return search form of a report design
+     */
     public static Map<String, Object> createFormForDisplay(DispatchContext dctx, Map<String, Object> context) {
         String reportContentId = (String) context.get("reportContentId");
         Delegator delegator = dctx.getDelegator();
@@ -507,7 +535,7 @@ public class BirtServices {
         } catch (GenericEntityException e) {
             return ServiceUtil.returnError(e.getMessage());
         }
-        //TODO utiliser un parser XML
+        //TODO use an XML parser
         Debug.logInfo(textData, module);
         textData = textData.substring(textData.indexOf("<form "), textData.length());
         if (textData.contains("</form>")) {
@@ -520,6 +548,9 @@ public class BirtServices {
         return result;
     }
 
+    /**
+     * delete all non-master report design
+     */
     public static Map<String, Object> deleteAllReports(DispatchContext dctx, Map<String, Object> context) {
         Delegator delegator = dctx.getDelegator();
         LocalDispatcher dispatcher = dctx.getDispatcher();
@@ -527,14 +558,10 @@ public class BirtServices {
         GenericValue userLogin = (GenericValue) context.get("userLogin");
 
         List<String> listContentId = null;
-        List<String> listRptDesignFiles = null;
-        List<GenericValue> listRptDesignFilesGV = null;
         List<GenericValue> listContent = null;
         EntityCondition entityConditionContent = EntityCondition.makeCondition("contentTypeId", "FLEXIBLE_REPORT");
-        EntityCondition entityConditionContentRpt = EntityCondition.makeCondition("contentTypeId", "RPTDESIGN");
         try {
             listContent = delegator.findList("Content", entityConditionContent, UtilMisc.toSet("contentId"), null, null, false);
-            listRptDesignFilesGV = delegator.findList("ContentDataResourceView", entityConditionContentRpt, UtilMisc.toSet("drObjectInfo"), null, null, false);
         } catch (GenericEntityException e) {
             e.printStackTrace();
             return ServiceUtil.returnError(e.getMessage());
@@ -542,42 +569,24 @@ public class BirtServices {
         if (UtilValidate.isEmpty(listContent)) {
             return ServiceUtil.returnError(UtilProperties.getMessage(resource_error, "BirtErrorNoFlexibleReportToDelete", locale));
         }
-        listContentId = EntityUtil.getFieldListFromEntityList(listContent, "contentId", false);
-        listRptDesignFiles = EntityUtil.getFieldListFromEntityList(listRptDesignFilesGV, "drObjectInfo", false);
-        for (String rptfileName : listRptDesignFiles) {
-            Path path = Paths.get(rptfileName.toString());
-            try {
-                if (! Files.deleteIfExists(path)) {
-                    ServiceUtil.returnError(UtilProperties.getMessage(resource_error, "BirtErrorCannotLocateReportFile", locale));
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-                return ServiceUtil.returnError(e.getMessage());
-            }
-        }
+        listContentId = EntityUtil.getFieldListFromEntityList(listContent, "contentId", true);
 
-        // TODO : factoriser ce code qui ressort plusieurs fois dans un worker (je savais pas qu'on pouvait faire des workers là :D) !
-        List<GenericValue> listContentRpt = null;
         try {
-            for (String contentId : listContentId) { // serait ptet plus propre avec utilisation directe du delegator pour s'occuper de la liste en une seule requête par table, mais bouton pas forcément destiné à rester donc au plus simple
-                delegator.removeByAnd("ContentAttribute", UtilMisc.toMap("contentId", contentId));
-                listContentRpt = delegator.findList("ContentAssoc", EntityCondition.makeCondition("contentId", contentId), UtilMisc.toSet("contentIdTo"), null, null, false);
-                String contentIdRpt = listContentRpt.get(0).getString("contentIdTo");
-                dispatcher.runSync("removeContentAndRelated", UtilMisc.toMap("contentId", contentId, "userLogin", userLogin, "locale", locale));
-                dispatcher.runSync("removeContentAndRelated", UtilMisc.toMap("contentId", contentIdRpt, "userLogin", userLogin, "locale", locale));
+            for (String contentId : listContentId) {
+                Map<String, Object> returnMap = dispatcher.runSync("deleteFlexibleReport", UtilMisc.toMap("contentId", contentId, "userLogin", userLogin, "locale", locale));
+                ServiceUtil.isError(returnMap);
             }
         } catch (GenericServiceException e) {
-            e.printStackTrace();
-            return ServiceUtil.returnError(e.getMessage());
-        } catch (GenericEntityException e) {
             e.printStackTrace();
             return ServiceUtil.returnError(e.getMessage());
         }
         return ServiceUtil.returnSuccess(UtilProperties.getMessage(resource, "BirtFlexibleReportsSuccessfullyDeleted", locale));
     }
 
-    // me demande si j'aurais pas dû faire un seul service de suppression avec listContentId en optionnel... 
-    public static Map<String, Object> deleteOneReport(DispatchContext dctx, Map<String, Object> context) {
+    /**
+     * Delete a flexible report design
+     */
+    public static Map<String, Object> deleteFlexibleReport(DispatchContext dctx, Map<String, Object> context) {
         Delegator delegator = dctx.getDelegator();
         LocalDispatcher dispatcher = dctx.getDispatcher();
         Locale locale = (Locale) context.get("locale");
@@ -613,7 +622,6 @@ public class BirtServices {
         }
         try {
             delegator.removeByAnd("ContentAttribute", UtilMisc.toMap("contentId", contentId));
-//            contentRpt = delegator.findOne("ContentAssoc", false, UtilMisc.toMap("contentId", contentId));
             dispatcher.runSync("removeContentAndRelated", UtilMisc.toMap("contentId", contentId, "userLogin", userLogin, "locale", locale));
             dispatcher.runSync("removeContentAndRelated", UtilMisc.toMap("contentId", contentIdRpt, "userLogin", userLogin, "locale", locale));
         } catch (GenericServiceException e) {
@@ -626,6 +634,11 @@ public class BirtServices {
         return ServiceUtil.returnSuccess(UtilProperties.getMessage(resource, "BirtFlexibleReportSuccessfullyDeleted", locale));
     }
 
+    /**
+     * Update birt rptdesign file frmo uploaded one.
+     * <p>This will update only STYLES, BODY, MASTERPAGE AND CUBES from existing rptdesign with uploaded ones.</p>
+     *
+     */
     public static Map<String, Object> uploadRptDesign(DispatchContext dctx, Map<String, Object> context) {
         String dataResourceId = (String) context.get("dataResourceIdRpt");
         Locale locale = (Locale) context.get("locale");
