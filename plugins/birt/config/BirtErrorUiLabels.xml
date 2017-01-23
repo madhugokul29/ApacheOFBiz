@@ -53,6 +53,10 @@
         <value xml:lang="en">This entity/view name is not valid</value>
         <value xml:lang="fr">Ce nom de vue/entité n'est pas valide</value>
     </property>
+    <property key="BirtErrorEntityViewNotFound">
+        <value xml:lang="en">No view entity name found</value>
+        <value xml:lang="fr">Aucun nom de vue/entité n'a été trouvé</value>
+    </property>
     <property key="BirtErrorNoAttributeFound">
         <value xml:lang="en">Master workflow attribute not found</value>
         <value xml:lang="fr">L'attribut de workflow du master n'as pas pu être trouvé</value>
