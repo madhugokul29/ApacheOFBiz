@@ -433,8 +433,11 @@ public class BirtServices {
             uiLabelMap.putAll(UtilProperties.getProperties(res, locale));
         }
 
+        List<String> excludeFields = modelEntity.getAutomaticFieldNames();
         for (String field : listEntityFields) {
             ModelField mField = modelEntity.getField(field);
+            //ignore stamps fields
+            if (excludeFields.contains(mField.getName())) continue;
             dataMap.put(field, mField.getType());
 
             String localizedName = null;
@@ -449,26 +452,8 @@ public class BirtServices {
                 fieldDisplayLabels.put(field, localizedName);
             }
 
-            List<String> listTwoFields = UtilMisc.toList("id", "id-long", "id-vlong", "indicator", "very-short", "short-varchar", "long-varchar", "very-long", "comment");
-            listTwoFields.add("description");
-            listTwoFields.add("name");
-            listTwoFields.add("value");
-            listTwoFields.add("credit-card-number");
-            listTwoFields.add("credit-card-date");
-            listTwoFields.add("email");
-            listTwoFields.add("url");
-            listTwoFields.add("id-ne");
-            listTwoFields.add("id-long-ne");
-            listTwoFields.add("id-vlong-ne");
-            listTwoFields.add("tel-number");
-            listTwoFields.add("fixed-point"); // should be in the other category, OFBiz bug (https://issues.apache.org/jira/browse/OFBIZ-6443) delete line when corrected.
-            listTwoFields.add("currency-precise"); // should be in the other category, OFBiz bug (https://issues.apache.org/jira/browse/OFBIZ-6443) delete line when corrected.
-            if (listTwoFields.contains(mField.getType())) {
-                filterMap.put(field, mField.getType());
-                filterMap.put(field.concat("_op"), "short-varchar");
-                filterDisplayLabels.put(field, fieldDisplayLabels.get(field));
-                filterDisplayLabels.put(field.concat("_op"), fieldDisplayLabels.get(field).concat(UtilProperties.getMessage(resource, "BirtFindCompareOperator", locale)));
-            } else { // remaining types need 4 fields (fld0-1_op-value)
+            List<String> fieldTypeWithRangeList = UtilMisc.toList("date", "date-time", "time", "floating-point", "currency-amount", "numeric");
+            if (fieldTypeWithRangeList.contains(mField.getType())) {
                 filterMap.put(field.concat("_fld0_value"), mField.getType());
                 filterMap.put(field.concat("_fld0_op"), "short-varchar");
                 filterMap.put(field.concat("_fld1_value"), mField.getType());
@@ -477,6 +462,11 @@ public class BirtServices {
                 filterDisplayLabels.put(field.concat("_fld0_op"), fieldDisplayLabels.get(field).concat(UtilProperties.getMessage(resource, "BirtFindFieldOptionValue0", locale).concat(UtilProperties.getMessage(resource, "BirtFindCompareOperator", locale))));
                 filterDisplayLabels.put(field.concat("_fld1_value"), fieldDisplayLabels.get(field).concat(UtilProperties.getMessage(resource, "BirtFindFieldOptionValue1", locale)));
                 filterDisplayLabels.put(field.concat("_fld1_op"), fieldDisplayLabels.get(field).concat(UtilProperties.getMessage(resource, "BirtFindFieldOptionValue1", locale).concat(UtilProperties.getMessage(resource, "BirtFindCompareOperator", locale))));
+            } else { // remaining types need 4 fields (fld0-1_op-value)
+                filterMap.put(field, mField.getType());
+                filterMap.put(field.concat("_op"), "short-varchar");
+                filterDisplayLabels.put(field, fieldDisplayLabels.get(field));
+                filterDisplayLabels.put(field.concat("_op"), fieldDisplayLabels.get(field).concat(UtilProperties.getMessage(resource, "BirtFindCompareOperator", locale)));
             }
         }
         Map<String, Object> result = ServiceUtil.returnSuccess();
