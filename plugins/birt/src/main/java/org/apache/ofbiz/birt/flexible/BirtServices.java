@@ -151,7 +151,7 @@ public class BirtServices {
     }
 
     /**
-     * Perform find data on given view/entity and return these into birt cmopatible format.
+     * Perform find data on given view/entity and return these into birt compatible format.
      * This service is meant to be used as default for View/entity report design
      *
      */
@@ -625,7 +625,7 @@ public class BirtServices {
     }
 
     /**
-     * Update birt rptdesign file frmo uploaded one.
+     * Update birt rptdesign file from uploaded one.
      * <p>This will update only STYLES, BODY, MASTERPAGE AND CUBES from existing rptdesign with uploaded ones.</p>
      *
      */
