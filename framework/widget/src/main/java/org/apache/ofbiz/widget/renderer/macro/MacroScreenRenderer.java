@@ -394,7 +394,7 @@ public class MacroScreenRenderer implements ScreenStringRenderer {
                 }
             } else if (UtilValidate.isNotEmpty(expandedContentId)) {
                 if (WidgetContentWorker.getContentWorker() != null) {
-                    renderedContent = WidgetContentWorker.getContentWorker().renderContentAsTextExt(dispatcher, delegator, expandedContentId, contentContext, locale, mimeTypeId, true);
+                    renderedContent = WidgetContentWorker.getContentWorker().renderContentAsTextExt(dispatcher, expandedContentId, contentContext, locale, mimeTypeId, true);
                 } else {
                     Debug.logError("Not rendering content, WidgetContentWorker.contentWorker not found.", module);
                 }
@@ -409,7 +409,7 @@ public class MacroScreenRenderer implements ScreenStringRenderer {
                 String editRequest = content.getEditRequest(context);
                 if (UtilValidate.isNotEmpty(editRequest)) {
                     if (WidgetContentWorker.getContentWorker() != null) {
-                        WidgetContentWorker.getContentWorker().renderContentAsTextExt(dispatcher, delegator, "NOCONTENTFOUND", writer, contentContext, locale, mimeTypeId, true);
+                        WidgetContentWorker.getContentWorker().renderContentAsTextExt(dispatcher, "NOCONTENTFOUND", writer, contentContext, locale, mimeTypeId, true);
                     } else {
                         Debug.logError("Not rendering content, WidgetContentWorker.contentWorker not found.", module);
                     }
@@ -504,7 +504,6 @@ public class MacroScreenRenderer implements ScreenStringRenderer {
          String expandedMapKey = content.getMapKey(context);
          String renderedContent = "";
          LocalDispatcher dispatcher = (LocalDispatcher) context.get("dispatcher");
-         Delegator delegator = (Delegator) context.get("delegator");
 
          // create a new map for the content rendering; so our current context does not get overwritten!
          Map<String, Object> contentContext = new HashMap<String, Object>();
@@ -512,7 +511,7 @@ public class MacroScreenRenderer implements ScreenStringRenderer {
 
          try {
              if (WidgetContentWorker.getContentWorker() != null) {
-                 renderedContent = WidgetContentWorker.getContentWorker().renderSubContentAsTextExt(dispatcher, delegator, expandedContentId, expandedMapKey, contentContext, locale, mimeTypeId, true);
+                 renderedContent = WidgetContentWorker.getContentWorker().renderSubContentAsTextExt(dispatcher, expandedContentId, expandedMapKey, contentContext, locale, mimeTypeId, true);
                  //Debug.logInfo("renderedContent=" + renderedContent, module);
              } else {
                  Debug.logError("Not rendering content, WidgetContentWorker.contentWorker not found.", module);
@@ -521,7 +520,7 @@ public class MacroScreenRenderer implements ScreenStringRenderer {
                  String editRequest = content.getEditRequest(context);
                  if (UtilValidate.isNotEmpty(editRequest)) {
                      if (WidgetContentWorker.getContentWorker() != null) {
-                         WidgetContentWorker.getContentWorker().renderContentAsTextExt(dispatcher, delegator, "NOCONTENTFOUND", writer, contentContext, locale, mimeTypeId, true);
+                         WidgetContentWorker.getContentWorker().renderContentAsTextExt(dispatcher, "NOCONTENTFOUND", writer, contentContext, locale, mimeTypeId, true);
                      } else {
                          Debug.logError("Not rendering content, WidgetContentWorker.contentWorker not found.", module);
                      }

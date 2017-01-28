@@ -33,7 +33,6 @@ import org.apache.ofbiz.base.util.UtilValidate;
 import org.apache.ofbiz.base.util.collections.MapStack;
 import org.apache.ofbiz.base.util.template.FreeMarkerWorker;
 import org.apache.ofbiz.content.content.ContentWorker;
-import org.apache.ofbiz.entity.Delegator;
 import org.apache.ofbiz.service.LocalDispatcher;
 
 import freemarker.core.Environment;
@@ -51,7 +50,6 @@ public class RenderContentAndSubContent implements TemplateTransformModel {
     public Writer getWriter(final Writer out, Map args) {
         final Environment env = Environment.getCurrentEnvironment();
         final LocalDispatcher dispatcher = FreeMarkerWorker.getWrappedObject("dispatcher", env);
-        final Delegator delegator = FreeMarkerWorker.getWrappedObject("delegator", env);
         final HttpServletRequest request = FreeMarkerWorker.getWrappedObject("request", env);
         final Map<String, Object> envMap = FreeMarkerWorker.createEnvironmentMap(env);
         final MapStack<String> templateRoot = MapStack.create();
@@ -93,10 +91,10 @@ public class RenderContentAndSubContent implements TemplateTransformModel {
                         String mapKey = (String)templateRoot.get("mapKey");
                         String contentAssocTypeId = (String)templateRoot.get("contentAssocTypeId");
                         if (UtilValidate.isNotEmpty(mapKey) || UtilValidate.isNotEmpty(contentAssocTypeId)) {
-                            String txt = ContentWorker.renderSubContentAsText(dispatcher, delegator, contentId, mapKey, templateRoot, locale, mimeTypeId, true);
+                            String txt = ContentWorker.renderSubContentAsText(dispatcher, contentId, mapKey, templateRoot, locale, mimeTypeId, true);
                             out.write(txt);
                         } else if (contentId != null) {
-                            ContentWorker.renderContentAsText(dispatcher, delegator, contentId, out, templateRoot, locale, mimeTypeId, null, null, true);
+                            ContentWorker.renderContentAsText(dispatcher, contentId, out, templateRoot, locale, mimeTypeId, null, null, true);
                         }
                     } catch (GeneralException e) {
                         String errMsg = "Error rendering thisContentId:" + (String)templateRoot.get("contentId") + " msg:" + e.toString();

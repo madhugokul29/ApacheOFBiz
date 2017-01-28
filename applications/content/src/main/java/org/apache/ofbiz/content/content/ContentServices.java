@@ -812,7 +812,6 @@ public class ContentServices {
      */
     public static Map<String, Object> renderSubContentAsText(DispatchContext dctx, Map<String, ? extends Object> context) {
         Map<String, Object> results = new HashMap<String, Object>();
-        Delegator delegator = dctx.getDelegator();
         LocalDispatcher dispatcher = dctx.getDispatcher();
 
         Map<String,Object> templateContext = UtilGenerics.checkMap(context.get("templateContext"));
@@ -846,7 +845,7 @@ public class ContentServices {
         }
 
         try {
-            ContentWorker.renderSubContentAsText(dispatcher, delegator, contentId, outWriter, mapKey, templateContext, locale, mimeTypeId, true);
+            ContentWorker.renderSubContentAsText(dispatcher, contentId, outWriter, mapKey, templateContext, locale, mimeTypeId, true);
             out.write(outWriter.toString());
             results.put("textData", outWriter.toString());
         } catch (GeneralException e) {
@@ -868,7 +867,6 @@ public class ContentServices {
     public static Map<String, Object> renderContentAsText(DispatchContext dctx, Map<String, ? extends Object> context) {
         Map<String,Object> results = new HashMap<String, Object>();
         LocalDispatcher dispatcher = dctx.getDispatcher();
-        Delegator delegator = dctx.getDelegator();
         Writer out = (Writer) context.get("outWriter");
 
         Map<String,Object> templateContext = UtilGenerics.checkMap(context.get("templateContext"));
@@ -896,7 +894,7 @@ public class ContentServices {
         }
 
         try {
-            ContentWorker.renderContentAsText(dispatcher, delegator, contentId, outWriter, templateContext, locale, mimeTypeId, null, null, true);
+            ContentWorker.renderContentAsText(dispatcher, contentId, outWriter, templateContext, locale, mimeTypeId, null, null, true);
             if (out != null) out.write(outWriter.toString());
             results.put("textData", outWriter.toString());
         } catch (GeneralException e) {
