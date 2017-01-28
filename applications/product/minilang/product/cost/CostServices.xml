@@ -45,7 +45,7 @@ under the License.
             <store-value value-field="existingCost"/>
         </iterate>
         <!-- The new cost is created -->
-        <make-value entity-name="CostComponent" value-field="newEntity"/>
+        <make-value value-field="newEntity" entity-name="CostComponent"/>
         <set-nonpk-fields map="parameters" value-field="newEntity"/>
         <sequenced-id sequence-name="CostComponent" field="newEntity.costComponentId"/>
         <if-empty field="newEntity.fromDate">
@@ -573,7 +573,7 @@ under the License.
         </else>
         </if-empty>
         
-        <!-- <log level="always" message="In updateProductAverageCostOnReceiveInventory creating new average cost with productAverageCostMap: ${productAverageCostMap}"/> -->
+        <!-- <log level="info" message="In updateProductAverageCostOnReceiveInventory creating new average cost with productAverageCostMap: ${productAverageCostMap}"/> -->
         <call-service service-name="createProductAverageCost" in-map-name="productAverageCostMap"/>
         <log level="info" message="For facilityId ${parameters.facilityId}, Average cost of product ${parameters.productId} is set from  ${updateProductAverageCostMap.averageCost} to ${productAverageCostMap.averageCost}"/>
     </simple-method>

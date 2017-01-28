@@ -4212,7 +4212,7 @@ public class OrderServices {
             }
         }
 
-        toStore.addAll(cart.makeOrderItems());
+        toStore.addAll(cart.makeOrderItems(dispatcher));
         toStore.addAll(cart.makeAllAdjustments());
 
         long groupIndex = cart.getShipInfoSize();
@@ -5688,10 +5688,9 @@ public class OrderServices {
 
     /**
      * Create an OrderItemShipGroup record
-     * @param ctx
+     * @param dctx
      * @param context
      * @return
-     * @throws GenericEntityException 
      */
     public static Map<String, Object> addOrderItemShipGroup(DispatchContext dctx, Map<String, Object> context) {
         Delegator delegator = dctx.getDelegator();
@@ -5896,7 +5895,7 @@ public class OrderServices {
 
     /**
      * Update orderItem and shipgroup association
-     * @param ctx
+     * @param dctx
      * @param context
      * @return
      * @throws GeneralException 

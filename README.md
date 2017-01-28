@@ -44,15 +44,11 @@ command `gradlew eclipse` before creating the project in Eclipse.
 This command will prepare OFBiz for Eclipse with the correct classpath and settings 
 by creating the.classpath and .project files.
 
-Security
--------------------
-
-You can trust the OFBiz Project Management Committee members and committers do their best to keep OFBiz secure from external exploits, and fix vulnerabilities as soon as they are known. Despite these efforts, if ever you find and want to report a security issue, please report at: security @ ofbiz.apache.org, before disclosing them in a public forum.
-
->_Note_: Be sure to read this Wiki page if ever you plan to use RMI, JNDI, JMX or Spring and maybe other Java classes OFBiz does not use Out Of The Box (OOTB): [The infamous Java serialization vulnerability](https://cwiki.apache.org/confluence/display/OFBIZ/The+infamous+Java+serialization+vulnerability)
-
-You can find more information about security in OFBiz at [Keeping OFBiz secure](https://cwiki.apache.org/confluence/display/OFBIZ/Keeping+OFBiz+secure) 
-
+>_Note_: if you want to use an external DBMS, instead of the embedded Derby, you will need a JDBC driver.
+The only thing you need to do is add a dependency in build.gradle to the MySQL/PostgreSQL/whatever JDBC driver.
+Search in Jcenter for the database driver suitable for the database installed on your production system.
+For example, under the dependencies section you can add something like this for mysql: `runtime 'mysql:mysql-connector-java:5.1.36'`
+Of course you need to make sure the connector is compatible with _your_ version of the database installed!
 
 Quick start
 -----------
@@ -80,6 +76,9 @@ MS Windows:
 Unix-like OS:
 `./gradlew ofbiz`
 
+>_Note_: then ignore the % progress indicator because this task does not end as long as OFBiz is running.
+
+
 ### Visit OFBiz through your browser:
 
 [Order Back Office](https://localhost:8443/ordermgr)
@@ -93,6 +92,19 @@ You can log in with the user __admin__ and password __ofbiz__.
 >_Note_: the default configuration uses an embedded Java database
 (Apache Derby) and embedded application server components such as
 Apache Tomcat®, Apache Geronimo (transaction manager), etc.
+
+Security
+-------------------
+
+You can trust the OFBiz Project Management Committee members and committers do their best to keep OFBiz secure from external exploits, 
+and fix vulnerabilities as soon as they are known. Despite these efforts, if ever you find and want to report a security issue, please report 
+at: security @ ofbiz.apache.org, before disclosing them in a public forum.
+
+>_Note_: Be sure to read this Wiki page if ever you plan to use RMI, JNDI, JMX or Spring and maybe other Java classes OFBiz does not use 
+Out Of The Box (OOTB): [The infamous Java serialization vulnerability](https://cwiki.apache.org/confluence/display/OFBIZ/The+infamous+Java+serialization+vulnerability)
+
+You can find more information about security in OFBiz at [Keeping OFBiz secure](https://cwiki.apache.org/confluence/display/OFBIZ/Keeping+OFBiz+secure) 
+
 
 * * * * * * * * * * * *
 
@@ -390,7 +402,7 @@ OR
 
 #### Execute an integration test case
 
-run a test case, in this example the componnet is "entity" and the case
+run a test case, in this example the component is "entity" and the case
 name is "entity-tests"
 
 `gradlew "ofbiz --test component=entity --test case=entity-tests"`
@@ -462,10 +474,15 @@ time consuming
 
 #### Setup eclipse project for OFBiz
 
-Thanks to some gradle magic, setting up OFBiz on eclipse is very
-easy. All you need is to execute one command and then you can
-import the project to eclipse. This command will generate
-the necessary __.classpath__ and __.project__ files for eclipse.
+Setting up OFBiz on eclipse is easy by simply running the below command
+and then importing the project to eclipse. This command will generate
+the necessary __.classpath__ and __.project__ files for eclipse and it
+will also make the source code for external libraries available in
+eclipse (i.e. you can view source through Ctrl + Click)
+
+The first time you run this command it will take a long time to execute
+because it will download source packages available for project
+dependencies.
 
 `gradlew eclipse`
 
@@ -475,7 +492,7 @@ OFBiz plugin system
 -------------------
 
 OFBiz provides an extension mechanism through plugins. Plugins are standard
-OFBiz components that reside in the specialpurpose directory. Plugins can be
+OFBiz components that reside in the plugins directory. Plugins can be
 added manually or fetched from a maven repository. The standard tasks for
 managing plugins are listed below.
 
@@ -503,14 +520,14 @@ If you have a plugin called mycustomplugin and want to install it in OFBiz follo
 below instructions:
 
 - Extract the plugin if it is compressed
-- Place the extracted directory into /specialpurpose
+- Place the extracted directory into /plugins
 - Run the below command
 
 `gradlew installPlugin -PpluginId=myplugin`
 
 The above commands achieve the following:
 
-- add the plugin to /specialpurpose/component-load.xml
+- add the plugin to /plugins/component-load.xml
 - executes the task "install" in the plugin's build.gradle file if it exists
 
 ### Uninstall a plugin
@@ -523,7 +540,7 @@ run the below command
 The above commands achieve the following:
 
 - executes the task "uninstall" in the plugin's build.gradle file if it exists
-- removes the plugin from /specialpurpose/component-load.xml
+- removes the plugin from /plugins/component-load.xml
 
 ### Remove a plugin
 
@@ -546,8 +563,8 @@ Create a new plugin. The following project parameters are passed:
 
 The above commands achieve the following:
 
-- create a new plugin in /specialpurpose/myplugin
-- add the plugin to /specialpurpose/component-load.xml
+- create a new plugin in /plugins/myplugin
+- add the plugin to /plugins/component-load.xml
 
 ### Push a plugin to a repository
 
@@ -576,11 +593,11 @@ To get tab completion (auto complete gradle commands by pressing tab)
 you can download the script from the below link and place it in the
 appropriate location for your system.
 
-[Gradle tab completion](https://gist.github.com/nolanlawson/8694399)
+[Gradle tab completion](https://gist.github.com/Ea87/46401a96df31cd208a87)
 
 For example, on debian based systems, you can use the following command:
 
-`sudo curl -L -s https://gist.github.com/nolanlawson/8694399/raw/gradle-tab-completion.bash -o /etc/bash_completion.d/gradle-tab-completion.bash`
+`sudo curl -L -s https://gist.github.com/Ea87/46401a96df31cd208a87/raw/gradle-tab-completion.bash -o /etc/bash_completion.d/gradle-tab-completion.bash`
 
 Crypto notice
 -------------
